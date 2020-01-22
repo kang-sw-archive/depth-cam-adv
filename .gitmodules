@@ -1,0 +1,24 @@
+[submodule "project_truestdio/tof-depth-map-gen-revision/third/doctest"]
+	path = project_truestdio/tof-depth-map-gen-revision/third/doctest
+	url = https://github.com/onqtam/doctest.git
+[submodule "project_truestdio/tof-depth-map-gen-revision/third/uTest"]
+	path = project_truestdio/tof-depth-map-gen-revision/third/uTest
+	url = https://github.com/HappyNY/uTest.git
+[submodule "project_truestdio/tof-depth-map-gen-revision/third/uEmbedded"]
+	path = project_truestdio/tof-depth-map-gen-revision/third/uEmbedded
+	url = https://github.com/HappyNY/uEmbedded.git
+[submodule "project_scanlib_usb_api/third/uEmbedded"]
+	path = project_scanlib_usb_api/third/uEmbedded
+	url = git@github.com:HappyNY/uEmbedded.git
+[submodule "project_scanlib_usb_api/third/nana"]
+	path = project_scanlib_usb_api/third/nana
+	url = https://github.com/cnjinhao/nana.git
+[submodule "project_scanlib_usb_api/third/JUCE"]
+	path = project_scanlib_usb_api/third/JUCE
+	url = https://github.com/WeAreROLI/JUCE.git
+[submodule "project_scanlib_usb_api/third/fltk"]
+	path = project_scanlib_usb_api/third/fltk
+	url = https://github.com/fltk/fltk.git
+[submodule "project_scanlib_usb_api/third/gflags"]
+	path = project_scanlib_usb_api/third/gflags
+	url = https://github.com/gflags/gflags.git

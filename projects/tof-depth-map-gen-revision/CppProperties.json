@@ -1,0 +1,30 @@
+{
+  "configurations": [
+    {
+      "inheritEnvironments": [
+        "msvc_x86"
+      ],
+      "name": "x86-Debug",
+      "includePath": [
+        "${env.INCLUDE}",
+        "${workspaceRoot}/**",
+        "${workspaceRoot}/Src/",
+        "${workspaceRoot}/third/",
+        "${workspaceRoot}/third/ADS0032v1.1/",
+        "${workspaceRoot}/third/uEmbedded/src/include/"
+      ],
+      "forcedInclude": [
+        "${workspaceRoot}/inc/intellisense.h"
+      ],
+      "defines": [
+        "WIN32",
+        "_DEBUG",
+        "UNICODE",
+        "_UNICODE",
+        "STM32F401xC",
+        "__GNUC__"
+      ],
+      "intelliSenseMode": "windows-msvc-x86"
+    }
+  ]
+}
