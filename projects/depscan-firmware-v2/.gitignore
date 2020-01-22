@@ -1,0 +1,6 @@
+out
+.vs/**
+!.vs/*.json
+build/*.o
+build/*.d
+build/*.lst

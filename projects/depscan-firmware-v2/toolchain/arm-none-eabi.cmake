@@ -1,0 +1,7 @@
+SET(CMAKE_C_COMPILER	E:\Programs\arm-atollic-eabi-bin/arm-atollic-eabi-gcc)
+SET(CMAKE_CXX_COMPILER	E:\Programs\arm-atollic-eabi-bin/arm-atollic-eabi-g++)
+SET(CMAKE_LINKER		E:\Programs\arm-atollic-eabi-bin/arm-atollic-eabi-ld)
+SET(CMAKE_NM			E:\Programs\arm-atollic-eabi-bin/arm-atollic-eabi-nm)
+SET(CMAKE_OBJCOPY		E:\Programs\arm-atollic-eabi-bin/arm-atollic-eabi-objcopy)
+SET(CMAKE_OBJDUMP		E:\Programs\arm-atollic-eabi-bin/arm-atollic-eabi-objdump)
+SET(CMAKE_RANLIB		E:\Programs\arm-atollic-eabi-bin/arm-atollic-eabi-ranlib)
