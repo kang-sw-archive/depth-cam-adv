@@ -1,5 +1,5 @@
 bin/
-.vs
+.vs/**
 tools/
 Arduino/
 /project_truestdio/board_sample

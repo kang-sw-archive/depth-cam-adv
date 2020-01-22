@@ -1,0 +1,270 @@
+EESchema Schematic File Version 4
+EELAYER 30 0
+EELAYER END
+$Descr A3 16535 11693
+encoding utf-8
+Sheet 2 2
+Title ""
+Date ""
+Rev ""
+Comp ""
+Comment1 ""
+Comment2 ""
+Comment3 ""
+Comment4 ""
+$EndDescr
+$Comp
+L MCU_Module:RaspberryPi-CM3+L U?
+U 1 1 5E280E68
+P 7700 5250
+F 0 "U?" H 7700 1861 50  0000 C CNN
+F 1 "RaspberryPi-CM3+L" H 7700 1770 50  0000 C CNN
+F 2 "" H 7100 8650 50  0001 C CNN
+F 3 "https://www.raspberrypi.org/documentation/hardware/computemodule/datasheets/rpi_DATA_CM3plus_1p0.pdf" H 7100 8650 50  0001 C CNN
+	1    7700 5250
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	6700 2250 6050 2250
+Wire Wire Line
+	6050 2350 6700 2350
+Wire Wire Line
+	6050 2450 6700 2450
+Wire Wire Line
+	6700 2650 6050 2650
+Wire Wire Line
+	6050 2750 6700 2750
+Wire Wire Line
+	6050 2850 6700 2850
+Wire Wire Line
+	6700 2950 6050 2950
+Wire Wire Line
+	6050 3050 6700 3050
+Wire Wire Line
+	6050 3150 6700 3150
+Wire Wire Line
+	6700 3350 6050 3350
+Wire Wire Line
+	6050 3450 6700 3450
+Wire Wire Line
+	6050 3550 6700 3550
+Wire Wire Line
+	6700 3750 6050 3750
+Wire Wire Line
+	6050 3850 6700 3850
+Wire Wire Line
+	6050 3950 6700 3950
+Wire Wire Line
+	6700 4050 6050 4050
+Wire Wire Line
+	6050 4150 6700 4150
+Wire Wire Line
+	6050 4250 6700 4250
+Wire Wire Line
+	6700 4350 6050 4350
+Wire Wire Line
+	6050 4450 6700 4450
+Wire Wire Line
+	6050 4550 6700 4550
+Wire Wire Line
+	6700 4650 6050 4650
+Wire Wire Line
+	6050 4750 6700 4750
+Wire Wire Line
+	6050 4850 6700 4850
+Wire Wire Line
+	6700 4950 6050 4950
+Wire Wire Line
+	6050 5050 6700 5050
+Wire Wire Line
+	6050 5150 6700 5150
+Wire Wire Line
+	6700 5250 6050 5250
+Wire Wire Line
+	6050 5350 6700 5350
+Wire Wire Line
+	6050 5450 6700 5450
+Wire Wire Line
+	6700 5550 6050 5550
+Wire Wire Line
+	6050 5650 6700 5650
+Wire Wire Line
+	6050 5750 6700 5750
+Wire Wire Line
+	6700 5850 6050 5850
+Wire Wire Line
+	6050 5950 6700 5950
+Wire Wire Line
+	6050 6050 6700 6050
+Wire Wire Line
+	6700 6150 6050 6150
+Wire Wire Line
+	6050 6250 6700 6250
+Wire Wire Line
+	6050 6350 6700 6350
+Wire Wire Line
+	6700 6450 6050 6450
+Wire Wire Line
+	6050 6550 6700 6550
+Wire Wire Line
+	6050 6650 6700 6650
+Wire Wire Line
+	6700 6750 6050 6750
+Wire Wire Line
+	6050 6850 6700 6850
+Wire Wire Line
+	6050 6950 6700 6950
+Wire Wire Line
+	6700 7050 6050 7050
+Wire Wire Line
+	6050 7150 6700 7150
+Wire Wire Line
+	6050 7250 6700 7250
+Wire Wire Line
+	6700 7350 6050 7350
+Wire Wire Line
+	6050 7450 6700 7450
+Wire Wire Line
+	6050 7550 6700 7550
+Wire Wire Line
+	6700 7650 6050 7650
+Wire Wire Line
+	6050 7750 6700 7750
+Wire Wire Line
+	6050 7850 6700 7850
+Wire Wire Line
+	6700 7950 6050 7950
+Wire Wire Line
+	6050 8050 6700 8050
+Wire Wire Line
+	6050 8150 6700 8150
+Wire Wire Line
+	6700 8250 6050 8250
+Wire Wire Line
+	7700 8550 7700 9200
+$Comp
+L power:Earth #PWR?
+U 1 1 5E2AF852
+P 7700 9200
+F 0 "#PWR?" H 7700 8950 50  0001 C CNN
+F 1 "Earth" H 7700 9050 50  0001 C CNN
+F 2 "" H 7700 9200 50  0001 C CNN
+F 3 "~" H 7700 9200 50  0001 C CNN
+	1    7700 9200
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	9350 2550 8700 2550
+Wire Wire Line
+	8700 2750 9350 2750
+Wire Wire Line
+	8700 2850 9350 2850
+Wire Wire Line
+	9350 2950 8700 2950
+Wire Wire Line
+	8700 3050 9350 3050
+Wire Wire Line
+	8700 3150 9350 3150
+Wire Wire Line
+	8700 3450 9350 3450
+Wire Wire Line
+	8700 3550 9350 3550
+Wire Wire Line
+	9350 3750 8700 3750
+Wire Wire Line
+	8700 3850 9350 3850
+Wire Wire Line
+	8700 3950 9350 3950
+Wire Wire Line
+	9350 4050 8700 4050
+Wire Wire Line
+	8700 4150 9350 4150
+Wire Wire Line
+	8700 4250 9350 4250
+Wire Wire Line
+	9350 4350 8700 4350
+Wire Wire Line
+	8700 4550 9350 4550
+Wire Wire Line
+	9350 4650 8700 4650
+Wire Wire Line
+	8700 4750 9350 4750
+Wire Wire Line
+	8700 4850 9350 4850
+Wire Wire Line
+	9350 4950 8700 4950
+Wire Wire Line
+	8700 5050 9350 5050
+Wire Wire Line
+	8700 5150 9350 5150
+Wire Wire Line
+	9350 5250 8700 5250
+Wire Wire Line
+	8700 5350 9350 5350
+Wire Wire Line
+	8700 5450 9350 5450
+Wire Wire Line
+	9350 5550 8700 5550
+Wire Wire Line
+	8700 5650 9350 5650
+Wire Wire Line
+	8700 5950 9350 5950
+Wire Wire Line
+	8700 6050 9350 6050
+Wire Wire Line
+	9350 6150 8700 6150
+Wire Wire Line
+	8700 6250 9350 6250
+Wire Wire Line
+	8700 6350 9350 6350
+Wire Wire Line
+	9350 6450 8700 6450
+Wire Wire Line
+	8700 6650 9350 6650
+Wire Wire Line
+	9350 6750 8700 6750
+Wire Wire Line
+	8700 6850 9350 6850
+Wire Wire Line
+	8700 6950 9350 6950
+Wire Wire Line
+	9350 7050 8700 7050
+Wire Wire Line
+	8700 7150 9350 7150
+Wire Wire Line
+	8700 7250 9350 7250
+Wire Wire Line
+	9350 7350 8700 7350
+Wire Wire Line
+	8700 7450 9350 7450
+Wire Wire Line
+	8700 7550 9350 7550
+Wire Wire Line
+	8700 7850 9350 7850
+Wire Wire Line
+	9350 7950 8700 7950
+Wire Wire Line
+	8700 8050 9350 8050
+Wire Wire Line
+	8700 8150 9350 8150
+Wire Wire Line
+	9350 8250 8700 8250
+Wire Wire Line
+	9350 3650 8700 3650
+Wire Wire Line
+	9350 3250 8700 3250
+Wire Wire Line
+	7400 1950 7400 1450
+Wire Wire Line
+	7500 1450 7500 1950
+Wire Wire Line
+	7600 1450 7600 1950
+Wire Wire Line
+	7800 1450 7800 1950
+Wire Wire Line
+	7900 1450 7900 1950
+Wire Wire Line
+	8000 1450 8000 1950
+Wire Wire Line
+	8100 1450 8100 1950
+$EndSCHEMATC
