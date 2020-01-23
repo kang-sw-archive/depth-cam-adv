@@ -1,16 +1,12 @@
 {
   "ExpandedNodes": [
     "",
-    "\\build",
     "\\Drivers",
     "\\Inc",
-    "\\lib",
-    "\\Middlewares\\ST",
+    "\\Lib",
     "\\Src",
-    "\\Src\\Usr",
-    "\\Third",
     "\\toolchain"
   ],
-  "SelectedNode": "\\build\\stm32g4xx_hal.lst",
-  "PreviewInSolutionExplorer": false
+  "SelectedNode": "\\Makefile",
+  "PreviewInSolutionExplorer": true
 }
