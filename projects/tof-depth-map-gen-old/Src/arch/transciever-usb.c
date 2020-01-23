@@ -1,7 +1,7 @@
 #include "transciever-usb.h"
 #include "stm32f4xx_hal.h"
 #include "usbd_cdc_if.h"
-#include <app/program.h>
+#include "../app/program.h"
 
 void InitUsbTransceiver( struct usb_transceiver* s )
 {

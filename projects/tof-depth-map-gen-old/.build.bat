@@ -1,0 +1,1 @@
+make all -j8 GCC_PATH=E:/Programs/ARMTools/bin

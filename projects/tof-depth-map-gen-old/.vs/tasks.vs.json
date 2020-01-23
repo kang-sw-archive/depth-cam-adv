@@ -7,12 +7,8 @@
       "contextType": "build",
       "type": "launch",
       "workingDirectory": "${workspaceRoot}",
-      "command": "make",
-      "args": [
-        "all",
-        "-j8",
-        "GCC_PATH=E:/Programs/ARMTools/bin"
-      ]
+      "command": ".build.bat",
+      "args": []
     },
     {
       "taskLabel": "clean",

@@ -22,7 +22,7 @@ TARGET = tof-depth-map-gen-revision
 # debug build?
 DEBUG = 1
 # optimization
-OPT = -Og
+OPT = -Os
 
 
 #######################################
@@ -70,7 +70,9 @@ Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c
 
 # Add user sources recursively
 rwildcard=$(foreach d,$(wildcard $(1:=/*)),$(call rwildcard,$d,$2) $(filter $(subst *,%,$2),$d))
-C_SOURCES += $(call rwildcard,Src/Usr,*.c *.cpp)
+C_SOURCES += $(call rwildcard,Src/app,*.c *.cpp)
+C_SOURCES += $(call rwildcard,Src/arch,*.c *.cpp)
+C_SOURCES += $(call rwildcard,third/uEmbedded/src,*.c)
 
 # ASM sources
 ASM_SOURCES =  \
@@ -88,13 +90,11 @@ CC = $(GCC_PATH)/$(PREFIX)gcc
 AS = $(GCC_PATH)/$(PREFIX)gcc -x assembler-with-cpp
 CP = $(GCC_PATH)/$(PREFIX)objcopy
 SZ = $(GCC_PATH)/$(PREFIX)size
-OBJDUMP = $(GCC_PATH)/$(PREFIX)objdump
 else
 CC = $(PREFIX)gcc
 AS = $(PREFIX)gcc -x assembler-with-cpp
 CP = $(PREFIX)objcopy
 SZ = $(PREFIX)size
-OBJDUMP = $(PREFIX)objdump
 endif
 HEX = $(CP) -O ihex
 BIN = $(CP) -O binary -S
@@ -137,7 +137,10 @@ C_INCLUDES =  \
 -IDrivers/CMSIS/Device/ST/STM32F4xx/Include \
 -IDrivers/CMSIS/Include
 
-
+C_INCLUDES += \
+-Ithird/uEmbedded/src/ \
+-Ithird/ADS0032v1.1/include \
+-ISrc
 
 # compile gcc flags
 ASFLAGS = $(MCU) $(AS_DEFS) $(AS_INCLUDES) $(OPT) -Wall -fdata-sections -ffunction-sections
@@ -158,8 +161,8 @@ endif
 LDSCRIPT = STM32F401VCTx_FLASH.ld
 
 # libraries
-LIBS = -lc -lm -lnosys 
-LIBDIR =
+LIBS = -lc -lm -lnosys -largus
+LIBDIR = -Lthird/ADS0032v1.1
 LDFLAGS = $(MCU) -specs=nano.specs -T$(LDSCRIPT) $(LIBDIR) $(LIBS) -Wl,-Map=$(BUILD_DIR)/$(TARGET).map,--cref -Wl,--gc-sections
 
 # default action: build all
@@ -174,6 +177,9 @@ vpath %.c $(sort $(dir $(C_SOURCES)))
 # list of ASM program objects
 OBJECTS += $(addprefix $(BUILD_DIR)/intermediate/,$(notdir $(ASM_SOURCES:.s=.o)))
 vpath %.s $(sort $(dir $(ASM_SOURCES)))
+
+# Def OBJDUMP
+OBJDUMP = $(GCC_PATH)/$(PREFIX)objdump
 
 # Linker flag:: -Wa,-a,-adhlns,-alms=$(BUILD_DIR)/$(notdir $(<:.c=.lst))
 $(BUILD_DIR)/intermediate/%.o: %.c Makefile | $(BUILD_DIR) 
@@ -195,6 +201,7 @@ $(BUILD_DIR)/%.bin: $(BUILD_DIR)/%.elf | $(BUILD_DIR)
 	
 $(BUILD_DIR)/%.lss: $(BUILD_DIR)/%.elf | $(BUILD_DIR)
 	$(OBJDUMP) -h -S -z $< > $@
+	$(OBJDUMP) -x $< > $(@:.lss=.fnc)
 
 $(BUILD_DIR):
 	mkdir $(BUILD_DIR)

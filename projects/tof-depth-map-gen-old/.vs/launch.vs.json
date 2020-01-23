@@ -1,0 +1,31 @@
+{
+  "version": "0.2.1",
+  "defaults": {},
+  "configurations": [
+    {
+      "args": [],
+      "currentDir": "${workspaceRoot}",
+      "cwd": "${workspaceRoot}",
+      "debugServerArgs": "-f E:/Programs/ARMTools/OpenOCD/share/openocd/scripts/board/stm32f4discovery.cfg",
+      "debugServerPath": "E:\\Programs\\ARMTools\\OpenOCD\\bin\\openocd.exe",
+      "externalConsole": true,
+      "filterStderr": true,
+      "filterStdout": true,
+      "inheritEnvironments": [
+        "gcc_arm"
+      ],
+      "launchCompleteCommand": "None",
+      "miDebuggerPath": "E:\\Programs\\ARMTools\\bin\\arm-none-eabi-gdb.exe",
+      "miDebuggerServerAddress": "localhost:3333",
+      "MIMode": "gdb",
+      "name": "tof-depth-map-gen-revision.elf",
+      "program": "${workspaceRoot}\\BUILD\\tof-depth-map-gen-revision.elf",
+      "project": "build\\tof-depth-map-gen-revision.elf",
+      "setupCommands": [],
+      "showDisplayString": true,
+      "type": "cppdbg",
+      "visualizerFile": "${debugInfo.linuxNatvisPath}",
+      "stopOnEntry": true
+    }
+  ]
+}
