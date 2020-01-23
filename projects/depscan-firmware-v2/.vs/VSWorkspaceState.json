@@ -1,8 +1,16 @@
 {
   "ExpandedNodes": [
     "",
+    "\\build",
+    "\\Drivers",
+    "\\Inc",
+    "\\lib",
+    "\\Middlewares\\ST",
+    "\\Src",
+    "\\Src\\Usr",
+    "\\Third",
     "\\toolchain"
   ],
-  "SelectedNode": "\\toolchain\\arm-none-eabi.cmake",
+  "SelectedNode": "\\build\\stm32g4xx_hal.lst",
   "PreviewInSolutionExplorer": false
 }

@@ -70,14 +70,14 @@ void Error_Handler(void);
 #define USART2_RX_GPIO_Port GPIOA
 #define MOT1_STEP_Pin GPIO_PIN_8
 #define MOT1_STEP_GPIO_Port GPIOA
-#define MOT2_STEP_Pin GPIO_PIN_9
-#define MOT2_STEP_GPIO_Port GPIOA
 #define T_SWDIO_Pin GPIO_PIN_13
 #define T_SWDIO_GPIO_Port GPIOA
 #define T_SWCLK_Pin GPIO_PIN_14
 #define T_SWCLK_GPIO_Port GPIOA
 #define T_SWO_Pin GPIO_PIN_3
 #define T_SWO_GPIO_Port GPIOB
+#define MOT2_STEP_Pin GPIO_PIN_4
+#define MOT2_STEP_GPIO_Port GPIOB
 #define LD2_Pin GPIO_PIN_8
 #define LD2_GPIO_Port GPIOB
 /* USER CODE BEGIN Private defines */
