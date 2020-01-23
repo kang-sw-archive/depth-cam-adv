@@ -22,3 +22,6 @@
 [submodule "project_scanlib_usb_api/third/gflags"]
 	path = project_scanlib_usb_api/third/gflags
 	url = https://github.com/gflags/gflags.git
+[submodule "projects/tof-depth-map-gen-old/third/uEmbedded"]
+	path = projects/tof-depth-map-gen-old/third/uEmbedded
+	url = git@github.com:kang-sw/uEmbedded.git

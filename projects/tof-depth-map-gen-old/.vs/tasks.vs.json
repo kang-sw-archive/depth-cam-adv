@@ -1,0 +1,26 @@
+{
+  "version": "0.2.1",
+  "tasks": [
+    {
+      "taskLabel": "build",
+      "appliesTo": "*",
+      "contextType": "build",
+      "type": "launch",
+      "workingDirectory": "${workspaceRoot}",
+      "command": "make",
+      "args": [
+        "all",
+        "-j8",
+        "GCC_PATH=E:/Programs/ARMTools/bin"
+      ]
+    },
+    {
+      "taskLabel": "clean",
+      "workingDirectory": "${workspaceRoot}",
+      "appliesTo": "*",
+      "contextType": "clean",
+      "command": "make",
+      "args": [ "clean" ]
+    }
+  ]
+}

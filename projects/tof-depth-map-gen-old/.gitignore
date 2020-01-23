@@ -1,0 +1,4 @@
+out
+.vs/**
+!.vs/*.json
+build/

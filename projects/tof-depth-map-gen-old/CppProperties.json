@@ -2,29 +2,27 @@
   "configurations": [
     {
       "inheritEnvironments": [
-        "msvc_x86"
+        "mingw_64"
       ],
-      "name": "x86-Debug",
+      "name": "Mingw64",
       "includePath": [
-        "${env.INCLUDE}",
-        "${workspaceRoot}/**",
-        "${workspaceRoot}/Src/",
-        "${workspaceRoot}/third/",
-        "${workspaceRoot}/third/ADS0032v1.1/",
-        "${workspaceRoot}/third/uEmbedded/src/include/"
-      ],
-      "forcedInclude": [
-        "${workspaceRoot}/inc/intellisense.h"
+        "E:\\Programs\\TrueSTUDIO for STM32 9.3.0\\ARMTools\\arm-atollic-eabi\\include",
+        "E:\\Programs\\TrueSTUDIO for STM32 9.3.0\\ARMTools\\arm-atollic-eabi\\include\\c++\\6.3.1",
+        "E:\\Programs\\TrueSTUDIO for STM32 9.3.0\\ARMTools\\lib\\gcc\\arm-atollic-eabi\\6.3.1\\include",
+        "${workspaceRoot}/Inc",
+        "${workspaceRoot}/Drivers/STM32G4xx_HAL_Driver/Inc",
+        "${workspaceRoot}/Drivers/STM32G4xx_HAL_Driver/Inc/Legacy",
+        "${workspaceRoot}/Middlewares/ST/STM32_USB_Device_Library/Core/Inc",
+        "${workspaceRoot}/Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Inc",
+        "${workspaceRoot}/Drivers/CMSIS/Device/ST/STM32G4xx/Include",
+        "${workspaceRoot}/Drivers/CMSIS/Include",
+        "${workspaceRoot}/Drivers/CMSIS/Include"
       ],
       "defines": [
-        "WIN32",
-        "_DEBUG",
-        "UNICODE",
-        "_UNICODE",
-        "STM32F401xC",
-        "__GNUC__"
+        "USE_HAL_DRIVER",
+        "STM32G431xx"
       ],
-      "intelliSenseMode": "windows-msvc-x86"
+      "intelliSenseMode": "linux-gcc-x86"
     }
   ]
 }
