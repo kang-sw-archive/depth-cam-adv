@@ -1,9 +1,10 @@
 {
   "ExpandedNodes": [
     "",
-    "\\build",
-    "\\Local settings (.vs)"
+    "\\Src",
+    "\\Src\\app",
+    "\\third"
   ],
-  "SelectedNode": "\\Local settings (.vs)\\launch.vs.json",
+  "SelectedNode": "\\openocd.cfg",
   "PreviewInSolutionExplorer": true
 }

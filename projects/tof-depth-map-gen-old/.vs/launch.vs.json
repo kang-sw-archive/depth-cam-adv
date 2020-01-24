@@ -6,22 +6,27 @@
       "args": [],
       "currentDir": "${workspaceRoot}",
       "cwd": "${workspaceRoot}",
-      "debugServerArgs": "-f E:/Programs/ARMTools/OpenOCD/share/openocd/scripts/board/stm32f4discovery.cfg",
-      "debugServerPath": "E:\\Programs\\ARMTools\\OpenOCD\\bin\\openocd.exe",
+      "debugServerArgs": "-f ${workspaceRoot}/openocd.cfg",
+      "debugServerPath": "${env.OPENOCD}",
+      "serverStarted": "Info : stm32f4x.cpu: hardware has 6 breakpoints, 4 watchpoints",
       "externalConsole": true,
       "filterStderr": true,
       "filterStdout": true,
       "inheritEnvironments": [
         "gcc_arm"
       ],
-      "launchCompleteCommand": "None",
-      "miDebuggerPath": "E:\\Programs\\ARMTools\\bin\\arm-none-eabi-gdb.exe",
+      "miDebuggerPath": "${env.ARM_NONE_EABI_DIR}\\arm-none-eabi-gdb.exe",
       "miDebuggerServerAddress": "localhost:3333",
       "MIMode": "gdb",
       "name": "tof-depth-map-gen-revision.elf",
       "program": "${workspaceRoot}\\BUILD\\tof-depth-map-gen-revision.elf",
       "project": "build\\tof-depth-map-gen-revision.elf",
-      "setupCommands": [],
+      "setupCommands": [ 
+        {
+          "text": "source .gdbcmd",
+          "ignoreFailures": true
+        }
+      ],
       "showDisplayString": true,
       "type": "cppdbg",
       "visualizerFile": "${debugInfo.linuxNatvisPath}",

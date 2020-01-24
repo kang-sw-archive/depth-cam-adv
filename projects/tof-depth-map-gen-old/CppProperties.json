@@ -17,7 +17,8 @@
         "${workspaceRoot}/Drivers/CMSIS/Device/ST/STM32F4xx/Include",
         "${workspaceRoot}/Drivers/CMSIS/Include",
         "${workspaceRoot}/third/uEmbedded/src",
-        "${workspaceRoot}/Src",
+        "${workspaceRoot}/third/ADS0032v1.1/include",
+        "${workspaceRoot}/Src"
       ],
       "defines": [
         "USE_HAL_DRIVER",

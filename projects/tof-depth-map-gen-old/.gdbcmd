@@ -1,0 +1,5 @@
+file build/tof-depth-map-revision.elf
+monitor reset halt
+monitor reset init
+b main
+c
