@@ -1,0 +1,45 @@
+{
+  "version": "0.2.1",
+  "defaults": {},
+  "configurations": [
+    {
+      "type": "cppdbg",
+      "name": "depscan-firmware-rtos.elf",
+      "project": "build\\depscan-firmware-rtos.elf",
+      "cwd": "${workspaceRoot}",
+      "program": "${workspaceRoot}\\build\\${workspaceRootFolderName}.elf",
+      "MIMode": "gdb",
+      "externalConsole": true,
+      "inheritEnvironments": [
+        "gcc_arm"
+      ],
+      "stopOnEntry": true,
+      "miDebuggerPath": "${env.ARM_NONE_EABI_DIR}/arm-none-eabi-gdb.exe",
+      "setupCommands": [
+        {
+          "text": "Documentation: Learn how to configure embedded debugging",
+          "description": "See here for more info http://aka.ms/vsembeddeddebug",
+          "ignoreFailures": true
+        },
+        {
+          "text": "-environment-cd ${workspaceRoot}/BUILD"
+        },
+        {
+          "text": "-file-exec-and-symbols E:/__LocalWorkspace/Edu-Projects/depth-cam-adv/projects/depscan-firmware-rtos/build/depscan-firmware-rtos.elf",
+          "description": "load file",
+          "ignoreFailures": false
+        }
+      ],
+      "visualizerFile": "${debugInfo.linuxNatvisPath}",
+      "showDisplayString": true,
+      "miDebuggerServerAddress": "localhost:3333",
+      // "debugServerPath": "${env.openocd}",
+      // "debugServerArgs": "-f ${workspaceRoot}\\openocd.cfg",
+      // "serverStarted": "",
+      "filterStderr": true,
+      "filterStdout": true,
+      "currentDir": "${workspaceRoot}",
+      "debugServerPath": "${workspaceRoot}/.dbgpkg/.launch.bat"
+    }
+  ]
+}

@@ -1,0 +1,5 @@
+.vs/**
+!.vs/*.json
+build/**
+!build/*.elf
+

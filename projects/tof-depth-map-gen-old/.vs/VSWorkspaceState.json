@@ -3,8 +3,9 @@
     "",
     "\\Src",
     "\\Src\\app",
+    "\\Src\\arch",
     "\\third"
   ],
-  "SelectedNode": "\\openocd.cfg",
+  "SelectedNode": "\\.gdbcmd",
   "PreviewInSolutionExplorer": true
 }
