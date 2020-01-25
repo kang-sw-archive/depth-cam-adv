@@ -2,4 +2,5 @@
 !.vs/*.json
 build/**
 !build/*.elf
+!build/*.lss
 
