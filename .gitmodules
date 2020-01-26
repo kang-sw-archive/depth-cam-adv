@@ -25,3 +25,9 @@
 [submodule "projects/tof-depth-map-gen-old/third/uEmbedded"]
 	path = projects/tof-depth-map-gen-old/third/uEmbedded
 	url = git@github.com:kang-sw/uEmbedded.git
+[submodule "projects/depscan-firmware-rtos/Third/uEmbedded"]
+	path = projects/depscan-firmware-rtos/Third/uEmbedded
+	url = git@github.com:kang-sw/uEmbedded.git
+[submodule "projects/depscan-firmware-rtos/Third/EASTL"]
+	path = projects/depscan-firmware-rtos/Third/EASTL
+	url = git@github.com:kang-sw/EASTL.git
