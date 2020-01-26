@@ -24,8 +24,8 @@
 #include "usb_device.h"
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include <signal.h>
 #include <math.h>
+#include <signal.h>
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -50,8 +50,8 @@ TIM_HandleTypeDef htim3;
 osThreadId_t         defaultTaskHandle;
 const osThreadAttr_t defaultTask_attributes = {
     .name       = "defaultTask",
-    .priority   = (osPriority_t)osPriorityNormal,
-    .stack_size = 128 };
+    .priority   = (osPriority_t)osPriorityHigh,
+    .stack_size = 0x100 };
 /* USER CODE BEGIN PV */
 
 /* USER CODE END PV */
@@ -130,6 +130,7 @@ int main( void )
 
     /* USER CODE BEGIN RTOS_THREADS */
     /* add threads, ... */
+
     /* USER CODE END RTOS_THREADS */
 
     /* Start scheduler */
@@ -367,9 +368,9 @@ void StartDefaultTask( void* argument )
     /* USER CODE BEGIN 5 */
     /* Infinite loop */
     for ( ;; ) {
-        volatile float a = 3.3f;
-        a                = sqrt( a );
-        osDelay( 1 );
+        void CommProc( void );
+        CommProc();
+        osThreadYield();
     }
     /* USER CODE END 5 */
 }

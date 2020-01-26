@@ -26,7 +26,7 @@ TARGET = depscan-firmware-rtos
 # debug build?
 DEBUG = 1
 # optimization
-OPT = -Og
+OPT = -Os
 
 
 #######################################
@@ -84,7 +84,12 @@ Middlewares/ST/STM32_USB_Device_Library/Core/Src/usbd_ioreq.c \
 Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c
  
 rwildcard=$(foreach d,$(wildcard $(1:=/*)),$(call rwildcard,$d,$2) $(filter $(subst *,%,$2),$d))
-C_SOURCES += $(call rwildcard,Src/Usr,*.c *.cpp)
+C_SOURCES += \
+	$(call rwildcard,Src/Usr,*.c) \
+	$(call rwildcard,Third/uEmbedded/src,*.c)
+CPP_SOURCES += \
+	$(call rwildcard,Src/Usr,*.cpp) \
+	$(call rwildcard,Third/uEmbedded/src,*.cpp)
 
 # ASM sources
 ASM_SOURCES =  \
@@ -99,12 +104,14 @@ PREFIX = arm-none-eabi-
 # either it can be added to the PATH environment variable.
 ifdef GCC_PATH
 CC = $(GCC_PATH)/$(PREFIX)gcc
+CPP = $(GCC_PATH)/$(PREFIX)c++ -std=c++14
 AS = $(GCC_PATH)/$(PREFIX)gcc -x assembler-with-cpp
 CP = $(GCC_PATH)/$(PREFIX)objcopy
 SZ = $(GCC_PATH)/$(PREFIX)size
 DUMP = $(GCC_PATH)/$(PREFIX)objdump
 else
 CC = $(PREFIX)gcc
+CPP = $(PREFIX)c++ -std=c++14
 AS = $(PREFIX)gcc -x assembler-with-cpp
 CP = $(PREFIX)objcopy
 SZ = $(PREFIX)size
@@ -153,8 +160,8 @@ C_INCLUDES =  \
 -IMiddlewares/ST/STM32_USB_Device_Library/Core/Inc \
 -IMiddlewares/ST/STM32_USB_Device_Library/Class/CDC/Inc \
 -IDrivers/CMSIS/Device/ST/STM32F4xx/Include \
--IDrivers/CMSIS/Include
-
+-IDrivers/CMSIS/Include \
+-IThird/uEmbedded/src \
 
 # compile gcc flags
 ASFLAGS = $(MCU) $(AS_DEFS) $(AS_INCLUDES) $(OPT) -Wall -fdata-sections -ffunction-sections
@@ -165,10 +172,10 @@ ifeq ($(DEBUG), 1)
 CFLAGS += -g -gdwarf-2
 endif
 
-
 # Generate dependency information
 CFLAGS += -MMD -MP -MF"$(@:%.o=%.d)"
 
+CPPFLAGS = $(CFLAGS) -fno-exceptions -fno-rtti 
 
 #######################################
 # LDFLAGS
@@ -177,7 +184,7 @@ CFLAGS += -MMD -MP -MF"$(@:%.o=%.d)"
 LDSCRIPT = STM32F401VCTx_FLASH.ld
 
 # libraries
-LIBS = -lc -lm -lnosys 
+LIBS = -lc -lm -lnosys -lstdc++
 LIBDIR = 
 LDFLAGS = $(MCU) -specs=nano.specs -T$(LDSCRIPT) $(LIBDIR) $(LIBS) -Wl,-Map=$(BUILD_DIR)/$(TARGET).map,--cref -Wl,--gc-sections
 
@@ -191,12 +198,18 @@ all: $(BUILD_DIR)/$(TARGET).elf $(BUILD_DIR)/$(TARGET).hex $(BUILD_DIR)/$(TARGET
 # list of objects
 OBJECTS = $(addprefix $(BUILD_DIR)/,$(notdir $(C_SOURCES:.c=.o)))
 vpath %.c $(sort $(dir $(C_SOURCES)))
+# list of cpp sources
+OBJECTS += $(addprefix $(BUILD_DIR)/,$(notdir $(CPP_SOURCES:.cpp=.o)))
+vpath %.cpp $(sort $(dir $(CPP_SOURCES)))
 # list of ASM program objects
 OBJECTS += $(addprefix $(BUILD_DIR)/,$(notdir $(ASM_SOURCES:.s=.o)))
 vpath %.s $(sort $(dir $(ASM_SOURCES)))
 
 $(BUILD_DIR)/%.o: %.c Makefile | $(BUILD_DIR) 
 	$(CC) -c $(CFLAGS) -Wa,-a,-ad,-alms=$(BUILD_DIR)/$(notdir $(<:.c=.lst)) $< -o $@
+	
+$(BUILD_DIR)/%.o: %.cpp Makefile | $(BUILD_DIR) 
+	$(CPP) -c $(CPPFLAGS) -Wa,-a,-ad,-alms=$(BUILD_DIR)/$(notdir $(<:.c=.lst)) $< -o $@
 
 $(BUILD_DIR)/%.o: %.s Makefile | $(BUILD_DIR)
 	$(AS) -c $(CFLAGS) $< -o $@

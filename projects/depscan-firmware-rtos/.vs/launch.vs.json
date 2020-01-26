@@ -7,7 +7,7 @@
       "name": "depscan-firmware-rtos.elf",
       "project": "build\\depscan-firmware-rtos.elf",
       "cwd": "${workspaceRoot}",
-      "program": "${workspaceRoot}\\build\\${workspaceRootFolderName}.elf",
+      "program": "${workspaceRoot}\\build\\depscan-firmware-rtos.elf",
       "MIMode": "gdb",
       "externalConsole": true,
       "inheritEnvironments": [
@@ -29,8 +29,7 @@
           "description": "load file",
           "ignoreFailures": false
         }
-      ],
-      "visualizerFile": "${debugInfo.linuxNatvisPath}",
+      ], 
       "showDisplayString": true,
       "miDebuggerServerAddress": "localhost:3333",
       // "debugServerPath": "${env.openocd}",

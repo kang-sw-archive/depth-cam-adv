@@ -1,10 +1,15 @@
 {
   "ExpandedNodes": [
     "",
-    "\\.dbgpkg",
     "\\build",
-    "\\Src"
+    "\\Src",
+    "\\Src\\Usr",
+    "\\Src\\Usr\\arch",
+    "\\Third",
+    "\\Third\\uEmbedded",
+    "\\Third\\uEmbedded\\src",
+    "\\Third\\uEmbedded\\src\\uEmbedded-pp"
   ],
-  "SelectedNode": "\\CppProperties.json",
+  "SelectedNode": "\\Third\\uEmbedded\\src\\uEmbedded-pp\\static_timer_logic.hxx",
   "PreviewInSolutionExplorer": true
 }

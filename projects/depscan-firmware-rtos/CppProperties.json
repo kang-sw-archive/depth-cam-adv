@@ -6,9 +6,8 @@
       ],
       "name": "Mingw64",
       "includePath": [
-        "E:\\Programs\\ARMTools\\arm-none-eabi\\include",
-        "E:\\Programs\\ARMTools\\lib\\gcc\\arm-none-eabi\\5.4.1\\include",
         "${workspaceRoot}/Inc",
+        "${env.ARM_NONE_EABI_INCLUDES}",
         "${workspaceRoot}/Drivers/STM32F4xx_HAL_Driver/Inc",
         "${workspaceRoot}/Drivers/STM32F4xx_HAL_Driver/Inc/Legacy",
         "${workspaceRoot}/Middlewares/Third_Party/FreeRTOS/Source/include",
@@ -17,7 +16,8 @@
         "${workspaceRoot}/Middlewares/ST/STM32_USB_Device_Library/Core/Inc",
         "${workspaceRoot}/Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Inc",
         "${workspaceRoot}/Drivers/CMSIS/Device/ST/STM32F4xx/Include",
-        "${workspaceRoot}/Drivers/CMSIS/Include"
+        "${workspaceRoot}/Drivers/CMSIS/Include",
+        "${workspaceRoot}/Third/uEmbedded/src"
       ],
       "defines": [
         "USE_HAL_DRIVER",
