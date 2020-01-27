@@ -25,6 +25,19 @@
       "appliesTo": "*",
       "command": ".dbgpkg/.openocd.bat",
       "contextType": "custom"
+    },
+    {
+      "taskLabel": "rebuild",
+      "appliesTo": "*",
+      "contextType": "rebuild",
+      "command": "make",
+      "args": [
+        "clean",
+        "&&",
+        "make",
+        "all",
+        "-j8"
+      ]
     }
   ]
 }

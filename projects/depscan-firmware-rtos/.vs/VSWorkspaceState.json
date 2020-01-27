@@ -1,7 +1,7 @@
 {
   "ExpandedNodes": [
     "",
-    "\\Inc",
+    "\\build",
     "\\Src",
     "\\Src\\Usr",
     "\\Src\\Usr\\arch",
@@ -11,6 +11,6 @@
     "\\Third\\uEmbedded\\src\\uEmbedded",
     "\\Third\\uEmbedded\\src\\uEmbedded-pp"
   ],
-  "SelectedNode": "\\Third\\uEmbedded\\src\\uEmbedded\\transceiver.h",
+  "SelectedNode": "\\Third\\uEmbedded\\src\\uEmbedded\\queue_allocator.c",
   "PreviewInSolutionExplorer": true
 }
