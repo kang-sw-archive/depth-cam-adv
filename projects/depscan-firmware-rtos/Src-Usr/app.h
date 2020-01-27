@@ -1,13 +1,13 @@
 #pragma once
 #include "arch/mem.h"
-#include <cmsis_os2.h>
+#include <FreeRTOS.h>
+#include <task.h>
 #ifdef __cplusplus
 extern "C" {
 #endif // __cplusplus
 
 /////////////////////////////////////////////////////////////////////////////
 // Decls 
-extern osThreadId_t gThCmdProc;
 
 /////////////////////////////////////////////////////////////////////////////
 // Macros
@@ -16,6 +16,7 @@ extern osThreadId_t gThCmdProc;
 /////////////////////////////////////////////////////////////////////////////
 // Funcs
 void AppTask_HostIO( void* nouse_ );
+void AppTask_CmdProc( void* nouse_ );
 
 #ifdef __cplusplus
 }
