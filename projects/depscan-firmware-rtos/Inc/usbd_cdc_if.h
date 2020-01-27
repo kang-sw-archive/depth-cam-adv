@@ -90,8 +90,6 @@
 
 /** CDC Interface callback. */
 extern USBD_CDC_ItfTypeDef USBD_Interface_fops_FS;
-extern USBD_HandleTypeDef hUsbDeviceFS;
-extern uint8_t UserRxBufferFS[APP_RX_DATA_SIZE];
 
 /* USER CODE BEGIN EXPORTED_VARIABLES */
 
