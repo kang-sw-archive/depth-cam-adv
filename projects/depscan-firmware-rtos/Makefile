@@ -92,11 +92,11 @@ startup_stm32f401xc.s
 rwildcard=$(foreach d,$(wildcard $(1:=/*)),$(call rwildcard,$d,$2) $(filter $(subst *,%,$2),$d))
 
 C_SOURCES += \
-	$(call rwildcard,Src/Usr,*.c) \
+	$(call rwildcard,Src-Usr,*.c) \
 	$(call rwildcard,Third/uEmbedded/src,*.c)
 
 CPP_SOURCES += \
-	$(call rwildcard,Src/Usr,*.cpp) \
+	$(call rwildcard,Src-Usr,*.cpp) \
 	$(call rwildcard,Third/uEmbedded/src,*.cpp) 
 
 
