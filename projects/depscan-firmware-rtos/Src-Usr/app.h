@@ -5,7 +5,18 @@
 extern "C" {
 #endif // __cplusplus
 
-#define OS_MS_TO_TICKS( ms ) ( ( ms ) / osKernelGetTickFreq() )
+/////////////////////////////////////////////////////////////////////////////
+// Decls
+extern osThreadId_t gThHostIO;
+extern osThreadId_t gThCmdProc;
+
+/////////////////////////////////////////////////////////////////////////////
+// Macros
+#define OS_MS_TO_TICKS( ms ) ( (ms)*1000u / osKernelGetTickFreq() )
+
+/////////////////////////////////////////////////////////////////////////////
+// Funcs
+void AppTask_HostIO( void* nouse_ );
 
 #ifdef __cplusplus
 }
