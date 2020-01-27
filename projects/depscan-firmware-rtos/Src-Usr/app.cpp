@@ -28,8 +28,7 @@ void operator delete( void* p )
 }
 
 /////////////////////////////////////////////////////////////////////////////
-// Thread globals
-osThreadId_t gThHostIO;
+// Thread globals 
 osThreadId_t gThCmdProc;
 
 /////////////////////////////////////////////////////////////////////////////
@@ -44,6 +43,8 @@ extern "C" void StartDefaultTask( void* argument )
     InitHW();
     InitRW();
 
+    // Task thread test ... 
+     
     // Launch Host Communication Process
     AppTask_HostIO( NULL );
 }
