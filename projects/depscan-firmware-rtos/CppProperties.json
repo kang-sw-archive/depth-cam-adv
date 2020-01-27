@@ -1,10 +1,7 @@
 {
   "configurations": [
-    {
-      "inheritEnvironments": [
-        "mingw_64"
-      ],
-      "name": "Mingw64",
+    { 
+      "name": "Mingw32",
       "includePath": [
         "${workspaceRoot}/Inc",
         "${env.ARM_NONE_EABI_INCLUDES}",

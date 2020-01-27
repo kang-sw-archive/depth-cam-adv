@@ -1,15 +1,16 @@
 {
   "ExpandedNodes": [
     "",
-    "\\build",
+    "\\Inc",
     "\\Src",
     "\\Src\\Usr",
     "\\Src\\Usr\\arch",
     "\\Third",
     "\\Third\\uEmbedded",
     "\\Third\\uEmbedded\\src",
+    "\\Third\\uEmbedded\\src\\uEmbedded",
     "\\Third\\uEmbedded\\src\\uEmbedded-pp"
   ],
-  "SelectedNode": "\\Third\\uEmbedded\\src\\uEmbedded-pp\\static_timer_logic.hxx",
+  "SelectedNode": "\\Third\\uEmbedded\\src\\uEmbedded\\transceiver.h",
   "PreviewInSolutionExplorer": true
 }
