@@ -4,6 +4,7 @@
 //! @copyright Copyright (c) 2019. Seungwoo Kang. All rights reserved.
 //!
 //! @details
+#include "mem.h"
 #include <stdlib.h>
 #include <uEmbedded/ring_buffer.h>
 #include <uEmbedded/transceiver.h>
@@ -29,7 +30,7 @@ extern "C" transceiver_descriptor_t OpenUsbHostConnection( size_t ReadBufferSize
 {
     uassert( s_rw.rdbuf_.buff == nullptr );
     auto ret = &s_rw;
-    ring_buffer_init( &ret->rdbuf_, malloc( ReadBufferSize ), ReadBufferSize );
+    ring_buffer_init( &ret->rdbuf_, AppMalloc( ReadBufferSize ), ReadBufferSize );
     return reinterpret_cast<transceiver_descriptor_t>( ret );
 }
 
@@ -49,7 +50,7 @@ transceiver_result_t cdc_write( void* nouse_, char const* buf, size_t len )
 transceiver_result_t cdc_close( void* desc )
 {
     auto td = reinterpret_cast<usb_rw*>( desc );
-    free( td->rdbuf_.buff );
+    AppFree( td->rdbuf_.buff );
     td->rdbuf_.buff = nullptr;
     return TRANSCEIVER_OK;
 }

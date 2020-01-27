@@ -5,7 +5,7 @@
 //! @copyright Copyright (c) 2019. Seungwoo Kang. All rights reserved.
 //!
 //! @details
-#include "app.h"
+#include "app.h" 
 #include "rw.h"
 #include <FreeRTOS.h>
 #include <list>
@@ -16,24 +16,14 @@
 // Memory allocation rebinds
 //
 
-extern "C" void* malloc( size_t sz )
-{
-    return pvPortMalloc( sz );
-}
-
-extern "C" void free( void* p )
-{
-    vPortFree( p );
-}
-
 void* operator new( size_t size )
 {
-    return malloc( size );
+    return AppMalloc( size );
 }
 
 void operator delete( void* p )
 {
-    free( p );
+    AppFree( p );
 }
 
 /////////////////////////////////////////////////////////////////////////////

@@ -1,6 +1,6 @@
 #pragma once
+#include "arch/mem.h"
 #include <cmsis_os2.h>
-
 #ifdef __cplusplus
 extern "C" {
 #endif // __cplusplus
