@@ -1,14 +1,18 @@
 #pragma once
 #include <uEmbedded/transceiver.h>
-
 #ifdef __cplusplus
 extern "C" {
 #endif
 
+/////////////////////////////////////////////////////////////////////////////
+// Decls
 //! Connection to host.
+//! This is to adapt various IO devices via the unity interface.
 extern transceiver_descriptor_t gHostConnection;
 
-//! Initailize all architecture associated read-write operation.
+/////////////////////////////////////////////////////////////////////////////
+// Functions
+//! Initailize all architecture associated to read-write operation.
 void InitRW();
 
 #ifdef __cplusplus
