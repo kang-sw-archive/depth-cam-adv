@@ -32,13 +32,10 @@
       ], 
       "showDisplayString": true,
       "miDebuggerServerAddress": "localhost:3333",
-      // "debugServerPath": "${env.openocd}",
-      // "debugServerArgs": "-f ${workspaceRoot}\\openocd.cfg",
-      // "serverStarted": "",
       "filterStderr": true,
       "filterStdout": true,
-      "currentDir": "${workspaceRoot}",
-      "debugServerPath": "${workspaceRoot}/.dbgpkg/.launch.bat"
+      "currentDir": "${workspaceRoot}"
+      // "debugServerPath": "${workspaceRoot}/.dbgpkg/.launch.bat"
     }
   ]
 }

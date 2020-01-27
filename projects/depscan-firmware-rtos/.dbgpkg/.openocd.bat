@@ -10,5 +10,6 @@ if "%ERRORLEVEL%" neq "0" (
 	start %openocd% -f .dbgpkg/openocd.cfg
 )
 
+exit
 rem rem Reset and flesh MPU
 rem %arm_none_eabi_dir%\arm-none-eabi-gdb --command .dbgpkg\.gdbcmd

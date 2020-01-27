@@ -1,7 +1,14 @@
 @echo off
- 
-echo launching..
 
-start %~dp0.launch.halt.bat
+echo Build start
+make all -j8
 
-%openocd% -f %~dp0openocd.cfg
+echo Check openocd status ...
+tasklist /FI "IMAGENAME eq openocd.exe" 2>NUL | find /I /N "openocd.exe">NUL
+if "%ERRORLEVEL%" neq "0" ( 
+	echo starting openocd
+	start %openocd% -f .dbgpkg/openocd.cfg
+)
+
+echo Flashing ...
+%~dp0.launch.halt.bat

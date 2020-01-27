@@ -31,6 +31,12 @@
       "args": [
         "clean"
       ]
+    },
+    {
+      "taskLabel": "launch",
+      "appliesTo": "*",
+      "contextType": "custom",
+      "command": ".dbgpkg/.launch.bat"
     }
   ]
 }
