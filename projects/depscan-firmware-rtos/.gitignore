@@ -1,6 +1,6 @@
 .vs/**
 !.vs/launch.vs.json
-!.vs/task.vs.json
+!.vs/tasks.vs.json
 build/**
 !build/*.elf
 !build/*.lss

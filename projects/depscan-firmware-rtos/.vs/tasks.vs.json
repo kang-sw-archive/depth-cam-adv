@@ -1,0 +1,36 @@
+{
+  "version": "0.2.1",
+  "tasks": [
+    {
+      "taskLabel": "build",
+      "appliesTo": "*",
+      "contextType": "build",
+      "command": "make",
+      "args": [
+        "all",
+        "-j8"
+      ]
+    },
+    {
+      "taskLabel": "rebuild all",
+      "appliesTo": "*",
+      "contextType": "rebuild",
+      "command": "make",
+      "args": [
+        "clean",
+        "&&",
+        "all",
+        "-j8"
+      ]
+    },
+    {
+      "taskLabel": "clean",
+      "appliesTo": "*",
+      "contextType": "clean",
+      "command": "make",
+      "args": [
+        "clean"
+      ]
+    }
+  ]
+}
