@@ -5,13 +5,13 @@
 //! @copyright Copyright (c) 2019. Seungwoo Kang. All rights reserved.
 //!
 //! @details
+#include "app.h"
 #include "rw.h"
 #include <FreeRTOS.h>
-#include <cmsis_os2.h>
 #include <list>
 #include <stdio.h>
+#include <string.h>
 #include <vector>
-
 /////////////////////////////////////////////////////////////////////////////
 // Memory allocation rebinds
 //
@@ -37,8 +37,9 @@ void operator delete( void* p )
 }
 
 /////////////////////////////////////////////////////////////////////////////
-// Static decls
-static void InitCmdProc();
+// Thread globals
+osThreadId_t gThHostIO;
+osThreadId_t gThCmdProc;
 
 /////////////////////////////////////////////////////////////////////////////
 // Defines initialize process
@@ -50,4 +51,12 @@ static void InitCmdProc();
 extern "C" void InitProcedure()
 {
     InitRW();
+
+    // Launch Host Communication Process
+    osThreadAttr_t attr;
+    memset( &attr, 0, sizeof( attr ) );
+    attr.name       = "HostIO";
+    attr.priority   = osPriorityNormal;
+    attr.stack_size = 256;
+    gThHostIO       = osThreadNew( AppTask_HostIO, NULL, &attr );
 }
