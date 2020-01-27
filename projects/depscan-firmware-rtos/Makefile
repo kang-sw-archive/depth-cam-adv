@@ -92,11 +92,11 @@ startup_stm32f401xc.s
 rwildcard=$(foreach d,$(wildcard $(1:=/*)),$(call rwildcard,$d,$2) $(filter $(subst *,%,$2),$d))
 
 C_SOURCES += \
-	$(call rwildcard,Src/Usr,*.c) \
+	$(call rwildcard,Src-Usr,*.c) \
 	$(call rwildcard,Third/uEmbedded/src,*.c)
 
 CPP_SOURCES += \
-	$(call rwildcard,Src/Usr,*.cpp) \
+	$(call rwildcard,Src-Usr,*.cpp) \
 	$(call rwildcard,Third/uEmbedded/src,*.cpp) 
 
 
@@ -188,7 +188,7 @@ CPPFLAGS = $(CFLAGS) -fno-exceptions -fno-rtti
 LDSCRIPT = STM32F401VCTx_FLASH.ld
 
 # libraries
-LIBS = -lc -lm -lnosys -lstdc++
+LIBS = -lc -lm -lnosys
 LIBDIR = 
 LDFLAGS = $(MCU) -specs=nano.specs -T$(LDSCRIPT) $(LIBDIR) $(LIBS) -Wl,-Map=$(BUILD_DIR)/$(TARGET).map,--cref -Wl,--gc-sections
 
@@ -222,7 +222,7 @@ $(BUILD_DIR)/$(TARGET).elf: $(OBJECTS) Makefile
 	$(CC) $(OBJECTS) $(LDFLAGS) -o $@
 	$(SZ) $@
 	$(DUMP) -fdS $@ > $(@:.elf=.lss)
-	nm --print-size --size-sort -r --radix=d $@ > $(@:.elf=.size.lss)
+	nm --print-size --size-sort -C -r --radix=x $@ > $(@:.elf=.size.lss)
 
 $(BUILD_DIR)/%.hex: $(BUILD_DIR)/%.elf | $(BUILD_DIR)
 	$(HEX) $< $@
@@ -237,7 +237,7 @@ $(BUILD_DIR):
 # clean up
 #######################################
 clean:
-	-rm -fR $(BUILD_DIR)
+	rmdir /s /q $(BUILD_DIR)
   
 #######################################
 # dependencies

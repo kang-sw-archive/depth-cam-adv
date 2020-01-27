@@ -1,0 +1,23 @@
+#pragma once
+#include <cmsis_os2.h>
+
+#ifdef __cplusplus
+extern "C" {
+#endif // __cplusplus
+
+/////////////////////////////////////////////////////////////////////////////
+// Decls
+extern osThreadId_t gThHostIO;
+extern osThreadId_t gThCmdProc;
+
+/////////////////////////////////////////////////////////////////////////////
+// Macros
+#define OS_MS_TO_TICKS( ms ) ( (ms)*1000u / osKernelGetTickFreq() )
+
+/////////////////////////////////////////////////////////////////////////////
+// Funcs
+void AppTask_HostIO( void* nouse_ );
+
+#ifdef __cplusplus
+}
+#endif // __cplusplus
