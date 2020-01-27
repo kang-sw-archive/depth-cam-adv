@@ -8,7 +8,7 @@ extern "C" {
 // Decls
 //! Connection to host.
 //! This is to adapt various IO devices via the unity interface.
-extern transceiver_descriptor_t gHostConnection;
+extern transceiver_handle_t gHostConnection;
 
 /////////////////////////////////////////////////////////////////////////////
 // Functions

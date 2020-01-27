@@ -2,12 +2,14 @@
 #include "arch/mem.h"
 #include <FreeRTOS.h>
 #include <task.h>
+#include <uEmbedded/transceiver.h>
 #ifdef __cplusplus
 extern "C" {
 #endif // __cplusplus
 
 /////////////////////////////////////////////////////////////////////////////
-// Decls 
+// Decls
+extern transceiver_handle_t gLog;
 
 /////////////////////////////////////////////////////////////////////////////
 // Macros

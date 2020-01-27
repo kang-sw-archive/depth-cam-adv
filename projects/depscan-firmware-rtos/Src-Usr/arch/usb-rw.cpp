@@ -26,12 +26,12 @@ static struct usb_rw {
     ring_buffer                 rdbuf_;
 } s_rw;
 
-extern "C" transceiver_descriptor_t OpenUsbHostConnection( size_t ReadBufferSize )
+extern "C" transceiver_handle_t OpenUsbHostConnection( size_t ReadBufferSize )
 {
     uassert( s_rw.rdbuf_.buff == nullptr );
     auto ret = &s_rw;
     ring_buffer_init( &ret->rdbuf_, AppMalloc( ReadBufferSize ), ReadBufferSize );
-    return reinterpret_cast<transceiver_descriptor_t>( ret );
+    return reinterpret_cast<transceiver_handle_t>( ret );
 }
 
 static transceiver_result_t cdc_read( void* desc, char* buf, size_t len )
