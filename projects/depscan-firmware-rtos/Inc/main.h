@@ -64,7 +64,6 @@ void Error_Handler(void);
 #define ARGUS_CS_GPIO_Port GPIOC
 #define ARGUS_IRQ_Pin GPIO_PIN_1
 #define ARGUS_IRQ_GPIO_Port GPIOC
-#define ARGUS_IRQ_EXTI_IRQn EXTI1_IRQn
 #define MOT_STEP1_Pin GPIO_PIN_8
 #define MOT_STEP1_GPIO_Port GPIOA
 #define MOT_STEP2_Pin GPIO_PIN_4

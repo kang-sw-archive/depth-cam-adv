@@ -12,7 +12,7 @@ extern "C" {
 /////////////////////////////////////////////////////////////////////////////
 // Funcs
 bool HW_CheckUsbConnection();
-
+void InitHW();
 #ifdef __cplusplus
 }
 #endif // __cplusplus

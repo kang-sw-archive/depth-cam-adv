@@ -5,7 +5,8 @@
 //! @copyright Copyright (c) 2019. Seungwoo Kang. All rights reserved.
 //!
 //! @details
-#include "app.h" 
+#include "app.h"
+#include "arch/hw.h"
 #include "rw.h"
 #include <FreeRTOS.h>
 #include <list>
@@ -38,15 +39,11 @@ osThreadId_t gThCmdProc;
 // - Launches command queue/procedure process
 // - Initializes hi-precision hardware timer
 // - Initializes motor control logic
-extern "C" void InitProcedure()
+extern "C" void StartDefaultTask( void* argument )
 {
+    InitHW();
     InitRW();
 
     // Launch Host Communication Process
-    osThreadAttr_t attr;
-    memset( &attr, 0, sizeof( attr ) );
-    attr.name       = "HostIO";
-    attr.priority   = osPriorityNormal;
-    attr.stack_size = 256;
-    gThHostIO       = osThreadNew( AppTask_HostIO, NULL, &attr );
+    AppTask_HostIO( NULL );
 }

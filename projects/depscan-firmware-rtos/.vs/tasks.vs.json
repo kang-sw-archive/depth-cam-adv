@@ -4,21 +4,9 @@
     {
       "taskLabel": "build",
       "appliesTo": "*",
-      "contextType": "build",
-      "command": "make",
-      "args": [
-        "all",
-        "-j8"
-      ]
-    },
-    {
-      "taskLabel": "rebuild all",
-      "appliesTo": "*",
       "contextType": "rebuild",
       "command": "make",
       "args": [
-        "clean",
-        "&&",
         "all",
         "-j8"
       ]
@@ -35,7 +23,7 @@
     {
       "taskLabel": "launch",
       "appliesTo": "*",
-      "contextType": "custom",
+      "contextType": "build",
       "command": ".dbgpkg/.launch.bat"
     }
   ]
