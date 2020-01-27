@@ -6,6 +6,6 @@
     "\\Src\\arch",
     "\\third"
   ],
-  "SelectedNode": "\\.gdbcmd",
+  "SelectedNode": "\\Src\\usbd_cdc_if.c",
   "PreviewInSolutionExplorer": true
 }
