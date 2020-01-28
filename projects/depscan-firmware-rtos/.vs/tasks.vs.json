@@ -2,16 +2,6 @@
   "version": "0.2.1",
   "tasks": [
     {
-      "taskLabel": "build",
-      "appliesTo": "*",
-      "contextType": "rebuild",
-      "command": "make",
-      "args": [
-        "all",
-        "-j8"
-      ]
-    },
-    {
       "taskLabel": "clean",
       "appliesTo": "*",
       "contextType": "clean",
@@ -22,9 +12,19 @@
     },
     {
       "taskLabel": "launch",
-      "appliesTo": "*",
+      "appliesTo": "depscan-firmware-rtos.elf",
       "contextType": "build",
       "command": ".dbgpkg/.launch.bat"
+    },
+    {
+      "taskLabel": "build",
+      "appliesTo": "*",
+      "contextType": "build",
+      "command": "make",
+      "args": [
+        "all",
+        "-j8"
+      ]
     }
   ]
 }

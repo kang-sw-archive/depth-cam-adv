@@ -102,7 +102,7 @@ extern "C" void print( char const* fmt, ... )
     API_SendHostString( buf, allocsz );
 }
 
-extern "C" int puts( char const* txt )
+extern "C" int putstr( char const* txt )
 {
     API_SendHostString( txt, strlen( txt ) + 1 );
     return 0;
@@ -141,7 +141,6 @@ bool readHostConn( void* dst, size_t len )
 
 /////////////////////////////////////////////////////////////////////////////
 //
-extern "C" bool App_HandleCaptureCommand( int argc, char* argv[] );
 
 void stringCmdHandler( char* str, size_t len )
 {
@@ -168,22 +167,23 @@ void stringCmdHandler( char* str, size_t len )
         break;
 
     case STRCASE( "ping" ):
-
+        putstr( "ping" );
         break;
 
     default:
-        App_HandleCaptureCommand( argc, argv );
+        AppHandler_CaptureCommand( argc, argv );
         break;
     }
 }
 
 extern "C" __weak_symbol bool
-App_HandleCaptureCommand( int argc, char* argv[] )
+AppHandler_CaptureCommand( int argc, char* argv[] )
 {
-    print( "Tokens :: \n" );
+    print( "Receiving :: " );
     for ( int i = 0; i < argc; i++ ) {
-        print( "  %02d: %s\n", i, argv[i] );
+        print( "%s ", i, argv[i] );
     }
+    putstr( "\n" );
     return true;
 }
 

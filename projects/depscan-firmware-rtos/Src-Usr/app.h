@@ -17,8 +17,9 @@ _Noreturn void AppProc_HostIO( void* nouse_ );
 void           API_SendHostBinary( void const* data, size_t len );
 void           API_SendHostString( void const* data, size_t len );
 void           API_SendHostRaw( void const* data, size_t len );
+bool           AppHandler_CaptureCommand( int argc, char* argv[] );
 void           print( char const* fmt, ... ); //!< Print text out to host.
-int            puts( char const* txt ); 
+int            putstr( char const* txt );
 
 #ifdef __cplusplus
 }
