@@ -22,7 +22,6 @@ struct FCommunicationProcedureInitStruct {
 //! Scanned image buffer descriptor.
 //! Read-only.
 struct FScanImageDesc {
-
     int   Width       = {}; //!< Image width in pixels
     int   Height      = {}; //!< Image height in pixels
     float AspectRatio = {}; //!< Aspect ratio from angles
@@ -43,7 +42,10 @@ struct FScanImageDesc {
     FScanImageDesc( FScanImageDesc&& ) noexcept;
     FScanImageDesc& operator=( FScanImageDesc const& ) noexcept;
     FScanImageDesc& operator=( FScanImageDesc&& ) noexcept;
-    FScanImageDesc( FPxlData const* p = nullptr ) : mReadData( p ) {}
+    FScanImageDesc( FPxlData const* p = nullptr )
+        : mReadData( p )
+    {
+    }
     ~FScanImageDesc() noexcept;
 
 private:
@@ -70,7 +72,10 @@ public:
 
 public:
     //! Prevents hiding base class constructor.
-    FScannerProtocolHandler() : ICommunicationHandlerBase() {}
+    FScannerProtocolHandler()
+        : ICommunicationHandlerBase()
+    {
+    }
     ~FScannerProtocolHandler();
 
     //! Initializes communication process on different thread.
@@ -107,7 +112,11 @@ public:
     struct CaptureParam {
         template <typename ty_>
         struct Point {
-            Point( ty_ xx = ty_{}, ty_ yy = ty_{} ) : x( xx ), y( yy ) {}
+            Point( ty_ xx = ty_ {}, ty_ yy = ty_ {} )
+                : x( xx )
+                , y( yy )
+            {
+            }
             ty_ x, y; //!< To keep options as current, Set this value negative
                       //!< value e.g. -1
         };

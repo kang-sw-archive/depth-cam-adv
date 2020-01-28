@@ -81,13 +81,12 @@ static inline bool ScanDataReadFrom( FILE* in_strm, ScanDataPixelType** outPixel
 
 #ifdef __cplusplus
 }
-#include <iostream>
+#    include <iostream>
 
 namespace scanlib {
 static bool ScanDataReadFrom( std::istream& strm, ScanDataPixelType** outPixels, ScanDataHeaderType* outDesc )
 {
-    if ( strm.read( (char*)outDesc, sizeof( ScanDataHeaderType ) ).gcount() !=
-         sizeof( ScanDataHeaderType ) ) {
+    if ( strm.read( (char*)outDesc, sizeof( ScanDataHeaderType ) ).gcount() != sizeof( ScanDataHeaderType ) ) {
         return false;
     }
 
@@ -100,8 +99,7 @@ static bool ScanDataReadFrom( std::istream& strm, ScanDataPixelType** outPixels,
         return false;
     }
 
-    if ( strm.read( (char*)*outPixels, outDesc->ELEMENT_SIZE * outDesc->NUM_PIXELS ).gcount() !=
-         outDesc->ELEMENT_SIZE * outDesc->NUM_PIXELS ) {
+    if ( strm.read( (char*)*outPixels, outDesc->ELEMENT_SIZE * outDesc->NUM_PIXELS ).gcount() != outDesc->ELEMENT_SIZE * outDesc->NUM_PIXELS ) {
         free( *outPixels );
         return false;
     }

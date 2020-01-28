@@ -1,8 +1,9 @@
 #include "com.hpp"
 #include <Windows.h>
 
-comstreambuf_t::comstreambuf_t( char const* com_port ) : m_hCom( NULL ),
-                                                         ibuf()
+comstreambuf_t::comstreambuf_t( char const* com_port )
+    : m_hCom( NULL )
+    , ibuf()
 {
     char buf[128];
     sprintf_s( buf, "\\\\.\\%s", com_port );

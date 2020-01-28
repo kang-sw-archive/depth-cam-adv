@@ -38,7 +38,7 @@ typedef struct {
 
 enum ECaptureModeBit {
     ECMB_DISTANCE_AUTO = 1,
-    ECMB_DISTANCE_FAR = 2,
+    ECMB_DISTANCE_FAR  = 2,
     ECMB_LOW_PRECISION = 4,
 };
 

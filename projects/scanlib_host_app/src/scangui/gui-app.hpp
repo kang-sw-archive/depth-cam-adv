@@ -128,9 +128,9 @@ vert
 )";
 
 #ifdef WIN32
-#define SCANLIB_ASCIIVAL_ENTER   13
-#define SCANLIB_ASCIIVAL_UPARROW 38
-#define SCANLIB_ASCIIVAL_DNARROW 40
+#    define SCANLIB_ASCIIVAL_ENTER   13
+#    define SCANLIB_ASCIIVAL_UPARROW 38
+#    define SCANLIB_ASCIIVAL_DNARROW 40
 #endif
 
 //! Simple set of components that make up application
@@ -146,8 +146,8 @@ public:
 
 public:
     size_t                    NumMaxCommandHistory = 512;
-    std::chrono::milliseconds UpdatePeriod{ 100 };
-    std::chrono::milliseconds ReportPeriod{ 100 };
+    std::chrono::milliseconds UpdatePeriod { 100 };
+    std::chrono::milliseconds ReportPeriod { 100 };
 
     size_t NumMaxImageHistory() const { return mNumMaxImageHistory; }
     void   NumMaxImageHistory( size_t val )

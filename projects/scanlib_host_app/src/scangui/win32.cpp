@@ -1,15 +1,15 @@
 ﻿#ifdef _WIN32
-#include "app.hpp"
+#    include "app.hpp"
 // #pragma comment( linker, "/SUBSYSTEM:WINDOWS /ENTRY:mainCRTStartup" )
 
-#include <Windows.h>
+#    include <Windows.h>
 
-#include <SetupAPI.h>
-#include <gflags/gflags.h>
-#include <initguid.h>
-#include <scanlib/arch/win32/com.hpp>
-#include <winusb.h>
-#pragma comment( lib, "setupapi.lib" )
+#    include <SetupAPI.h>
+#    include <gflags/gflags.h>
+#    include <initguid.h>
+#    include <scanlib/arch/win32/com.hpp>
+#    include <winusb.h>
+#    pragma comment( lib, "setupapi.lib" )
 
 DECLARE_string( com );
 
@@ -96,9 +96,8 @@ static int SearchCOM2()
 
     BOOL                     bOk = TRUE;
     SP_DEVICE_INTERFACE_DATA ifcData;
-    DWORD                    dwDetDataSize =
-        sizeof( SP_DEVICE_INTERFACE_DETAIL_DATA ) + DEVICE_INFO_SZ;
-    pDetData = (SP_DEVICE_INTERFACE_DETAIL_DATA*)new char[dwDetDataSize];
+    DWORD                    dwDetDataSize = sizeof( SP_DEVICE_INTERFACE_DETAIL_DATA ) + DEVICE_INFO_SZ;
+    pDetData                               = (SP_DEVICE_INTERFACE_DETAIL_DATA*)new char[dwDetDataSize];
     if ( pDetData == NULL ) {
         return -1;
     }
@@ -120,19 +119,16 @@ static int SearchCOM2()
                 BOOL    bSuccess   = SetupDiGetDeviceRegistryProperty(
                     hDevInfo, &devdata, SPDRP_FRIENDLYNAME, NULL, (PBYTE)fname,
                     256, NULL );
-                bSuccess = bSuccess && SetupDiGetDeviceRegistryProperty(
-                                           hDevInfo, &devdata, SPDRP_DEVICEDESC,
-                                           NULL, (PBYTE)desc, 256, NULL );
+                bSuccess        = bSuccess && SetupDiGetDeviceRegistryProperty( hDevInfo, &devdata, SPDRP_DEVICEDESC, NULL, (PBYTE)desc, 256, NULL );
                 bool bUsbDevice = false;
-                if ( ( wcsstr( desc, L"COM" ) != NULL ) ||
-                     ( wcsstr( fname, L"COM" ) != NULL ) ) {
+                if ( ( wcsstr( desc, L"COM" ) != NULL ) || ( wcsstr( fname, L"COM" ) != NULL ) ) {
                     bUsbDevice = true;
                 }
                 if ( bSuccess == TRUE ) {
-#ifdef _DEBUG
+#    ifdef _DEBUG
                     wprintf( L"%S[%03d] %S (%S)\n", L"COM Port", cnt,
                              (wchar_t*)fname, (wchar_t*)desc );
-#endif // DEBUG
+#    endif // DEBUG
                     serialportinfo si;
                     si.isUSBdev = bUsbDevice;
                     si.devpath  = strDevPath.c_str();
@@ -241,11 +237,11 @@ static void SearchCOM( TCHAR* pszComePort, TCHAR* vid, TCHAR* pid )
 
                 if ( ( RegQueryValueEx( hDeviceRegistryKey, "PortName", NULL,
                                         &dwType, (LPBYTE)pszPortName,
-                                        &dwSize ) == ERROR_SUCCESS ) &&
-                     ( dwType == REG_SZ ) ) {
+                                        &dwSize )
+                       == ERROR_SUCCESS )
+                     && ( dwType == REG_SZ ) ) {
                     // Check if it really is a com port
                     if ( strncmp( pszPortName, "COM", 3 ) == 0 ) {
-
                         int nPortNr = atoi( pszPortName + 3 );
                         if ( nPortNr != 0 ) {
                             strcpy_s( pszComePort, BUFF_LEN, pszPortName );
@@ -283,8 +279,7 @@ static int SearchCOM3()
         NULL,
         0, // Enumerator
         0,
-        DIGCF_PRESENT |
-            DIGCF_ALLCLASSES ); //여기를 수정함으로 검색할 장치 변경이 가능
+        DIGCF_PRESENT | DIGCF_ALLCLASSES ); //여기를 수정함으로 검색할 장치 변경이 가능
 
     if ( hDevInfo == INVALID_HANDLE_VALUE ) {
         // Insert error handling here.

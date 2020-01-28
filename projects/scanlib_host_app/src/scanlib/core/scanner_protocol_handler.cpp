@@ -34,8 +34,7 @@ FScannerProtocolHandler::Activate( PortOpenFunctionType                     ComO
     bShutdown = false;
 
     // Create new thread to run procedure
-    mBackgroundProcess =
-        async( launch::async, &FScannerProtocolHandler::procedureThread, this, move( ComOpener ), params );
+    mBackgroundProcess = async( launch::async, &FScannerProtocolHandler::procedureThread, this, move( ComOpener ), params );
 
     // Wait until connection done.
     print( "Requesting Activation. Is Active? %d, Is Connected? %d ... \n", IsActive(), IsConnected() );
@@ -166,7 +165,7 @@ void FScannerProtocolHandler::configureCapture( CaptureParam const& arg, bool co
     if ( auto PrevCaptureDelay = mPrevCaptureParam.has_value() ? mPrevCaptureParam->CaptureDelayUs : -1;
          arg.CaptureDelayUs > 0 && arg.CaptureDelayUs != PrevCaptureDelay ) {
         sprintf( buf, "config delay %d", arg.CaptureDelayUs );
-        SendString( buf ); 
+        SendString( buf );
     }
 
     //! Calculate device dimensional image size / steps per pixels
@@ -184,7 +183,7 @@ void FScannerProtocolHandler::configureCapture( CaptureParam const& arg, bool co
     };
 
 #define has_or( a, b, opt ) \
-    ( ( a ).opt.has_value() ? ( a ).opt : ( b ).has_value() ? ( b )->opt : decltype( ( a ).opt ){} )
+    ( ( a ).opt.has_value() ? ( a ).opt : ( b ).has_value() ? ( b )->opt : decltype( ( a ).opt ) {} )
 
     // Fill with current value when there's any unspecified options.
     auto Angle = has_or( arg, mPrevCaptureParam, DesiredAngle );
@@ -298,7 +297,7 @@ bool FScannerProtocolHandler::requestReport( bool bSync, size_t TimeoutMs )
     // Wait until device return status if needed.
     if ( bSync ) {
         unique_lock<mutex> lck( mReportWait.mtx, try_to_lock );
-        return mReportWait.cv.wait_for( lck, chrono::milliseconds{ TimeoutMs },
+        return mReportWait.cv.wait_for( lck, chrono::milliseconds { TimeoutMs },
                                         [this]() { return mReportWait.arg.load(); } );
     }
 
@@ -422,11 +421,11 @@ void FScannerProtocolHandler::SetMotorDriveClockSpeed( int Hz ) noexcept
     SendString( buf );
 }
 
-void FScannerProtocolHandler::SetMotorSlowMovementClockSpeed(int Hz) noexcept
+void FScannerProtocolHandler::SetMotorSlowMovementClockSpeed( int Hz ) noexcept
 {
     char buf[256];
-    sprintf(buf, "config motor-clk-on-large-move %d", Hz);
-    SendString(buf);
+    sprintf( buf, "config motor-clk-on-large-move %d", Hz );
+    SendString( buf );
 }
 
 void FScannerProtocolHandler::ResetMotorPosition() noexcept { SendString( "motor-reset" ); }
@@ -489,13 +488,19 @@ FScanImageDesc FScanImageDesc::Clone() const noexcept
 }
 
 FScanImageDesc::FScanImageDesc( size_t w, size_t h, float aspect, FPxlData* RawPtr ) noexcept
-    : Width( w ), Height( h ), mData( RawPtr ), AspectRatio( aspect )
+    : Width( w )
+    , Height( h )
+    , mData( RawPtr )
+    , AspectRatio( aspect )
 {
     mReadData = mData;
 }
 
 FScanImageDesc::FScanImageDesc( size_t w, size_t h, float aspect ) noexcept
-    : Width( w ), Height( h ), mData( new FPxlData[w * h] ), AspectRatio( aspect )
+    : Width( w )
+    , Height( h )
+    , mData( new FPxlData[w * h] )
+    , AspectRatio( aspect )
 {
     mReadData = mData;
 }

@@ -39,7 +39,7 @@ int gui_view_app( int argc, char** argv )
 
     for ( size_t i = 1; i < argc; i++ ) {
         printf( "%s\n", argv[i] );
-        ifstream           fs{ argv[i], ios::binary | ios::in };
+        ifstream           fs { argv[i], ios::binary | ios::in };
         ScanDataHeaderType f;
         ScanDataPixelType* p;
         if ( scanlib::ScanDataReadFrom( fs, &p, &f ) ) {
@@ -64,12 +64,14 @@ int gui_view_app( int argc, char** argv )
 }
 
 ScannerMainForm::ScannerMainForm( FScannerProtocolHandler* Scanner, std::string const& fontName )
-    : form( API::make_center( 1024, 1024 ) ), bEnableAutoRestart( false ), bInStartMode( false )
+    : form( API::make_center( 1024, 1024 ) )
+    , bEnableAutoRestart( false )
+    , bInStartMode( false )
 
 {
     caption( "scangui" );
 
-    mFormatFont = paint::font{ fontName, 10.0 };
+    mFormatFont = paint::font { fontName, 10.0 };
     mLayout.div( ScannerMainFormLayoutScript );
 
     /// Determine Layout
@@ -94,7 +96,7 @@ ScannerMainForm::ScannerMainForm( FScannerProtocolHandler* Scanner, std::string 
         mStatus.multi_lines( true );
         paint::font::font_style status_style = {};
         status_style.weight                  = 500;
-        auto font                            = paint::font{ fontName, 10, status_style };
+        auto font                            = paint::font { fontName, 10, status_style };
         mStatus.typeface( font );
         mStatus.bgcolor( color().from_rgb( 64, 64, 64 ) );
         mStatus.fgcolor( color().from_rgb( 54, 255, 54 ) );
@@ -424,7 +426,7 @@ void ScannerMainForm::OnScannerCaptureDone( FScanImageDesc const& desc )
 void ScannerMainForm::OnUpdateReport( FDeviceStat const& Stat )
 {
     mLastStat = Stat;
-    char   buf[2048]; 
+    char   buf[2048];
     double progress = !Stat.bIsIdle * 100.0 * ( ( Stat.CurMotorStepY - Stat.OfstY ) / (double)( Stat.SizeY * Stat.StepPerPxlY ) );
 
     sprintf( buf,
@@ -555,22 +557,20 @@ void ScannerViewerWidget::RenderImage(
     }
 
     auto data = desc.Data();
-    if ( CacheBuff &&
-         API_MappToRGB(
-             (intptr_t)gp.context(),
+    if ( CacheBuff && API_MappToRGB( (intptr_t)gp.context(),
 
-             [&]( void* data ) {
-                 Internal_RenderImage(
-                     desc,
-                     calc_H,
-                     calc_col,
-                     [data, w = desc.Width, h = desc.Height]( int x, int y, color const& c ) {
-                         uint32_t* ptr  = (uint32_t*)data;
-                         ptr[y * w + x] = c.argb().value;
-                     },
-                     HorizontalCalib );
-             },
-             CacheBuff ) ) {
+                                     [&]( void* data ) {
+                                         Internal_RenderImage(
+                                             desc,
+                                             calc_H,
+                                             calc_col,
+                                             [data, w = desc.Width, h = desc.Height]( int x, int y, color const& c ) {
+                                                 uint32_t* ptr  = (uint32_t*)data;
+                                                 ptr[y * w + x] = c.argb().value;
+                                             },
+                                             HorizontalCalib );
+                                     },
+                                     CacheBuff ) ) {
         gp.flush();
         return;
     }
@@ -614,8 +614,7 @@ static void Internal_RenderImage(
 void ScannerMainForm::AutoUpdateImage()
 {
     FScanImageDesc desc;
-    if ( ( mViewImgIndex == 0 && mScan->GetScanningImage( desc ) ) ||
-         ( mViewImgIndex && mCapturedImage.size() && ( desc = GetViewingImage() ).CData() ) ) {
+    if ( ( mViewImgIndex == 0 && mScan->GetScanningImage( desc ) ) || ( mViewImgIndex && mCapturedImage.size() && ( desc = GetViewingImage() ).CData() ) ) {
         mViewport.ReplaceDesc( desc );
     }
 }
@@ -627,9 +626,9 @@ void ScannerMainForm::OpenSaveAs()
         return;
     }
 
-    nana::filebox fb{ *this, false };
+    nana::filebox fb { *this, false };
     char          buf[1024];
-    auto desc = GetViewingImage();
+    auto          desc = GetViewingImage();
     sprintf( buf, "fov[%1.0f-%1.0f]-r[%d-%d]-d[%d]-mot[%d]",
              mConfAngle[0].to_double(),
              mConfAngle[1].to_double(),
@@ -649,7 +648,7 @@ void ScannerMainForm::OpenSaveAs()
 
 void ScannerMainForm::SetAutosavePath()
 {
-    nana::filebox fb{ *this, false };
+    nana::filebox fb { *this, false };
     fb.add_filter( "Scan data file (*." SCAN_DATA_FORMAT_HEADER ")", "*." SCAN_DATA_FORMAT_HEADER );
     fb.allow_multi_select( false );
 
@@ -662,7 +661,7 @@ void ScannerMainForm::SetAutosavePath()
 
 void ScannerMainForm::OpenDepthMapFile()
 {
-    nana::filebox fb{ *this, true };
+    nana::filebox fb { *this, true };
     fb.add_filter( "Scan data file (*." SCAN_DATA_FORMAT_HEADER ")", "*." SCAN_DATA_FORMAT_HEADER );
     fb.allow_multi_select( true );
 
@@ -684,12 +683,12 @@ void ScannerMainForm::OpenDepthMapFile()
     for ( auto& path : paths ) {
         // Load image from selected path
         //! @todo. Find wfopen()'s linux version.
-        ifstream           fs{ path.c_str(), ios::binary };
+        ifstream           fs { path.c_str(), ios::binary };
         FPxlData*          ptr;
         ScanDataHeaderType ods;
         if ( scanlib::ScanDataReadFrom( fs, (ScanDataPixelType**)&ptr, &ods ) ) {
             // Create descriptor from loaded image
-            FScanImageDesc desc{ ods.WIDTH, ods.HEIGHT, ods.ASPECT_RATIO, ptr };
+            FScanImageDesc desc { ods.WIDTH, ods.HEIGHT, ods.ASPECT_RATIO, ptr };
 
             // New image form
             auto& frm     = *mUnnamedForms.emplace_back( make_unique<form>( *this ) );
@@ -700,7 +699,7 @@ void ScannerMainForm::OpenDepthMapFile()
             frm["ALL"] << view;
             frm.caption( pathstr.substr( pathstr.find_last_of( '\\' ) ) );
             frm.collocate();
-            view.bgcolor( color{}.from_rgb( 53, 53, 53 ) );
+            view.bgcolor( color {}.from_rgb( 53, 53, 53 ) );
             frm.show();
         }
     }
@@ -751,10 +750,10 @@ void ScannerMainForm::StopCapture() { mScan->StopCapture(); }
 void ScannerMainForm::RequestMotorMovement()
 {
     // Create input box
-    inputbox inp{ *this, "Enter motor angle to request movement", "Motor Movement Request" };
+    inputbox inp { *this, "Enter motor angle to request movement", "Motor Movement Request" };
 
-    inputbox::real angle_x{ "X angle", 0.0, -180.0, 180.0, 3 };
-    inputbox::real angle_y{ "Y angle", 0.0, -180.0, 180.0, 3 };
+    inputbox::real angle_x { "X angle", 0.0, -180.0, 180.0, 3 };
+    inputbox::real angle_y { "Y angle", 0.0, -180.0, 180.0, 3 };
 
     if ( !inp.show( angle_x, angle_y ) ) {
         return;
@@ -774,10 +773,10 @@ void ScannerMainForm::RequestMotorMovement()
 
 void ScannerMainForm::OpenStepPerAngleSettingDialog()
 {
-    inputbox inp{ *this, "Enter motor angle per step", "Set Degrees per Step" };
+    inputbox inp { *this, "Enter motor angle per step", "Set Degrees per Step" };
 
-    inputbox::real angle_x{ "X angle", 1.8 / 32, 0.0, 10.0, 0.0001 };
-    inputbox::real angle_y{ "Y angle", 1.8 / 32, 0.0, 10.0, 0.0001 };
+    inputbox::real angle_x { "X angle", 1.8 / 32, 0.0, 10.0, 0.0001 };
+    inputbox::real angle_y { "Y angle", 1.8 / 32, 0.0, 10.0, 0.0001 };
 
     if ( !inp.show( angle_x, angle_y ) ) {
         return;
@@ -792,9 +791,9 @@ void ScannerMainForm::OpenStepPerAngleSettingDialog()
 
 void ScannerMainForm::OpenMotorDrvClkSettingDialog()
 {
-    inputbox inp{ *this, "Set motor drive clock speed", "Set Motor Speed" };
+    inputbox inp { *this, "Set motor drive clock speed", "Set Motor Speed" };
 
-    inputbox::integer clk{ "Hz", 1000, 1, 100000, 100 };
+    inputbox::integer clk { "Hz", 1000, 1, 100000, 100 };
 
     if ( !inp.show( clk ) ) {
         return;
@@ -811,13 +810,11 @@ void ScannerMainForm::UpdateReportText()
 void ScannerMainForm::UpdateTimerEventHandler()
 {
     // Retry connect
-    cbool         bIsConnect  = mScan->IsConnected();
-    future_status wait_result = {};
-    cbool         bAsyncProcessActive =
-        mComSearchTask.valid() &&
-        ( wait_result = mComSearchTask.wait_for( 0ms ) ) != future_status::ready;
-    cbool bAsyncProcessDone = mComSearchTask.valid() && wait_result == future_status ::ready;
-    cbool bConnectResult    = bAsyncProcessDone && mComSearchTask.get();
+    cbool         bIsConnect          = mScan->IsConnected();
+    future_status wait_result         = {};
+    cbool         bAsyncProcessActive = mComSearchTask.valid() && ( wait_result = mComSearchTask.wait_for( 0ms ) ) != future_status::ready;
+    cbool         bAsyncProcessDone   = mComSearchTask.valid() && wait_result == future_status ::ready;
+    cbool         bConnectResult      = bAsyncProcessDone && mComSearchTask.get();
 
     if ( !bIsConnect && ( !bAsyncProcessActive || ( bAsyncProcessDone && !bConnectResult ) ) ) {
         mStatusText    = "-- No connection -- ";
@@ -833,10 +830,10 @@ void ScannerMainForm::UpdateTimerEventHandler()
     }
 
     // Let timer to retrigger if flag is active
-    if ( bInStartMode &&
-         mScan->IsDeviceRunning() == false &&
-         bEnableAutoRestart &&
-         mRetriggerCnt-- == 0 ) {
+    if ( bInStartMode
+         && mScan->IsDeviceRunning() == false
+         && bEnableAutoRestart
+         && mRetriggerCnt-- == 0 ) {
         print( "Auto re-triggering capture ... \n" );
         StartCapture();
     }
@@ -1060,5 +1057,5 @@ void ScannerViewerWidget::TranslateInto(
     auto   dx     = (int)std::min( (double)dstw, x * zoom + dstw / 2 - w / 2 );
     auto   dy     = (int)std::min( (double)dsth, y * zoom + dsth / 2 - h / 2 );
 
-    src.stretch( dst, rectangle{ dx, dy, w, h } );
+    src.stretch( dst, rectangle { dx, dy, w, h } );
 };

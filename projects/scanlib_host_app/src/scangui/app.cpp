@@ -6,11 +6,12 @@
 //! @details
 //!
 #include "app.hpp"
+#include "console-app.hpp"
 #include <gflags/gflags.h>
 #include <memory>
 #include <thread>
 
-using namespace std; 
+using namespace std;
 
 //
 // Flag definitions
@@ -35,6 +36,7 @@ int main( int argc, char** argv )
         if ( FLAGS_no_gui ) {
             //! @todo. Go to console mode ...
             API_SystemShowConsole( true );
+            InitConsoleApp();
         }
         else {
             API_SystemShowConsole( FLAGS_show_console );
@@ -55,6 +57,6 @@ bool API_RefreshScannerControl( FScannerProtocolHandler& S )
     if ( FLAGS_com.empty() ) {
         return false;
     }
-    API_SystemCreateScannerControl(S);
+    API_SystemCreateScannerControl( S );
     return true;
 }

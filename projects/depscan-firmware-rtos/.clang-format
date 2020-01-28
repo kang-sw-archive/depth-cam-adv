@@ -124,7 +124,7 @@ SpacesInContainerLiterals: true
 SpacesInCStyleCastParentheses: false
 SpacesInParentheses: true
 SpacesInSquareBrackets: false
-SpaceBeforeSquareBrackets: true
+SpaceBeforeSquareBrackets: false
 Standard:        Latest
 StatementMacros:
   - Q_UNUSED
