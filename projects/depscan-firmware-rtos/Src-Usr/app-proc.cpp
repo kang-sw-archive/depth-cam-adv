@@ -2,13 +2,14 @@
 #include "defs.h"
 #include "protocol.h"
 #include "rw.h"
+#include <alloca.h>
 #include <semphr.h>
+#include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <uEmbedded-pp/utility.hxx>
 #include <uEmbedded/uassert.h>
-
 /////////////////////////////////////////////////////////////////////////////
 // Host IO communication handler
 //
@@ -21,10 +22,10 @@
 static void stringCmdHandler( char* str, size_t len );
 static void binaryCmdHandler( char* data, size_t len );
 // Token parser
-static int stringToTokens( char* str, char* argv [], size_t argv_len );
+static int stringToTokens( char* str, char* argv[], size_t argv_len );
 
 // Flush buffered data to host
-static char          s_hostTrBuf [HOST_TRANSFER_BUFFER_SIZE];
+static char          s_hostTrBuf[HOST_TRANSFER_BUFFER_SIZE];
 static size_t        s_hostTrBufHead = 0;
 static volatile int  s_writingTask   = 0;
 static volatile bool s_bFlushing     = 0;
@@ -37,7 +38,7 @@ static bool readHostConn( void* dst, size_t len );
 
 /////////////////////////////////////////////////////////////////////////////
 // Primary Procedure
-extern "C" void AppTask_HostIO( void* nouse_ )
+extern "C" _Noreturn void AppProc_HostIO( void* nouse_ )
 {
     packetinfo_t packet;
 
@@ -55,7 +56,7 @@ extern "C" void AppTask_HostIO( void* nouse_ )
         // Packet size must be less than 2kByte at once
         // Allocate packet receive memory using VLA
         auto len = PACKET_LENGTH( packet );
-        char buf [len + 1];
+        char buf[len + 1];
         if ( readHostConn( buf, len ) == false )
             continue;
 
@@ -85,11 +86,20 @@ void API_SendHostRaw( void const* data, size_t len )
     apndToHostBuf( data, len );
 }
 
-// __write Redirection
-extern "C" int _write( int file, uint8_t* p, int len )
+void print( char const* fmt, ... )
 {
-    API_SendHostString( p, len );
-    return len;
+    va_list vp;
+
+    va_start( vp, fmt );
+    size_t allocsz = vsnprintf( NULL, 0, fmt, vp ) + 2;
+    va_end( vp );
+
+    va_start( vp, fmt );
+    char* buf = (char*)alloca( allocsz );
+    vsprintf( buf, fmt, vp );
+    va_end( vp );
+
+    API_SendHostString( buf, allocsz );
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -125,22 +135,22 @@ bool readHostConn( void* dst, size_t len )
 
 /////////////////////////////////////////////////////////////////////////////
 //
-bool App_HandleCaptureCommand();
+extern "C" bool App_HandleCaptureCommand( int argc, char* argv[] );
 
 void stringCmdHandler( char* str, size_t len )
 {
     // Append last byte as null ch
-    str [len + 1] = '\0';
+    str[len + 1] = '\0';
 
     // Make tokens from string ... Maximum token = 16
-    char* argv [16];
+    char* argv[16];
     int   argc = stringToTokens( str, argv, sizeof( argv ) / sizeof( *argv ) );
 
     if ( argc == 0 )
         return;
 
 #define STRCASE( v ) upp::hash::fnv1a_32( v )
-    uint32_t cmdidx = STRCASE( argv [0] );
+    uint32_t cmdidx = STRCASE( argv[0] );
 
     switch ( cmdidx ) {
     case STRCASE( "app-os-report" ):
@@ -148,25 +158,30 @@ void stringCmdHandler( char* str, size_t len )
         break;
 
     case STRCASE( "test-input" ):
-        printf( "Hello, world!\n" );
+        print( "Hello, world!\n" );
         break;
 
     default:
-        App_HandleCaptureCommand();
+        App_HandleCaptureCommand( argc, argv );
         break;
     }
 }
 
-__weak_symbol bool App_HandleCaptureCommand()
+extern "C" __weak_symbol bool
+App_HandleCaptureCommand( int argc, char* argv[] )
 {
-    return false;
+    print( "Tokens :: \n" );
+    for ( int i = 0; i < argc; i++ ) {
+        print( "  %02d: %s\n", i, argv[i] );
+    }
+    return true;
 }
 
 void binaryCmdHandler( char* data, size_t len )
 {
 }
 
-int stringToTokens( char* str, char* argv [], size_t argv_len )
+int stringToTokens( char* str, char* argv[], size_t argv_len )
 {
     // Consume all initial spaces
     while ( *str == ' ' )
@@ -179,15 +194,17 @@ int stringToTokens( char* str, char* argv [], size_t argv_len )
     int   num_token = 0;
     char* head      = str;
 
-    for ( ;; ) {
-        if ( *head != ' ' ) {
+    for ( ; num_token < (int)argv_len; ) {
+        if ( *head != ' ' && *head != '\0' ) {
             ++head;
             continue;
         }
 
-        argv [num_token++] = str;
-        *head              = 0;
-        while ( *++head == ' ' ) { }
+        argv[num_token++] = str;
+        if ( *head == 0 )
+            break;
+
+        for ( *head = 0; *++head == ' '; ) { }
 
         if ( *head == 0 )
             break;
@@ -217,10 +234,11 @@ void flushTransmitData()
         return;
 
     // Wait for all async write process done
-    while ( s_writingTask >= 0 )
+    while ( s_writingTask > 0 )
         taskYIELD();
 
     s_bFlushing = true;
     td_write( gHostConnection, s_hostTrBuf, s_hostTrBufHead );
-    s_bFlushing = false;
+    s_hostTrBufHead = 0;
+    s_bFlushing     = false;
 }

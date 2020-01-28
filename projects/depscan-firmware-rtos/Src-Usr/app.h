@@ -13,7 +13,7 @@ extern "C" {
 
 /////////////////////////////////////////////////////////////////////////////
 // Funcs
-void AppTask_HostIO( void* nouse_ );
+_Noreturn void AppProc_HostIO( void* nouse_ );
 void API_SendHostBinary( void const* data, size_t len );
 void API_SendHostString( void const* data, size_t len );
 void API_SendHostRaw( void const* data, size_t len );

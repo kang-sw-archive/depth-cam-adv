@@ -116,7 +116,7 @@ void FScannerProtocolHandler::procedureThread( PortOpenFunctionType             
                     break;
                 }
                 bWaitPing = true;
-                SendString( "report" );
+                SendString( "ping" );
                 continue;
             }
             default:

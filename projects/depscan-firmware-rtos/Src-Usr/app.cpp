@@ -46,11 +46,12 @@ extern "C" void StartDefaultTask( void* nouse_ )
     InitHW();
     InitRW();
 
-    // Launch hw timer manager
+    // launch hw timer manager
+    //! @todo. implement this
+    
+    // this function never returns.
+    AppProc_HostIO( NULL );
 
-    // Launch Host Communication Process
-    AppTask_HostIO( NULL );
-
-    // Never reaches here.
+    // control never reaches here.
     uassert( false );
 }

@@ -26,7 +26,7 @@ TARGET = depscan-firmware-rtos
 # debug build?
 DEBUG = 1
 # optimization
-OPT = -O2
+OPT = -Og
 
 
 #######################################
