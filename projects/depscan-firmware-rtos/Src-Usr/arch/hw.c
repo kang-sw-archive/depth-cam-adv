@@ -1,6 +1,6 @@
 #include "hw.h"
-#include <usbd_cdc_if.h>
 #include <usb_device.h>
+#include <usbd_cdc_if.h>
 
 bool HW_CheckUsbConnection()
 {
