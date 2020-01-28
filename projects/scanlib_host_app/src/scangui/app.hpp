@@ -3,6 +3,9 @@
 #include <scanlib/core/scanner_protocol_handler.hpp>
 #include <tuple>
 
+#define SICO_VENDOR_ID "17c0"
+#define SICO_SCANNER_PRODUCT_ID "79b6"
+
 void API_SystemShowConsole( bool bShow );
 void API_SystemCreateScannerControl( FScannerProtocolHandler& );
 void API_FindConnection( char* PortName );

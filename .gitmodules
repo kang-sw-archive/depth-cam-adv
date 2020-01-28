@@ -31,3 +31,15 @@
 [submodule "projects/depscan-firmware-rtos/Third/EASTL"]
 	path = projects/depscan-firmware-rtos/Third/EASTL
 	url = git@github.com:kang-sw/EASTL.git
+[submodule "projects/scanlib_host_app/third/--foce"]
+	path = projects/scanlib_host_app/third/--foce
+	url = https://github.com/gflags/gflags.git
+[submodule "projects/scanlib_host_app/third/--force"]
+	path = projects/scanlib_host_app/third/--force
+	url = git@github.com:kang-sw/nana.git
+[submodule "projects/scanlib_host_app/third/gflags"]
+	path = projects/scanlib_host_app/third/gflags
+	url = https://github.com/gflags/gflags.git
+[submodule "projects/scanlib_host_app/third/nana"]
+	path = projects/scanlib_host_app/third/nana
+	url = git@github.com:kang-sw/nana.git

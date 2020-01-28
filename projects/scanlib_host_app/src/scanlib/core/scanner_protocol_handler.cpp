@@ -18,7 +18,7 @@ using namespace std::chrono;
 template <typename tptr_, typename sptr_>
 tptr_*& ptr_cast( sptr_& src ) { return reinterpret_cast<tptr_*&>( src ); }
 
-static void StoreLineData( vector<FPxlData>& arr, int xl, int yl, FLineData const& desc, FPxlData const* data );
+static void StoreLineData( vector<FPxlData>& arr, int xl, int yl, FLineDesc const& desc, FPxlData const* data );
 static void GetImageInfo( FScanImageDesc* out, FDeviceStat const& stat );
 
 FScannerProtocolHandler::~FScannerProtocolHandler() { Shutdown(); }
@@ -369,7 +369,7 @@ void FScannerProtocolHandler::OnBinaryData( char const* data, size_t len )
     case ECommand::RSP_LINE_DATA: {
         if ( bRequestingCapture == false )
             break;
-        auto desc = *ptr_cast<const FLineData>( p )++;
+        auto desc = *ptr_cast<const FLineDesc>( p )++;
         // print( "+--- LINE DATA DESCRIPTION ---+\n"
         //       "|  Line Number     : %6u   |\n"
         //       "|  X Offset        : %6u   |\n"
@@ -453,7 +453,7 @@ void FScannerProtocolHandler::print( char const* fmt, ... ) const noexcept
     va_end( v );
 }
 
-void StoreLineData( vector<FPxlData>& arr, int const xl, int const yl, FLineData const& desc, FPxlData const* data )
+void StoreLineData( vector<FPxlData>& arr, int const xl, int const yl, FLineDesc const& desc, FPxlData const* data )
 {
     int const x = desc.OfstX;
     int const y = desc.LineIdx;

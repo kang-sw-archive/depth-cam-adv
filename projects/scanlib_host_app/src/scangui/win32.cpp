@@ -168,7 +168,8 @@ static void SearchCOM( TCHAR* pszComePort, TCHAR* vid, TCHAR* pid )
     SP_DEVINFO_DATA DeviceInfoData;
     PCSTR           DevEnum              = "USB";
     CHAR            ExpectedDeviceId[80] = { 0 }; // Store hardware id
-    BYTE            szBuffer[1024]       = { 0 };
+    size_t          DevIdLen;
+    BYTE            szBuffer[1024] = { 0 };
     DEVPROPTYPE     ulPropertyType;
     DWORD           dwSize = 0;
     DWORD           Error  = 0;
@@ -179,6 +180,7 @@ static void SearchCOM( TCHAR* pszComePort, TCHAR* vid, TCHAR* pid )
     strcat_s( ExpectedDeviceId, vid );
     strcat_s( ExpectedDeviceId, "&pid_" );
     strcat_s( ExpectedDeviceId, pid );
+    DevIdLen = strlen( ExpectedDeviceId );
 
     // SetupDiGetClassDevs returns a handle to a device information set
     DeviceInfoSet = SetupDiGetClassDevs( NULL, DevEnum, NULL,
@@ -202,6 +204,24 @@ static void SearchCOM( TCHAR* pszComePort, TCHAR* vid, TCHAR* pid )
                  &ulPropertyType, (BYTE*)szBuffer,
                  sizeof( szBuffer ), // The size, in bytes
                  &dwSize ) ) {
+            // Compare if VID&PID equals
+            // To compare as case-insensitive
+            for ( char* head = (char*)szBuffer; *head; ++head ) {
+                *head = tolower( *head );
+            }
+            // Compare ...
+            bool bFound = false;
+            for ( size_t i = 0, length = strlen( (char*)szBuffer ) - DevIdLen; i < length; i++ ) {
+                char* bf = (char*)szBuffer + i;
+                if ( strncmp( bf, ExpectedDeviceId, DevIdLen ) == 0 ) {
+                    bFound = true;
+                    break;
+                }
+            }
+
+            if ( bFound == false )
+                continue;
+
             HKEY hDeviceRegistryKey;
 
             // Get the key
@@ -235,6 +255,7 @@ static void SearchCOM( TCHAR* pszComePort, TCHAR* vid, TCHAR* pid )
 
                 // Close the key now that we are finished with it
                 RegCloseKey( hDeviceRegistryKey );
+                break;
             }
         }
     }
@@ -246,7 +267,7 @@ static void SearchCOM( TCHAR* pszComePort, TCHAR* vid, TCHAR* pid )
     // from [https://aticleworld.com/get-com-port-of-usb-serial-device/]
 }
 
-void API_FindConnection( char* PortName ) { SearchCOM( PortName, "8e2f", "efcc" ); }
+void API_FindConnection( char* PortName ) { SearchCOM( PortName, SICO_VENDOR_ID, SICO_SCANNER_PRODUCT_ID ); }
 
 static int SearchCOM3()
 {
