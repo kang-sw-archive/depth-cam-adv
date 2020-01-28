@@ -33,9 +33,6 @@ void operator delete( void* p )
 
 /////////////////////////////////////////////////////////////////////////////
 // Statics
-static TaskHandle_t sTh_CmdProc;
-static StaticTask_t sTh_CmdProcDesc;
-static StackType_t  sTh_CmdProcStack[256];
 
 /////////////////////////////////////////////////////////////////////////////
 // Defines initialize process
@@ -48,14 +45,6 @@ extern "C" void StartDefaultTask( void* nouse_ )
 {
     InitHW();
     InitRW();
-
-    // Launch command queue procedure
-    sTh_CmdProc = xTaskCreateStatic(
-        AppTask_CmdProc, "CmdProc",
-        256, NULL,
-        uxTaskPriorityGet( NULL ) + 1,
-        sTh_CmdProcStack,
-        &sTh_CmdProcDesc );
 
     // Launch hw timer manager
 
