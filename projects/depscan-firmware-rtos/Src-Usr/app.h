@@ -16,7 +16,7 @@ extern transceiver_handle_t gLog;
 /////////////////////////////////////////////////////////////////////////////
 // Funcs
 void AppTask_HostIO( void* nouse_ );
-void AppWriteToHost( void const* data, size_t len );
+void API_SendToHost( void const* data, size_t len );
 
 #ifdef __cplusplus
 }
