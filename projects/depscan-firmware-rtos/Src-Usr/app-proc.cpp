@@ -4,6 +4,7 @@
 #include "rw.h"
 #include <semphr.h>
 #include <stdlib.h>
+#include <uEmbedded-pp/utility.hxx>
 
 /////////////////////////////////////////////////////////////////////////////
 // Host IO communication handler
@@ -11,7 +12,13 @@
 //
 
 /////////////////////////////////////////////////////////////////////////////
-// Static utilities
+// Utilities
+
+// Command procedure
+static void stringCmdHandler( char* str, size_t len );
+static void binaryCmdHandler( char* data, size_t len );
+// Token parser
+static int stringToTokens( char* str, char const* argv[], size_t argv_len );
 
 // Flush buffered data to host
 static void flushTransmitData();
@@ -35,22 +42,24 @@ extern "C" void AppTask_HostIO( void* nouse_ )
         // Packet size must be less than 2kByte at once
 
         // Allocate packet receive memory using VLA
-        char buf[PACKET_LENGTH( packet ) + 1];
-        if ( readHostConn( buf, PACKET_LENGTH( packet ) ) == false )
+        auto len = PACKET_LENGTH( packet );
+        char buf[len + 1];
+        if ( readHostConn( buf, len ) == false )
             continue;
 
-
+        // Call command procedure
+        ( PACKET_IS_STR( packet ) ? stringCmdHandler : binaryCmdHandler )( buf, len );
     }
 }
 
-extern "C" void AppTask_CmdProc( void* )
-{
-}
-
+/////////////////////////////////////////////////////////////////////////////
+// Global function defs
 void API_SendToHost( void const* data, size_t len )
 {
 }
 
+/////////////////////////////////////////////////////////////////////////////
+// Utility defs
 bool readHostConn( void* dst, size_t len )
 {
     size_t numRetries = 5;
@@ -78,4 +87,40 @@ bool readHostConn( void* dst, size_t len )
         }
     }
     return false;
+}
+
+/////////////////////////////////////////////////////////////////////////////
+//
+void stringCmdHandler( char* str, size_t len )
+{
+    // Append last byte as null ch
+    str[len + 1] = '\0';
+
+    // Make tokens from string ... Maximum token = 16
+    char* argv[16];
+    int   argc = stringToTokens( str, argv, sizeof( argv ) / sizeof( *argv ) );
+
+    if ( argc == 0 )
+        return;
+
+#define STRCASE( v ) upp::hash::fnv1a_32( v )
+    uint32_t cmdidx = STRCASE( argv[0] );
+
+    switch ( cmdidx ) {
+    case STRCASE( "app-os-report" ):
+        break;
+
+    default:
+        App_HandleCaptureCommand();
+        break;
+    }
+}
+
+__weak_symbol bool App_HandleCaptureCommand()
+{
+    return false;
+}
+
+void binaryCmdHandler( char* data, size_t len )
+{
 }
