@@ -21,13 +21,15 @@
 static void stringCmdHandler( char* str, size_t len );
 static void binaryCmdHandler( char* data, size_t len );
 // Token parser
-static int stringToTokens( char* str, char* argv[], size_t argv_len );
+static int stringToTokens( char* str, char* argv [], size_t argv_len );
 
 // Flush buffered data to host
-static char   s_hostTrBUf[HOST_TRANSFER_BUFFER_SIZE];
-static size_t s_hostTrBufHead = 0;
-static void   apndToHostBuf( void const* d, size_t len );
-static void   flushTransmitData();
+static char          s_hostTrBuf [HOST_TRANSFER_BUFFER_SIZE];
+static size_t        s_hostTrBufHead = 0;
+static volatile int  s_writingTask   = 0;
+static volatile bool s_bFlushing     = 0;
+static void          apndToHostBuf( void const* d, size_t len );
+static void          flushTransmitData();
 
 // Read host connection for requested byte length.
 // @returns false when failed to receive data, with given timeout.
@@ -53,7 +55,7 @@ extern "C" void AppTask_HostIO( void* nouse_ )
         // Packet size must be less than 2kByte at once
         // Allocate packet receive memory using VLA
         auto len = PACKET_LENGTH( packet );
-        char buf[len + 1];
+        char buf [len + 1];
         if ( readHostConn( buf, len ) == false )
             continue;
 
@@ -128,17 +130,17 @@ bool App_HandleCaptureCommand();
 void stringCmdHandler( char* str, size_t len )
 {
     // Append last byte as null ch
-    str[len + 1] = '\0';
+    str [len + 1] = '\0';
 
     // Make tokens from string ... Maximum token = 16
-    char* argv[16];
+    char* argv [16];
     int   argc = stringToTokens( str, argv, sizeof( argv ) / sizeof( *argv ) );
 
     if ( argc == 0 )
         return;
 
 #define STRCASE( v ) upp::hash::fnv1a_32( v )
-    uint32_t cmdidx = STRCASE( argv[0] );
+    uint32_t cmdidx = STRCASE( argv [0] );
 
     switch ( cmdidx ) {
     case STRCASE( "app-os-report" ):
@@ -164,19 +166,61 @@ void binaryCmdHandler( char* data, size_t len )
 {
 }
 
-int stringToTokens( char* str, char* argv[], size_t argv_len )
+int stringToTokens( char* str, char* argv [], size_t argv_len )
 {
-    return 0;
+    // Consume all initial spaces
+    while ( *str == ' ' )
+        ++str;
+
+    // Ignore space-only string.
+    if ( *str == 0 )
+        return 0;
+
+    int   num_token = 0;
+    char* head      = str;
+
+    for ( ;; ) {
+        if ( *head != ' ' ) {
+            ++head;
+            continue;
+        }
+
+        argv [num_token++] = str;
+        *head              = 0;
+        while ( *++head == ' ' ) { }
+
+        if ( *head == 0 )
+            break;
+
+        str = head; // Non-space character pos
+    }
+
+    return num_token;
 }
 
 void apndToHostBuf( void const* d, size_t len )
 {
-    uassert( s_hostTrBufHead + len < sizeof( s_hostTrBUf ) );
+    uassert( s_hostTrBufHead + len < sizeof( s_hostTrBuf ) );
 
-    memcpy( s_hostTrBUf + s_hostTrBufHead, d, len );
+    while ( s_bFlushing )
+        taskYIELD();
+
+    ++s_writingTask;
     s_hostTrBufHead += len;
+    memcpy( s_hostTrBuf + s_hostTrBufHead - len, d, len );
+    --s_writingTask;
 }
 
 void flushTransmitData()
 {
+    if ( s_hostTrBufHead == 0 )
+        return;
+
+    // Wait for all async write process done
+    while ( s_writingTask >= 0 )
+        taskYIELD();
+
+    s_bFlushing = true;
+    td_write( gHostConnection, s_hostTrBuf, s_hostTrBufHead );
+    s_bFlushing = false;
 }
