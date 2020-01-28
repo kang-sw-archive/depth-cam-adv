@@ -3,8 +3,11 @@
 #include "protocol.h"
 #include "rw.h"
 #include <semphr.h>
+#include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <uEmbedded-pp/utility.hxx>
+#include <uEmbedded/uassert.h>
 
 /////////////////////////////////////////////////////////////////////////////
 // Host IO communication handler
@@ -21,7 +24,10 @@ static void binaryCmdHandler( char* data, size_t len );
 static int stringToTokens( char* str, char* argv[], size_t argv_len );
 
 // Flush buffered data to host
-static void flushTransmitData();
+static char   s_hostTrBUf[HOST_TRANSFER_BUFFER_SIZE];
+static size_t s_hostTrBufHead = 0;
+static void   apndToHostBuf( void const* d, size_t len );
+static void   flushTransmitData();
 
 // Read host connection for requested byte length.
 // @returns false when failed to receive data, with given timeout.
@@ -38,9 +44,13 @@ extern "C" void AppTask_HostIO( void* nouse_ )
         if ( readHostConn( &packet, PACKET_SIZE ) == false )
             continue;
 
+        // Check packet validity
+        // If any data were delivered in bad condition, it'll consume all pending bytes.
+        if ( PACKET_IS_PACKET( packet ) == false )
+            continue;
+
         // Should be aware of maximum stack depth!
         // Packet size must be less than 2kByte at once
-
         // Allocate packet receive memory using VLA
         auto len = PACKET_LENGTH( packet );
         char buf[len + 1];
@@ -56,10 +66,21 @@ extern "C" void AppTask_HostIO( void* nouse_ )
 // Global function defs
 void API_SendHostBinary( void const* data, size_t len )
 {
+    packetinfo_t packet = PACKET_MAKE( false, len );
+    apndToHostBuf( &packet, sizeof packet );
+    apndToHostBuf( data, len );
 }
 
 void API_SendHostString( void const* data, size_t len )
 {
+    packetinfo_t packet = PACKET_MAKE( true, len );
+    apndToHostBuf( &packet, sizeof packet );
+    apndToHostBuf( data, len );
+}
+
+void API_SendHostRaw( void const* data, size_t len )
+{
+    apndToHostBuf( data, len );
 }
 
 // __write Redirection
@@ -124,6 +145,10 @@ void stringCmdHandler( char* str, size_t len )
 
         break;
 
+    case STRCASE( "test-input" ):
+        printf( "Hello, world!\n" );
+        break;
+
     default:
         App_HandleCaptureCommand();
         break;
@@ -139,9 +164,17 @@ void binaryCmdHandler( char* data, size_t len )
 {
 }
 
-int stringToTokens(char* str, char* argv[], size_t argv_len)
+int stringToTokens( char* str, char* argv[], size_t argv_len )
 {
     return 0;
+}
+
+void apndToHostBuf( void const* d, size_t len )
+{
+    uassert( s_hostTrBufHead + len < sizeof( s_hostTrBUf ) );
+
+    memcpy( s_hostTrBUf + s_hostTrBufHead, d, len );
+    s_hostTrBufHead += len;
 }
 
 void flushTransmitData()
