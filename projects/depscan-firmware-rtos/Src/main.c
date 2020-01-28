@@ -55,7 +55,7 @@ TIM_HandleTypeDef htim3;
 
 /* Definitions for HostIO */
 osThreadId_t HostIOHandle;
-uint32_t defaultTaskBuffer[ 256 ];
+uint32_t defaultTaskBuffer[ 512 ];
 osStaticThreadDef_t defaultTaskControlBlock;
 const osThreadAttr_t HostIO_attributes = {
   .name = "HostIO",
@@ -517,7 +517,7 @@ __weak void StartDefaultTask(void *argument)
 {
   /* init code for USB_DEVICE */
   MX_USB_DEVICE_Init();
-  /* USER CODE BEGIN 5 */  
+  /* USER CODE BEGIN 5 */
   /* USER CODE END 5 */ 
 }
 
