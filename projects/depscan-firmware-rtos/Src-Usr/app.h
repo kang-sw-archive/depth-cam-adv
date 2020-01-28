@@ -18,6 +18,7 @@ void           API_SendHostBinary( void const* data, size_t len );
 void           API_SendHostString( void const* data, size_t len );
 void           API_SendHostRaw( void const* data, size_t len );
 bool           AppHandler_CaptureCommand( int argc, char* argv[] );
+bool           AppHandler_CaptureBinary( char* data, size_t len );
 void           print( char const* fmt, ... ); //!< Print text out to host.
 int            putstr( char const* txt );
 

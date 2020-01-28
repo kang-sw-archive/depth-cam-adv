@@ -48,7 +48,7 @@ extern "C" _Noreturn void AppProc_HostIO( void* nouse_ )
             continue;
 
         // Check packet validity
-        // If any data were delivered in bad condition, it'll consume all pending bytes.
+        // If any data was delivered in bad condition, it'll consume all pending bytes.
         if ( PACKET_IS_PACKET( packet ) == false )
             continue;
 
@@ -179,7 +179,7 @@ void stringCmdHandler( char* str, size_t len )
 extern "C" __weak_symbol bool
 AppHandler_CaptureCommand( int argc, char* argv[] )
 {
-    print( "Receiving :: " );
+    print( "info: Receiving :: " );
     for ( int i = 0; i < argc; i++ ) {
         print( "%s ", i, argv[i] );
     }
@@ -187,8 +187,19 @@ AppHandler_CaptureCommand( int argc, char* argv[] )
     return true;
 }
 
+extern "C" __weak_symbol bool
+AppHandler_CaptureBinary( char* data, size_t len )
+{
+    return false;
+}
+
 void binaryCmdHandler( char* data, size_t len )
 {
+    if ( AppHandler_CaptureBinary( data, len ) ) {
+        return;
+    }
+
+    putstr( "warning: failed to process binary data\n" );
 }
 
 int stringToTokens( char* str, char* argv[], size_t argv_len )
