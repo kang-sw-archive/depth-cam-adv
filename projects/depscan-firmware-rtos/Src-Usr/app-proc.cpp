@@ -18,7 +18,7 @@
 static void stringCmdHandler( char* str, size_t len );
 static void binaryCmdHandler( char* data, size_t len );
 // Token parser
-static int stringToTokens( char* str, char const* argv[], size_t argv_len );
+static int stringToTokens( char* str, char* argv[], size_t argv_len );
 
 // Flush buffered data to host
 static void flushTransmitData();
@@ -54,8 +54,19 @@ extern "C" void AppTask_HostIO( void* nouse_ )
 
 /////////////////////////////////////////////////////////////////////////////
 // Global function defs
-void API_SendToHost( void const* data, size_t len )
+void API_SendHostBinary( void const* data, size_t len )
 {
+}
+
+void API_SendHostString( void const* data, size_t len )
+{
+}
+
+// __write Redirection
+extern "C" int _write( int file, uint8_t* p, int len )
+{
+    API_SendHostString( p, len );
+    return len;
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -91,6 +102,8 @@ bool readHostConn( void* dst, size_t len )
 
 /////////////////////////////////////////////////////////////////////////////
 //
+bool App_HandleCaptureCommand();
+
 void stringCmdHandler( char* str, size_t len )
 {
     // Append last byte as null ch
@@ -108,6 +121,7 @@ void stringCmdHandler( char* str, size_t len )
 
     switch ( cmdidx ) {
     case STRCASE( "app-os-report" ):
+
         break;
 
     default:
@@ -122,5 +136,14 @@ __weak_symbol bool App_HandleCaptureCommand()
 }
 
 void binaryCmdHandler( char* data, size_t len )
+{
+}
+
+int stringToTokens(char* str, char* argv[], size_t argv_len)
+{
+    return 0;
+}
+
+void flushTransmitData()
 {
 }

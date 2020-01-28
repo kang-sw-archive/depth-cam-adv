@@ -8,15 +8,14 @@ extern "C" {
 #endif // __cplusplus
 
 /////////////////////////////////////////////////////////////////////////////
-// Decls
-extern transceiver_handle_t gLog;
 
 /////////////////////////////////////////////////////////////////////////////
 
 /////////////////////////////////////////////////////////////////////////////
 // Funcs
 void AppTask_HostIO( void* nouse_ );
-void API_SendToHost( void const* data, size_t len );
+void API_SendHostBinary( void const* data, size_t len );
+void API_SendHostString( void const* data, size_t len );
 
 #ifdef __cplusplus
 }
