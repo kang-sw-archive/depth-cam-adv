@@ -14,9 +14,11 @@ extern "C" {
 /////////////////////////////////////////////////////////////////////////////
 // Funcs
 _Noreturn void AppProc_HostIO( void* nouse_ );
-void API_SendHostBinary( void const* data, size_t len );
-void API_SendHostString( void const* data, size_t len );
-void API_SendHostRaw( void const* data, size_t len );
+void           API_SendHostBinary( void const* data, size_t len );
+void           API_SendHostString( void const* data, size_t len );
+void           API_SendHostRaw( void const* data, size_t len );
+void           print( char const* fmt, ... ); //!< Print text out to host.
+int            puts( char const* txt ); 
 
 #ifdef __cplusplus
 }

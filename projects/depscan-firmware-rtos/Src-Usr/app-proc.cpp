@@ -86,7 +86,7 @@ void API_SendHostRaw( void const* data, size_t len )
     apndToHostBuf( data, len );
 }
 
-void print( char const* fmt, ... )
+extern "C" void print( char const* fmt, ... )
 {
     va_list vp;
 
@@ -100,6 +100,12 @@ void print( char const* fmt, ... )
     va_end( vp );
 
     API_SendHostString( buf, allocsz );
+}
+
+extern "C" int puts( char const* txt )
+{
+    API_SendHostString( txt, strlen( txt ) + 1 );
+    return 0;
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -159,6 +165,10 @@ void stringCmdHandler( char* str, size_t len )
 
     case STRCASE( "test-input" ):
         print( "Hello, world!\n" );
+        break;
+
+    case STRCASE( "ping" ):
+
         break;
 
     default:
