@@ -13,6 +13,9 @@ extern "C" {
 // Funcs
 bool HW_CheckUsbConnection();
 void InitHW();
+
+// Inits
+void HW_TIMER_INIT();
 #ifdef __cplusplus
 }
 #endif // __cplusplus

@@ -92,7 +92,6 @@ void HardFault_Handler(void)
 {
   /* USER CODE BEGIN HardFault_IRQn 0 */
     *(volatile int*)0;
-    raise( SIGINT );
   /* USER CODE END HardFault_IRQn 0 */
   while (1)
   {
