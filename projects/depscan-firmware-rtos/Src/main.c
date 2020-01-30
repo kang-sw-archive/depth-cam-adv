@@ -105,7 +105,6 @@ int main(void)
   HAL_Init();
 
   /* USER CODE BEGIN Init */
-    HAL_SYSTICK_Config( SystemCoreClock / ( 1000U / uwTickFreq ) );
   /* USER CODE END Init */
 
   /* Configure the system clock */

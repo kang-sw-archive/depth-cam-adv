@@ -8,7 +8,7 @@
 
 #define NUM_MAX_HWTIMER_NODE 40
 
-#define NUM_TIMER_TASK_STACK_WORDS 256
+#define NUM_TIMER_TASK_STACK_WORDS 512
 
 typedef uint64_t usec_t;
 typedef uint64_t timer_handle_t;

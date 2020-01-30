@@ -158,20 +158,65 @@ void stringCmdHandler( char* str, size_t len )
     uint32_t cmdidx = STRCASE( argv[0] );
 
     switch ( cmdidx ) {
-    case STRCASE( "app-os-report" ):
+    case STRCASE( "app-os-report" ): {
+    } break;
 
-        break;
+    case STRCASE( "test-timer" ): {
+        static struct TI {
+            uint64_t init;
+            int      cnt = 0;
+            int      num = 0;
+            int      delay;
+        } ti;
+        int num = 1, delay = 1;
 
-    case STRCASE( "test-input" ):
+        if ( argc >= 2 )
+            num = std::min( NUM_MAX_HWTIMER_NODE, std::max( 1, atoi( argv[1] ) ) );
+        if ( argc >= 3 )
+            delay = std::max( 100, atoi( argv[2] ) );
+
+        if ( ti.cnt != ti.num ) {
+            putstr( "Yet timer task is running ... \n" );
+            break;
+        }
+        ti.init  = API_GetTime_us();
+        ti.cnt   = 0;
+        ti.num   = num;
+        ti.delay = delay;
+
+        for ( int i = num - 1; i >= 0; i-- ) {
+            API_SetTimer(
+                delay * ( i + 1 ) - ( API_GetTime_us() - ti.init ), &ti,
+                []( void* beg ) {
+                    auto&    t       = *(TI*)beg;
+                    uint64_t init    = t.init;
+                    uint64_t now     = API_GetTime_us();
+                    int      elapsed = now - init;
+
+                    print(
+                        "[%3d] %llu: %d us (error %d us)\n",
+                        t.cnt,
+                        now,
+                        elapsed,
+                        elapsed - ( t.delay * ( t.cnt + 1 ) ) );
+
+                    t.cnt++;
+                } );
+        }
+
+    } break;
+
+    case STRCASE( "test-input" ): {
         print( "Hello, world!\n" );
-        break;
+    } break;
 
-    case STRCASE( "ping" ):
+    case STRCASE( "ping" ): {
         API_SendHostBinary( "ping", 4 );
-        break;
+    } break;
 
     default:
-        AppHandler_CaptureCommand( argc, argv );
+        if ( AppHandler_CaptureCommand( argc, argv ) )
+            break;
         break;
     }
 }
