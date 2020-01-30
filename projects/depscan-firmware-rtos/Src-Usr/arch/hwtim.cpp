@@ -1,6 +1,7 @@
 #include <FreeRTOS.h>
 
 #include "../defs.h"
+#include <cmsis_os2.h>
 #include <stm32f4xx_hal.h>
 #include <task.h>
 #include <uEmbedded-pp/static_timer_logic.hxx>
@@ -13,8 +14,8 @@ extern TIM_HandleTypeDef htim2;
 // Statics
 using timer_t = upp::static_timer_logic<usec_t, uint8_t, NUM_MAX_HWTIMER_NODE>;
 static timer_t            s_tim;
-static usec_t             s_total_us = std::numeric_limits<usec_t>::max() - (usec_t) 1e9;
-static TIM_HandleTypeDef& htim = htim2;
+static usec_t             s_total_us = std::numeric_limits<usec_t>::max() - (usec_t)1e9;
+static TIM_HandleTypeDef& htim       = htim2;
 
 static TaskHandle_t sTimerTask;
 static StackType_t  sTimerStack[NUM_TIMER_TASK_STACK_WORDS];
@@ -44,7 +45,7 @@ extern "C" void HW_TIMER_INIT()
         "TIMER",
         sizeof( sTimerStack ) / sizeof( *sTimerStack ),
         NULL,
-        configMAX_PRIORITIES - 10,
+        osPriorityRealtime4,
         sTimerStack,
         &sTimerTaskStaticCb );
 
@@ -85,12 +86,21 @@ extern "C" timer_handle_t API_SetTimer( usec_t delay, void* obj, void ( *cb )( v
     return r.id_;
 }
 
+extern "C" timer_handle_t API_SetTimerFromISR( usec_t delay, void* obj, void ( *cb )( void* ) )
+{
+    uassert( s_tim.capacity() > 0 );
+    auto r = s_tim.add( delay, obj, cb );
+
+    BaseType_t bHigherTaskPriorityWoken = pdFALSE;
+    vTaskNotifyGiveFromISR( sTimerTask, &bHigherTaskPriorityWoken );
+    portYIELD_FROM_ISR( bHigherTaskPriorityWoken );
+    return r.id_;
+}
+
 extern "C" void API_AbortTimer( timer_handle_t h )
 {
     taskENTER_CRITICAL();
-    if ( s_tim.remove( { h } ) ) {
-        xTaskNotifyGive( sTimerTask );
-    }
+    s_tim.remove( { h } );
     taskEXIT_CRITICAL();
 }
 
@@ -117,6 +127,7 @@ _Noreturn void TimerUpdateTask( void* nouse__ )
     }
 }
 
+// This code is a dummy function to prevent link errors that occur when using the std :: function class.
 namespace std {
 void __throw_bad_function_call()
 {

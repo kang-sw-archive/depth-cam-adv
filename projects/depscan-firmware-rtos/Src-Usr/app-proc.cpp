@@ -154,11 +154,10 @@ void stringCmdHandler( char* str, size_t len )
     if ( argc == 0 )
         return;
 
-#define STRCASE( v ) upp::hash::fnv1a_32( v )
-    uint32_t cmdidx = STRCASE( argv[0] );
+#define STRCASE( v ) upp::hash::fnv1a_32_const( v )
 
-    switch ( cmdidx ) {
-    case STRCASE( "app-os-report" ): {
+    switch ( upp::hash::fnv1a_32(argv[0]) ) {
+    case STRCASE( "env-report" ): {
     } break;
 
     case STRCASE( "test-timer" ): {
@@ -184,24 +183,25 @@ void stringCmdHandler( char* str, size_t len )
         ti.num   = num;
         ti.delay = delay;
 
-        for ( int i = num - 1; i >= 0; i-- ) {
-            API_SetTimer(
-                delay * ( i + 1 ) - ( API_GetTime_us() - ti.init ), &ti,
-                []( void* beg ) {
-                    auto&    t       = *(TI*)beg;
-                    uint64_t init    = t.init;
-                    uint64_t now     = API_GetTime_us();
-                    int      elapsed = now - init;
+        auto timer_cb = []( void* beg ) {
+            auto&    t       = *(TI*)beg;
+            uint64_t init    = t.init;
+            uint64_t now     = API_GetTime_us();
+            int      elapsed = now - init;
 
-                    print(
-                        "[%3d] %llu: %d us (error %d us)\n",
-                        t.cnt,
-                        now,
-                        elapsed,
-                        elapsed - ( t.delay * ( t.cnt + 1 ) ) );
+            print(
+                "[%3d] %llu: %d us (error %d us)\n",
+                t.cnt,
+                now,
+                elapsed,
+                elapsed - ( t.delay * ( t.cnt + 1 ) ) );
 
-                    t.cnt++;
-                } );
+            t.cnt++;
+        };
+
+        for ( int i = 0; i < num; i++ ) {
+            auto correct_delay = delay * ( i + 1 ) - ( API_GetTime_us() - ti.init );
+            API_SetTimer( correct_delay, &ti, timer_cb );
         }
 
     } break;
