@@ -362,9 +362,6 @@ void FScannerProtocolHandler::OnBinaryData( char const* data, size_t len )
         //       Stat.bIsPrecisionMode ? "true" : "false",
         //       Stat.bIsIdle ? "true" : "false" );
     } break;
-    case ECommand::RSP_PING:
-        // Ping does nothing. Only for packet check.
-        break;
     case ECommand::RSP_LINE_DATA: {
         if ( bRequestingCapture == false )
             break;
@@ -401,6 +398,8 @@ void FScannerProtocolHandler::OnBinaryData( char const* data, size_t len )
         }
 
         print( "Capturing process done.\n" );
+        break;
+    default:
         break;
     }
 }

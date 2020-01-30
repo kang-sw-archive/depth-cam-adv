@@ -8,7 +8,7 @@ void InitConsoleApp()
 {
     FScannerProtocolHandler scan;
     char                    buf[2048];
-    scan.Logger = []( auto str ) { printf(str); printf(">> "); };
+    scan.Logger = []( auto str ) { printf(str); if(str[strlen(str)-1] =='\n') printf(">> "); };
 
     for ( ;; ) {
         if ( API_RefreshScannerControl( scan ) == false ) {
