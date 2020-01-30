@@ -89,15 +89,15 @@ void API_SendHostRaw( void const* data, size_t len )
 extern "C" void print( char const* fmt, ... )
 {
     va_list vp;
-
+    va_list vp2;
     va_start( vp, fmt );
-    size_t allocsz = vsnprintf( NULL, 0, fmt, vp ) + 2;
+    size_t allocsz = vsnprintf( NULL, 0, fmt, vp ) + 1;
     va_end( vp );
 
-    va_start( vp, fmt );
+    va_copy( vp2, vp );
     char* buf = (char*)alloca( allocsz );
-    vsprintf( buf, fmt, vp );
-    va_end( vp );
+    vsprintf( buf, fmt, vp2 );
+    va_end( vp2 );
 
     API_SendHostString( buf, allocsz );
 }
@@ -167,7 +167,7 @@ void stringCmdHandler( char* str, size_t len )
         break;
 
     case STRCASE( "ping" ):
-        putstr( "ping" );
+        API_SendHostBinary( "ping", 4 );
         break;
 
     default:
@@ -181,7 +181,7 @@ AppHandler_CaptureCommand( int argc, char* argv[] )
 {
     print( "info: Receiving :: " );
     for ( int i = 0; i < argc; i++ ) {
-        print( "%s ", i, argv[i] );
+        print( "%s ", argv[i] );
     }
     putstr( "\n" );
     return true;
