@@ -28,4 +28,5 @@ bool HW_CheckUsbConnection()
 void InitHW()
 {
     MX_USB_DEVICE_Init();
+    HW_TIMER_INIT();
 }
