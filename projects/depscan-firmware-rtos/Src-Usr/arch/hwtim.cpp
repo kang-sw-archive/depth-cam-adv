@@ -79,8 +79,8 @@ extern "C" timer_handle_t API_SetTimer( usec_t delay, void* obj, void ( *cb )( v
 {
     uassert( s_tim.capacity() > 0 );
     taskENTER_CRITICAL();
-    auto r = s_tim.add( delay, obj, cb );
-    // Wake up update task
+    auto r = s_tim.add( std::max( 10ull, delay - 10ull ), obj, cb );
+    // Wake update task
     xTaskNotifyGive( sTimerTask );
     taskEXIT_CRITICAL();
     return r.id_;
@@ -89,7 +89,7 @@ extern "C" timer_handle_t API_SetTimer( usec_t delay, void* obj, void ( *cb )( v
 extern "C" timer_handle_t API_SetTimerFromISR( usec_t delay, void* obj, void ( *cb )( void* ) )
 {
     uassert( s_tim.capacity() > 0 );
-    auto r = s_tim.add( delay, obj, cb );
+    auto r = s_tim.add( std::max( 10ull, delay - 10ull ), obj, cb );
 
     BaseType_t bHigherTaskPriorityWoken = pdFALSE;
     vTaskNotifyGiveFromISR( sTimerTask, &bHigherTaskPriorityWoken );
@@ -107,7 +107,7 @@ extern "C" void API_AbortTimer( timer_handle_t h )
 _Noreturn void TimerUpdateTask( void* nouse__ )
 {
     for ( ;; ) {
-        ulTaskNotifyTake( pdTRUE, 100 );
+        ulTaskNotifyTake( pdTRUE, 100 /* For case if lost ... */ );
 
         __HAL_TIM_DISABLE_IT( &htim, TIM_FLAG_CC1 );
         auto next = s_tim.update();

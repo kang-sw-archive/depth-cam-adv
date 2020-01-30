@@ -156,7 +156,7 @@ void stringCmdHandler( char* str, size_t len )
 
 #define STRCASE( v ) upp::hash::fnv1a_32_const( v )
 
-    switch ( upp::hash::fnv1a_32(argv[0]) ) {
+    switch ( upp::hash::fnv1a_32( argv[0] ) ) {
     case STRCASE( "env-report" ): {
     } break;
 
@@ -286,7 +286,7 @@ void apndToHostBuf( void const* d, size_t len )
     uassert( s_hostTrBufHead + len < sizeof( s_hostTrBuf ) );
 
     while ( s_bFlushing )
-        taskYIELD();
+        vTaskDelay( 1 );
 
     ++s_writingTask;
     s_hostTrBufHead += len;
