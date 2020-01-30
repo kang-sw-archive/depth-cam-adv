@@ -25,6 +25,11 @@
         "all",
         "-j8"
       ]
+    },
+    {
+      "taskLabel": "task-depscan-firmware-rtos",
+      "appliesTo": "depscan-firmware-rtos.ioc",
+      "type": "launch"
     }
   ]
 }
