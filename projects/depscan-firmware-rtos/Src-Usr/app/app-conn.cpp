@@ -118,7 +118,7 @@ static struct export_data {
     }
 } s_xd;
 
-void API_ExportBin( uint32_t id, void const* mem, size_t len, char const* name )
+void API_ExportBin( uint32_t id, void const* mem, size_t len )
 {
     using ed      = export_data::node;
     ed* const arr = s_xd.node_;

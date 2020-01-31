@@ -41,6 +41,7 @@ typedef struct capture_common_ty__ {
 
     //! Scanner properties 
 
+
     //! Point properties
     int NumMaxRequest;
     

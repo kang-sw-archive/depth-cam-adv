@@ -10,6 +10,8 @@
 #define NUM_TIMER_TASK_STACK_WORDS 512
 #define NUM_MAX_EXPORT_BINARY 40
 
+#define CAPTURER_BUFFER_SIZE 1024
+
 typedef uint64_t usec_t;
 
 typedef struct {

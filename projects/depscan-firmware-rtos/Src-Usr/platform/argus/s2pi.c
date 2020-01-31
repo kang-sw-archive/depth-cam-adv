@@ -20,7 +20,7 @@
 #include <uEmbedded/event-procedure.h>
 #include "stm32f4xx_hal.h"
 
-#include "../../app.h"
+#include "../../app/app.h"
 
 /////////////////////////////////////////////////////////////////////////////
 // Definitions

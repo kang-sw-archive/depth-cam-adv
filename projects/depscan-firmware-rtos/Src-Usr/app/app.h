@@ -28,7 +28,7 @@ void API_Logf( char const* fmt, ... ); //!< Print text out to host.
 int  API_Log( char const* txt );
 
 // Assign data export
-void API_ExportBin( uint32_t id, void const* mem, size_t len, char const* name );
+void API_ExportBin( uint32_t id, void const* mem, size_t len );
 void API_RemoveExport( uint32_t id, void const* ptr );
 
 // Timer functionality

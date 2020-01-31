@@ -3,8 +3,8 @@
 #include <argus.h>
 #include <uEmbedded-pp/utility.hxx>
 
-#include "app.h"
 #include "../platform/s2pi.h"
+#include "app.h"
 #include "capture.h"
 
 /////////////////////////////////////////////////////////////////////////////
@@ -38,8 +38,10 @@ extern "C" bool AppHandler_CaptureCommand( int argc, char* argv[] )
         }
     } break;
 
-    case CSTRHASH( "close" ): {
+    case CSTRHASH( "pattern-test" ): {
+    } break;
 
+    case CSTRHASH( "close" ): {
     }
     default:
         return false;
