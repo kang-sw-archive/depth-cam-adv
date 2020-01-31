@@ -4,8 +4,8 @@
 #include <stdbool.h>
 #include <task.h>
 #include <uEmbedded/transceiver.h>
-#include "platform/mem.h"
-#include "defs.h"
+#include "../platform/mem.h"
+#include "../defs.h"
 #ifdef __cplusplus
 extern "C" {
 #endif // __cplusplus
@@ -21,7 +21,7 @@ extern "C" {
 // File xfer funtions
 void API_SendHostBinary( void const* data, size_t len );
 void API_SendHostString( void const* data, size_t len );
-// This function does not enwraps data with header.
+// This function does not wrap data with header.
 void API_SendHostRaw( void const* data, size_t len );
 
 void API_Logf( char const* fmt, ... ); //!< Print text out to host.

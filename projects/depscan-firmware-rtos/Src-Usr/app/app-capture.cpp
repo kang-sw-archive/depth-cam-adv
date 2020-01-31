@@ -4,12 +4,12 @@
 #include <uEmbedded-pp/utility.hxx>
 
 #include "app.h"
-#include "platform/s2pi.h"
+#include "../platform/s2pi.h"
 #include "capture.h"
 
 /////////////////////////////////////////////////////////////////////////////
 // Globals
-capture_base_t* gCapture;
+capture_t* gCapture;
 
 /////////////////////////////////////////////////////////////////////////////
 // Capture Handler

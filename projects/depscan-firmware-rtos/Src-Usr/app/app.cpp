@@ -15,7 +15,7 @@
 #include <uEmbedded/uassert.h>
 #include <vector>
 #include "app.h"
-#include "platform/hw.h"
+#include "../platform/hw.h"
 #include "rw.h"
 /////////////////////////////////////////////////////////////////////////////
 // Memory allocation rebinds

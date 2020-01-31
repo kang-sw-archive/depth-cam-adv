@@ -2,7 +2,8 @@
 #include <argus.h>
 #include <stdbool.h>
 #include <stdint.h>
-#include "defs.h"
+#include "../defs.h"
+#include "../protocol/protocol-s.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -18,8 +19,18 @@ typedef struct {
     int y;
 } capture_point_t;
 
+typedef enum {
+    CAPTURE_MODE_NONE,
+    CAPTURE_MODE_LINE,
+    CAPTURE_MODE_POINT
+} capture_mode_t;
+
 //! A struct indicates common capture status
 typedef struct capture_common_ty__ {
+    //! Basic property
+    capture_mode_t Mode;
+    void*          Substat;
+
     //! Sensor properties
     argus_hnd_t* SensorHandle;
     argus_mode_t SensorMode;
@@ -27,19 +38,13 @@ typedef struct capture_common_ty__ {
 
     //! Motor properties
     capture_fpoint_t AnglePerStep;
-    void*            Buffer;
 
-} capture_base_t;
+    //! Scanner properties 
 
-//! A struct indicates line capture status
-typedef struct {
-    capture_common_ty__ stat;
-} capture_line_stat_t;
-
-//! A struct indicates point capture status
-typedef struct {
-    capture_common_ty__ stat;
-} capture_point_stat_t;
+    //! Point properties
+    int NumMaxRequest;
+    
+} capture_t;
 
 #ifdef __cplusplus
 }

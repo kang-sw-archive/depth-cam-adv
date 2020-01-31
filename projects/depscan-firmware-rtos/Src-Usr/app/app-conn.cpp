@@ -8,14 +8,22 @@
 #include <string.h>
 #include <uEmbedded-pp/utility.hxx>
 #include <uEmbedded/uassert.h>
+#include "../defs.h"
+#include "../protocol/protocol.h"
 #include "app.h"
-#include "defs.h"
-#include "protocol.h"
 #include "rw.h"
 /////////////////////////////////////////////////////////////////////////////
 // Defines host IO communication handler
 //
 //
+
+/////////////////////////////////////////////////////////////////////////////
+// Exports
+struct {
+    uint32_t id_;
+    void* obj_;
+    void ( *xfer_ )( void* );
+} ;
 
 /////////////////////////////////////////////////////////////////////////////
 // Utilities
