@@ -8,9 +8,7 @@
 #ifdef __cplusplus
 extern "C" {
 #endif // __cplusplus
-
-/////////////////////////////////////////////////////////////////////////////
-// Definitions
+     
 typedef struct {
     float x;
     float y;
@@ -27,7 +25,7 @@ typedef enum {
     CAPTURE_MODE_POINT
 } capture_mode_t;
 
-//! A struct indicates common capture status
+//! @brief A struct indicates common capture status
 typedef struct capture_common_ty__ {
     //! Basic property
     capture_mode_t Mode;
@@ -50,9 +48,8 @@ typedef struct capture_common_ty__ {
     char Buffer[CAPTURER_BUFFER_SIZE];
 } capture_t;
 
-/////////////////////////////////////////////////////////////////////////////
-// Functions
 void Capture_Point_Begin( void* ARG );
+
 #ifdef __cplusplus
 }
 #endif // __cplusplus

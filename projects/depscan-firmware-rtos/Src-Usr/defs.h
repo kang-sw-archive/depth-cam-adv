@@ -20,10 +20,10 @@
 //! @defgroup Depscan_General_Typedefs
 //! @{
 
-//! System generic time unit. Can hold 2^64 - 1 microseconds.
+//! @brief System generic time unit. Can hold 2^64 - 1 microseconds.
 typedef uint64_t usec_t;
 
-//! Timer adapter structure compatible with logical timer classes.
+//! @brief Timer adapter structure compatible with logical timer classes.
 typedef struct {
     uint64_t data_[2];
 } timer_handle_t;
