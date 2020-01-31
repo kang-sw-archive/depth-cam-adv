@@ -4,7 +4,7 @@
 #include <uEmbedded-pp/utility.hxx>
 
 #include "app.h"
-#include "arch/s2pi.h"
+#include "platform/s2pi.h"
 #include "capture.h"
 
 /////////////////////////////////////////////////////////////////////////////

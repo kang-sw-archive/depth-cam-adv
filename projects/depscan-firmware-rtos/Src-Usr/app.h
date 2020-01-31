@@ -4,7 +4,7 @@
 #include <stdbool.h>
 #include <task.h>
 #include <uEmbedded/transceiver.h>
-#include "arch/mem.h"
+#include "platform/mem.h"
 #include "defs.h"
 #ifdef __cplusplus
 extern "C" {
