@@ -40,7 +40,7 @@ struct slave_desc {
     status_t latestTransferStatus;
 };
 
-#define ASYNC_SPI    1
+#define ASYNC_SPI    0
 #define print( ... ) // for(volatile size_t i = 155; --i; )
 
 // All slaves
