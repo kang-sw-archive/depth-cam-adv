@@ -4,7 +4,7 @@
   "configurations": [
     {
       "type": "cppdbg",
-      "name": "depscan-firmware-rtos.elf",
+      "name": "Launch MCU",
       "project": "build\\depscan-firmware-rtos.elf",
       "cwd": "${workspaceRoot}",
       "program": "${workspaceRoot}\\build\\depscan-firmware-rtos.elf",

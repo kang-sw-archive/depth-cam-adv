@@ -3,4 +3,4 @@
 !.vs/tasks.vs.json
 build/**
 !build/*.elf
-!build/*.lss
+!build/*.size.lss

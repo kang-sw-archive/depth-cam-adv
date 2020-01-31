@@ -14,8 +14,8 @@
 #include <string.h>
 #include <uEmbedded/uassert.h>
 #include <vector>
-#include "app.h"
 #include "../platform/hw.h"
+#include "app.h"
 #include "rw.h"
 /////////////////////////////////////////////////////////////////////////////
 // Memory allocation rebinds
@@ -33,7 +33,23 @@ void operator delete( void* p )
 
 /////////////////////////////////////////////////////////////////////////////
 // Globals
-extern "C" void API_Logf( char const* fmt, ... )
+extern "C" void API_Putf( char const* fmt, ... )
+{
+    va_list vp;
+    va_list vp2;
+    va_start( vp, fmt );
+    size_t allocsz = vsnprintf( NULL, 0, fmt, vp ) + 1;
+    va_end( vp );
+
+    va_copy( vp2, vp );
+    char* buf = (char*)alloca( allocsz );
+    vsprintf( buf, fmt, vp2 );
+    va_end( vp2 );
+
+    API_SendHostString( buf, allocsz );
+}
+
+void API_Logf( char const* fmt, ... )
 {
     va_list vp;
     va_list vp2;

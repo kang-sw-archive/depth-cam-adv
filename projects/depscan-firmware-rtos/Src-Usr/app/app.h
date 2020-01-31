@@ -24,6 +24,7 @@ void API_SendHostBinaries( void const* const data[], size_t const len[], size_t 
 void API_SendHostString( void const* data, size_t len );
 void API_SendHostRaw( void const* data, size_t len ); //< Does not wrap data with header.
 
+void API_Putf(char const* fmt, ...); //!< Print text without time header
 void API_Logf( char const* fmt, ... ); //!< Print text out to host.
 int  API_Log( char const* txt );
 

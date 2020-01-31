@@ -29,4 +29,6 @@ void InitHW()
 {
     MX_USB_DEVICE_Init();
     HW_TIMER_INIT();
+    void S2PI_Init();
+    S2PI_Init();
 }

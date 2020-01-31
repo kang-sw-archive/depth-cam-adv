@@ -82,38 +82,6 @@ extern DMA_HandleTypeDef hdma_spi1_rx;
    *
    <----------------------------------------------------------------<> */
 
-// On transfer error
-//void HAL_SPI_ErrorCallback( SPI_HandleTypeDef* hspi )
-//{
-//    if ( g_rxtxRunning > 0 )
-//    {
-//        --g_rxtxRunning;
-//    }
-//}
-//
-//void HAL_SPI_TxCpltCallback( SPI_HandleTypeDef* nouse_ )
-//{
-//    if ( g_rxtxRunning > 0 )
-//    {
-//        --g_rxtxRunning;
-//    }
-//}
-//
-//void HAL_SPI_RxCpltCallback( SPI_HandleTypeDef* nouse_ )
-//{
-//    if ( g_rxtxRunning > 0 )
-//    {
-//        --g_rxtxRunning;
-//    }
-//}
-//
-//void HAL_SPI_TxRxCpltCallback( SPI_HandleTypeDef* nouse_ )
-//{
-//    if ( g_rxtxRunning > 0 )
-//    {
-//        --g_rxtxRunning;
-//    }
-//}
 //
 //void HAL_SPI_AbortCpltCallback( SPI_HandleTypeDef* hspi )
 //{
@@ -125,7 +93,7 @@ static void timer_cb__spi( void* p )
     s->callback( s->latestTransferStatus, s->callbackParam );
 }
 
-void transfer_done( DMA_HandleTypeDef* h )
+static void transfer_done( DMA_HandleTypeDef* h )
 {
     if ( g_rxtxRunning > 0 ) {
         g_rxtxRunning--;
@@ -144,7 +112,7 @@ void transfer_done( DMA_HandleTypeDef* h )
     }
 }
 
-void transfer_error( DMA_HandleTypeDef* h )
+static void transfer_error( DMA_HandleTypeDef* h )
 {
     if ( g_rxtxRunning > 0 ) {
         g_rxtxRunning--;
@@ -159,14 +127,32 @@ void transfer_error( DMA_HandleTypeDef* h )
     }
 }
 
+// On transfer error
+#if ASYNC_SPI
+void HAL_SPI_ErrorCallback( SPI_HandleTypeDef* hspi )
+{
+    transfer_error( NULL );
+}
+
+void HAL_SPI_TxCpltCallback( SPI_HandleTypeDef* nouse_ )
+{
+    transfer_done( NULL );
+}
+
+void HAL_SPI_RxCpltCallback( SPI_HandleTypeDef* nouse_ )
+{
+    transfer_done( NULL );
+}
+
+void HAL_SPI_TxRxCpltCallback( SPI_HandleTypeDef* nouse_ )
+{
+    transfer_done( NULL );
+}
+#endif
+
 void S2PI_Init()
 {
     size_t i;
-    // EXTI_CALLBACK_LINE[1] = S2PI_IRQ_Callback;
-    hdma_spi1_rx.XferCpltCallback  = transfer_done;
-    hdma_spi1_tx.XferCpltCallback  = transfer_done;
-    hdma_spi1_rx.XferErrorCallback = transfer_error;
-    hdma_spi1_tx.XferErrorCallback = transfer_error;
 
     for ( i = 0; i < S2PI_SLAVE_MAX; i++ ) {
         struct slave_desc volatile* s = g_slaves + i;
@@ -237,20 +223,20 @@ status_t S2PI_TransferFrame( s2pi_slave_t    slave,
     status_t          retval;
 
     if ( rxData ) {
+        g_rxtxRunning = 1;
 #if !ASYNC_SPI
         res = HAL_SPI_TransmitReceive( &hspi1, (uint8_t*)txData, rxData, frameSize, 1000 );
 #else
         res = HAL_SPI_TransmitReceive_DMA( &hspi1, (uint8_t*)txData, rxData, frameSize );
 #endif
-        g_rxtxRunning = 2;
     }
     else {
+        g_rxtxRunning = 1;
 #if !ASYNC_SPI
         res = HAL_SPI_Transmit( &hspi1, (uint8_t*)txData, frameSize, 1000 );
 #else
         res = HAL_SPI_Transmit_DMA( &hspi1, (uint8_t*)txData, frameSize );
 #endif
-        g_rxtxRunning = 1;
     }
 
     if ( res == HAL_OK ) {
@@ -273,7 +259,7 @@ status_t S2PI_TransferFrame( s2pi_slave_t    slave,
     HAL_GPIO_WritePin( s->chipSelectPort, s->chipSelectPin, !s->csActiveVal );
     s->latestTransferStatus = retval;
     if ( callback )
-        QueueTimer( timer_cb__spi, s, 15 );
+        API_SetTimer( 15, s, timer_cb__spi );
     g_rxtxRunning = 0;
 #endif
 
