@@ -8,12 +8,13 @@ extern "C" {
 
 //! @addtogroup Depscan
 //! @{
-//! @defgroup Motor
-//! This motor class only provides an interface for handling stepper motors.
-//! Since motors are very hardware dependent, all motor initialization must already be done on the platform stage before use.
+//! @defgroup Depscan_Motor
+//! @brief This motor class only provides an interface for handling stepper motors.
+//! @details
+//!     Since motors are very hardware dependent, all motor initialization must already be done on the
+//!      platform stage before use.
 //! @{
-
-//! @defgroup Motor_Exported_Types
+//! @defgroup Depscan_Motor_Exported_Types
 //! @{
 
 //! Motor handle type
@@ -30,7 +31,8 @@ typedef enum {
     MOTOR_ABORT = -1,
 } motor_status_t;
 
-//! @defgroup Motor_APIs
+//! @}
+//! @defgroup Depscan_Motor_APIs
 //! @{
 
 //! Get motor status
@@ -72,7 +74,6 @@ motor_status_t Motor_ResetPos( motor_t );
 //! Stop motor immediately. This does not assure exact motor position
 motor_status_t Motor_EmergencyStop( motor_t m );
 
-//! @}
 //! @}
 //! @}
 //! @}

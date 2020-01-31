@@ -4,3 +4,4 @@
 build/**
 !build/*.elf
 !build/*.size.lss
+doxygen/
