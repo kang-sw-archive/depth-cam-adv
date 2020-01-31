@@ -9,16 +9,16 @@
  */
 #include <FreeRTOS.h>
 
-#include "../s2pi.h"
 #include <platform/argus_s2pi.h>
+#include "../s2pi.h"
 
 #include <uEmbedded/uassert.h>
 
-#include "stm32f4xx_hal.h"
 #include <platform/argus_irq.h>
 #include <stdbool.h>
 #include <stdlib.h>
 #include <uEmbedded/event-procedure.h>
+#include "stm32f4xx_hal.h"
 
 #include "../../app.h"
 
@@ -158,7 +158,6 @@ void transfer_error( DMA_HandleTypeDef* h )
         API_SetTimerFromISR( 1, (void*)s, timer_cb__spi );
     }
 }
- 
 
 void S2PI_Init()
 {

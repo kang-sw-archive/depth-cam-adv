@@ -62,10 +62,10 @@
  * @{
  *****************************************************************************/
 
-#include "../../app.h"
 #include <stdbool.h>
 #include <stdint.h>
 #include <tuple>
+#include "../../app.h"
 
 static std::pair<timer_handle_t, void*> s_h[4];
 

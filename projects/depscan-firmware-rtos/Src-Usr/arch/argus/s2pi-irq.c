@@ -1,6 +1,6 @@
-#include "../s2pi.h"
 #include <platform/argus_log.h>
 #include <stm32f4xx_hal.h>
+#include "../s2pi.h"
 static s2pi_irq_callback_t g_cbIrq;
 static void*               g_cbIrqObj;
 

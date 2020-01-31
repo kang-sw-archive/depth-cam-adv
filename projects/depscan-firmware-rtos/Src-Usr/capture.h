@@ -19,9 +19,17 @@ typedef struct {
 } capture_point_t;
 
 //! A struct indicates common capture status
-struct capture_common_ty__ {
+typedef struct capture_common_ty__ {
+    //! Sensor properties
+    argus_hnd_t* SensorHandle;
+    argus_mode_t SensorMode;
+    uint32_t     SensorDelay;
+
+    //! Motor properties
     capture_fpoint_t AnglePerStep;
-};
+    void*            Buffer;
+
+} capture_base_t;
 
 //! A struct indicates line capture status
 typedef struct {

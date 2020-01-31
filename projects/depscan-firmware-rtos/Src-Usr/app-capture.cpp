@@ -5,17 +5,21 @@
 
 #include "app.h"
 #include "arch/s2pi.h"
+#include "capture.h"
 
 /////////////////////////////////////////////////////////////////////////////
-// Statics for capture
+// Globals
+capture_base_t* gCapture;
 
+/////////////////////////////////////////////////////////////////////////////
+// Capture Handler
 #define CSTRHASH( str ) upp::hash::fnv1a_32_const( str )
 #define STRHASH( str )  upp::hash::fnv1a_32( str )
 
 extern "C" bool AppHandler_CaptureCommand( int argc, char* argv[] )
 {
     switch ( upp::hash::fnv1a_32( argv[0] ) ) {
-    case CSTRHASH( "init" ):
+    case CSTRHASH( "init" ): {
         if ( argc < 2 ) {
             API_Log(
                 "Initialization must specify capture options. usage: \n"
@@ -32,7 +36,11 @@ extern "C" bool AppHandler_CaptureCommand( int argc, char* argv[] )
         }
         else {
         }
-        break;
+    } break;
+
+    case CSTRHASH( "close" ): {
+
+    }
     default:
         return false;
     }

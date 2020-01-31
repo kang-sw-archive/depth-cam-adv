@@ -1,7 +1,5 @@
-#include "app.h"
-#include "defs.h"
-#include "protocol.h"
-#include "rw.h"
+#include <FreeRTOS.h>
+
 #include <alloca.h>
 #include <semphr.h>
 #include <stdarg.h>
@@ -10,6 +8,10 @@
 #include <string.h>
 #include <uEmbedded-pp/utility.hxx>
 #include <uEmbedded/uassert.h>
+#include "app.h"
+#include "defs.h"
+#include "protocol.h"
+#include "rw.h"
 /////////////////////////////////////////////////////////////////////////////
 // Defines host IO communication handler
 //

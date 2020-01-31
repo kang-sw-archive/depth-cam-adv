@@ -4,13 +4,13 @@
 //! @copyright Copyright (c) 2019. Seungwoo Kang. All rights reserved.
 //!
 //! @details
-#include "../defs.h"
-#include "mem.h"
 #include <stdlib.h>
 #include <uEmbedded/ring_buffer.h>
 #include <uEmbedded/transceiver.h>
 #include <uEmbedded/uassert.h>
 #include <usbd_cdc_if.h>
+#include "../defs.h"
+#include "mem.h"
 static transceiver_result_t cdc_read( void* desc, char* buf, size_t len );
 static transceiver_result_t cdc_write( void* desc, char const* buf, size_t len );
 static transceiver_result_t cdc_ioctl( void* desc, intptr_t cmd ) { return TRANSCEIVER_OK; }

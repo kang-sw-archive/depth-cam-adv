@@ -1,7 +1,7 @@
-#include "../../app.h"
 #include <platform/argus_log.h>
 #include <stdarg.h>
 #include <stdio.h>
+#include "../../app.h"
 
 status_t print( const char* fmt, ... )
 {

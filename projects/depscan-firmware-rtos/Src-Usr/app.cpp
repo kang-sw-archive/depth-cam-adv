@@ -7,9 +7,6 @@
 //! @details
 #include <FreeRTOS.h>
 
-#include "app.h"
-#include "arch/hw.h"
-#include "rw.h"
 #include <alloca.h>
 #include <list>
 #include <stdarg.h>
@@ -17,6 +14,9 @@
 #include <string.h>
 #include <uEmbedded/uassert.h>
 #include <vector>
+#include "app.h"
+#include "arch/hw.h"
+#include "rw.h"
 /////////////////////////////////////////////////////////////////////////////
 // Memory allocation rebinds
 //

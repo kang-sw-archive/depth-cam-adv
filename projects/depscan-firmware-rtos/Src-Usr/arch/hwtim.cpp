@@ -1,10 +1,10 @@
 #include <FreeRTOS.h>
 
-#include "../defs.h"
 #include <cmsis_os2.h>
 #include <stm32f4xx_hal.h>
 #include <task.h>
 #include <uEmbedded-pp/static_timer_logic.hxx>
+#include "../defs.h"
 
 /////////////////////////////////////////////////////////////////////////////
 // Imports
