@@ -83,7 +83,7 @@ extern "C" timer_handle_t API_SetTimer( usec_t delay, void* obj, void ( *cb )( v
     // Wake update task
     xTaskNotifyGive( sTimerTask );
     taskEXIT_CRITICAL();
-    return r.id_;
+    return { r.id_, r.time_ };
 }
 
 extern "C" timer_handle_t API_SetTimerFromISR( usec_t delay, void* obj, void ( *cb )( void* ) )
@@ -94,13 +94,13 @@ extern "C" timer_handle_t API_SetTimerFromISR( usec_t delay, void* obj, void ( *
     BaseType_t bHigherTaskPriorityWoken = pdFALSE;
     vTaskNotifyGiveFromISR( sTimerTask, &bHigherTaskPriorityWoken );
     portYIELD_FROM_ISR( bHigherTaskPriorityWoken );
-    return r.id_;
+    return { r.id_, r.time_ };
 }
 
 extern "C" void API_AbortTimer( timer_handle_t h )
 {
     taskENTER_CRITICAL();
-    s_tim.remove( { h } );
+    s_tim.remove( { h.data_[0], h.data_[1] } );
     taskEXIT_CRITICAL();
 }
 
@@ -125,6 +125,18 @@ _Noreturn void TimerUpdateTask( void* nouse__ )
             __HAL_TIM_ENABLE_IT( &htim, TIM_FLAG_CC1 );
         }
     }
+}
+
+extern "C" bool API_CheckTimer( timer_handle_t h, usec_t* usLeft )
+{
+    timer_t::desc_type d;
+    if ( s_tim.browse( { h.data_[0], h.data_[1] }, d ) == false ) {
+        return false;
+    }
+
+    if ( usLeft )
+        *usLeft = d.trigger_at_ - API_GetTime_us();
+    return true;
 }
 
 // This code is a dummy function to prevent link errors that occur when using the std :: function class.
