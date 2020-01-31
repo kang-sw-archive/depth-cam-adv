@@ -9,21 +9,33 @@
 /////////////////////////////////////////////////////////////////////////////
 // Statics for capture
 
-#define STRHASH( str ) upp::hash::fnv1a_32_const( #str )
+#define CSTRHASH( str ) upp::hash::fnv1a_32_const( str )
+#define STRHASH( str )  upp::hash::fnv1a_32( str )
 
 extern "C" bool AppHandler_CaptureCommand( int argc, char* argv[] )
 {
     switch ( upp::hash::fnv1a_32( argv[0] ) ) {
-    case STRHASH( capture - init ):
+    case CSTRHASH( "init" ):
         if ( argc < 2 ) {
+            API_Log(
+                "Initialization must specify capture options. usage: \n"
+                "  capture-init <mode>\n"
+                "       mode: scan  - Scanning mode. \n"
+                "             point - Point specification mode. \n" );
+            break;
         }
-        auto hnd = Argus_CreateHandle();
-        Argus_Init(hnd, S2PI_SLAVE_ARGUS);
+
+        auto arg = STRHASH( argv[1] );
+        if ( arg == CSTRHASH( "scan" ) ) {
+        }
+        else if ( arg == CSTRHASH( "point" ) ) {
+        }
+        else {
+        }
         break;
     default:
         return false;
     }
-    
 
     return true;
 }

@@ -190,9 +190,14 @@ void stringCmdHandler( char* str, size_t len )
         API_SendHostBinary( "ping", 4 );
     } break;
 
-    default:
-        if ( AppHandler_CaptureCommand( argc, argv ) )
+    case STRCASE( "capture" ): {
+        if ( argc == 1 ) {
+            API_Logf( "error: command 'capture' requires argument.\n" );
             break;
+        }
+        AppHandler_CaptureCommand( argc - 1, argv + 1 );
+    } break;
+    default:
         break;
     }
 }
@@ -200,11 +205,6 @@ void stringCmdHandler( char* str, size_t len )
 extern "C" __weak_symbol bool
 AppHandler_CaptureCommand( int argc, char* argv[] )
 {
-    API_Logf( "info: Receiving :: " );
-    for ( int i = 0; i < argc; i++ ) {
-        API_Logf( "%s ", argv[i] );
-    }
-    API_Log( "\n" );
     return true;
 }
 
