@@ -3,8 +3,8 @@
 
 #include "arch/mem.h"
 #include "defs.h"
-#include <task.h>
 #include <stdbool.h>
+#include <task.h>
 #include <uEmbedded/transceiver.h>
 #ifdef __cplusplus
 extern "C" {
@@ -34,6 +34,8 @@ timer_handle_t API_SetTimerFromISR( usec_t delay, void* obj, void ( *cb )( void*
 void           API_AbortTimer( timer_handle_t h );
 bool           API_CheckTimer( timer_handle_t h, usec_t* usLeft );
 
+/////////////////////////////////////////////////////////////////////////////
+// Procedures
 _Noreturn void AppProc_HostIO( void* nouse_ );
 bool           AppHandler_CaptureCommand( int argc, char* argv[] );
 bool           AppHandler_CaptureBinary( char* data, size_t len );

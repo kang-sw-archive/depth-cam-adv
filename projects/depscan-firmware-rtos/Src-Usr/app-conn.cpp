@@ -167,9 +167,8 @@ void stringCmdHandler( char* str, size_t len )
             int      elapsed = now - init;
 
             API_Logf(
-                "[%3d] %llu: %d us (error %d us)\n",
+                "<%3d> %d us (error %d us)\n",
                 t.cnt,
-                now,
                 elapsed,
                 elapsed - ( t.delay * ( t.cnt + 1 ) ) );
 
