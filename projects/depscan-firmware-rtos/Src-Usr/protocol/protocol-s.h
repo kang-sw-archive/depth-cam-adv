@@ -47,6 +47,8 @@ typedef uint16_t uq12_4_t;
 #define Q9_22_ONE_INT  ( 1 << 22 )
 #define UQ12_4_ONE_INT ( 1u << 4 )
 
+#define SCANNER_NUM_GET_TAG_LENGTH 20
+
 typedef struct {
     q9_22_t  Distance;
     uq12_4_t AMP;
@@ -76,6 +78,11 @@ typedef struct {
     uint32_t NumPoints; //!< Number of points in current transfer
 } FPointSetDesc;
 
+typedef struct {
+    char   TAG[SCANNER_NUM_GET_TAG_LENGTH];
+    size_t Length;
+} FGetDesc;
+
 typedef FPointSetDesc FPointReqSetDesc;
 
 #ifdef __cplusplus
@@ -94,7 +101,9 @@ enum ECommand // REQ = HOST -> DEVICE, RSP = DEVICE -> HOST
     RSP_DONE,
 
     RSP_POINT_SET,
-    RSP_POINT
+    RSP_POINT,
+
+    RSP_GET
 };
 #ifdef __cplusplus
 }

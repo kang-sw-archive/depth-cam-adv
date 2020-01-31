@@ -7,8 +7,10 @@
 #include <stdlib.h>
 #include <string.h>
 #include <uEmbedded-pp/utility.hxx>
+#include <uEmbedded/algorithm.h>
 #include <uEmbedded/uassert.h>
 #include "../defs.h"
+#include "../protocol/protocol-s.h"
 #include "../protocol/protocol.h"
 #include "app.h"
 #include "rw.h"
@@ -16,14 +18,6 @@
 // Defines host IO communication handler
 //
 //
-
-/////////////////////////////////////////////////////////////////////////////
-// Exports
-struct {
-    uint32_t id_;
-    void* obj_;
-    void ( *xfer_ )( void* );
-} ;
 
 /////////////////////////////////////////////////////////////////////////////
 // Utilities
@@ -76,11 +70,26 @@ extern "C" _Noreturn void AppProc_HostIO( void* nouse_ )
 
 /////////////////////////////////////////////////////////////////////////////
 // Global function defs
+extern "C" {
 void API_SendHostBinary( void const* data, size_t len )
 {
     packetinfo_t packet = PACKET_MAKE( false, len );
     apndToHostBuf( &packet, sizeof packet );
     apndToHostBuf( data, len );
+}
+
+void API_SendHostBinaries( void const* const data[], size_t const len[], size_t cnt )
+{
+    size_t sum = 0;
+    for ( size_t i = 0; i < cnt; i++ )
+        sum += len[i];
+
+    portENTER_CRITICAL();
+    packetinfo_t p = PACKET_MAKE( 0, sum );
+    API_SendHostRaw( &p, sizeof( p ) );
+    for ( size_t i = 0; i < cnt; i++ )
+        API_SendHostRaw( data[i], len[i] );
+    portEXIT_CRITICAL();
 }
 
 void API_SendHostString( void const* data, size_t len )
@@ -93,6 +102,77 @@ void API_SendHostString( void const* data, size_t len )
 void API_SendHostRaw( void const* data, size_t len )
 {
     apndToHostBuf( data, len );
+}
+
+static struct export_data {
+    struct node {
+        uint32_t    id_;
+        void const* mem_;
+        size_t      len_;
+    } node_[NUM_MAX_EXPORT_BINARY];
+    size_t     size_ = 0;
+    static int compare( void const* a, void const* b )
+    {
+        return reinterpret_cast<node const*>( a )->id_
+               - reinterpret_cast<node const*>( b )->id_;
+    }
+} s_xd;
+
+void API_ExportBin( uint32_t id, void const* mem, size_t len, char const* name )
+{
+    using ed      = export_data::node;
+    ed* const arr = s_xd.node_;
+
+    auto idx  = lowerbound( arr, &id, sizeof( ed ), s_xd.size_, export_data::compare );
+    auto head = arr + idx;
+
+    if ( head->id_ != id ) {
+        uassert( idx < NUM_MAX_EXPORT_BINARY );
+        head      = (ed*)array_insert( arr, NULL, idx, sizeof( ed ), &s_xd.size_ );
+        head->id_ = id;
+    }
+
+    head->len_ = len;
+    head->mem_ = mem;
+}
+
+void API_RemoveExport( uint32_t id, void const* ptr )
+{
+    //! @warning. Should not call this!
+    uassert( false );
+    using ed      = export_data::node;
+    ed* const arr = s_xd.node_;
+
+    auto idx = lowerbound( arr, &id, sizeof( ed ), s_xd.size_, export_data::compare );
+    if ( arr[idx].id_ == id ) {
+        //! @todo. Implement array_remove from uEmbedded ...
+    }
+}
+}
+
+static void ProcessGet( char const* name )
+{
+    // Find ref
+    auto id       = upp::hash::fnv1a_32( name );
+    using ed      = export_data::node;
+    ed* const arr = s_xd.node_;
+
+    auto idx = lowerbound( arr, &id, sizeof( ed ), s_xd.size_, export_data::compare );
+    auto at  = arr + idx;
+
+    if ( at->id_ != id ) {
+        API_Logf( "Given name %s is not exported data name\n", name );
+        return;
+    }
+
+    FGetDesc d;
+    d.Length = at->len_;
+    strncpy( d.TAG, name, SCANNER_NUM_GET_TAG_LENGTH );
+
+    void const* dat[] = { &d, at->mem_ };
+    size_t      len[] = { sizeof d, at->len_ };
+
+    API_SendHostBinaries( dat, len, 2 );
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -206,6 +286,14 @@ void stringCmdHandler( char* str, size_t len )
             break;
         }
         AppHandler_CaptureCommand( argc - 1, argv + 1 );
+    } break;
+
+    case STRCASE( "get" ): {
+        if ( argc == 1 ) {
+            API_Logf( "error: command 'get' requires argument.\n" );
+            break;
+        }
+        ProcessGet( argv[1] );
     } break;
     default:
         break;

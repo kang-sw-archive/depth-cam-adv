@@ -4,8 +4,8 @@
 #include <stdbool.h>
 #include <task.h>
 #include <uEmbedded/transceiver.h>
-#include "../platform/mem.h"
 #include "../defs.h"
+#include "../platform/mem.h"
 #ifdef __cplusplus
 extern "C" {
 #endif // __cplusplus
@@ -16,16 +16,20 @@ extern "C" {
 
 /////////////////////////////////////////////////////////////////////////////
 // APIs
-
 // Default functionality
+
 // File xfer funtions
 void API_SendHostBinary( void const* data, size_t len );
+void API_SendHostBinaries( void const* const data[], size_t const len[], size_t cnt );
 void API_SendHostString( void const* data, size_t len );
-// This function does not wrap data with header.
-void API_SendHostRaw( void const* data, size_t len );
+void API_SendHostRaw( void const* data, size_t len ); //< Does not wrap data with header.
 
 void API_Logf( char const* fmt, ... ); //!< Print text out to host.
 int  API_Log( char const* txt );
+
+// Assign data export
+void API_ExportBin( uint32_t id, void const* mem, size_t len, char const* name );
+void API_RemoveExport( uint32_t id, void const* ptr );
 
 // Timer functionality
 usec_t         API_GetTime_us();
