@@ -4,6 +4,7 @@
 #include "arch/mem.h"
 #include "defs.h"
 #include <task.h>
+#include <stdbool.h>
 #include <uEmbedded/transceiver.h>
 #ifdef __cplusplus
 extern "C" {
@@ -31,6 +32,7 @@ usec_t         API_GetTime_us();
 timer_handle_t API_SetTimer( usec_t delay, void* obj, void ( *cb )( void* ) );
 timer_handle_t API_SetTimerFromISR( usec_t delay, void* obj, void ( *cb )( void* ) );
 void           API_AbortTimer( timer_handle_t h );
+bool           API_CheckTimer( timer_handle_t h, usec_t* usLeft );
 
 _Noreturn void AppProc_HostIO( void* nouse_ );
 bool           AppHandler_CaptureCommand( int argc, char* argv[] );

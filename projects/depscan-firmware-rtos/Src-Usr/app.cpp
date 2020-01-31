@@ -5,11 +5,14 @@
 //! @copyright Copyright (c) 2019. Seungwoo Kang. All rights reserved.
 //!
 //! @details
+#include <FreeRTOS.h>
+
 #include "app.h"
 #include "arch/hw.h"
 #include "rw.h"
-#include <FreeRTOS.h>
+#include <alloca.h>
 #include <list>
+#include <stdarg.h>
 #include <stdio.h>
 #include <string.h>
 #include <uEmbedded/uassert.h>
@@ -30,6 +33,27 @@ void operator delete( void* p )
 
 /////////////////////////////////////////////////////////////////////////////
 // Globals
+extern "C" void API_Logf( char const* fmt, ... )
+{
+    va_list vp;
+    va_list vp2;
+    va_start( vp, fmt );
+    size_t allocsz = vsnprintf( NULL, 0, fmt, vp ) + 1;
+    va_end( vp );
+
+    va_copy( vp2, vp );
+    char* buf = (char*)alloca( allocsz );
+    vsprintf( buf, fmt, vp2 );
+    va_end( vp2 );
+
+    API_SendHostString( buf, allocsz );
+}
+
+extern "C" int API_Log( char const* txt )
+{
+    API_SendHostString( txt, strlen( txt ) + 1 );
+    return 0;
+}
 
 /////////////////////////////////////////////////////////////////////////////
 // Statics
@@ -48,7 +72,7 @@ extern "C" void StartDefaultTask( void* nouse_ )
 
     // launch hw timer manager
     //! @todo. implement this
-    
+
     // this function never returns.
     AppProc_HostIO( NULL );
 

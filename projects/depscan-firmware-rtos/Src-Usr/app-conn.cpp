@@ -11,13 +11,12 @@
 #include <uEmbedded-pp/utility.hxx>
 #include <uEmbedded/uassert.h>
 /////////////////////////////////////////////////////////////////////////////
-// Host IO communication handler
+// Defines host IO communication handler
 //
 //
 
 /////////////////////////////////////////////////////////////////////////////
 // Utilities
-
 // Command procedure
 static void stringCmdHandler( char* str, size_t len );
 static void binaryCmdHandler( char* data, size_t len );
@@ -84,28 +83,6 @@ void API_SendHostString( void const* data, size_t len )
 void API_SendHostRaw( void const* data, size_t len )
 {
     apndToHostBuf( data, len );
-}
-
-extern "C" void API_Logf( char const* fmt, ... )
-{
-    va_list vp;
-    va_list vp2;
-    va_start( vp, fmt );
-    size_t allocsz = vsnprintf( NULL, 0, fmt, vp ) + 1;
-    va_end( vp );
-
-    va_copy( vp2, vp );
-    char* buf = (char*)alloca( allocsz );
-    vsprintf( buf, fmt, vp2 );
-    va_end( vp2 );
-
-    API_SendHostString( buf, allocsz );
-}
-
-extern "C" int API_Log( char const* txt )
-{
-    API_SendHostString( txt, strlen( txt ) + 1 );
-    return 0;
 }
 
 /////////////////////////////////////////////////////////////////////////////

@@ -11,5 +11,7 @@
 #define NUM_TIMER_TASK_STACK_WORDS 512
 
 typedef uint64_t usec_t;
-typedef uint64_t timer_handle_t;
 
+typedef struct {
+    uint64_t data_[2];
+} timer_handle_t;
