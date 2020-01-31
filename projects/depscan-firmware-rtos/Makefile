@@ -82,7 +82,7 @@ Middlewares/ST/STM32_USB_Device_Library/Core/Src/usbd_ctlreq.c \
 Middlewares/ST/STM32_USB_Device_Library/Core/Src/usbd_ioreq.c \
 Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c \
 Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_spi.c \
-Src/stm32f4xx_hal_timebase_tim.c
+Src/stm32f4xx_hal_timebase_tim.c 
 
 # ASM sources
 ASM_SOURCES =  \
@@ -165,7 +165,8 @@ C_INCLUDES =  \
 -IMiddlewares/ST/STM32_USB_Device_Library/Class/CDC/Inc \
 -IDrivers/CMSIS/Device/ST/STM32F4xx/Include \
 -IDrivers/CMSIS/Include \
--IThird/uEmbedded/src
+-IThird/uEmbedded/src \
+-IThird/ADS0032v1.1/include 
 
 # compile gcc flags
 ASFLAGS = $(MCU) $(AS_DEFS) $(AS_INCLUDES) $(OPT) -Wall -fdata-sections -ffunction-sections
@@ -188,8 +189,8 @@ CPPFLAGS = $(CFLAGS) -fno-exceptions -fno-rtti -fno-threadsafe-statics
 LDSCRIPT = STM32F401VCTx_FLASH.ld
 
 # libraries
-LIBS = -lc -lm -lnosys
-LIBDIR = 
+LIBS = -lc -lm -lnosys -largus
+LIBDIR = -LThird/ADS0032v1.1
 LDFLAGS = $(MCU) -specs=nosys.specs -T$(LDSCRIPT) $(LIBDIR) $(LIBS) -Wl,-Map=$(BUILD_DIR)/$(TARGET).map,--cref -Wl,--gc-sections
 
 # default action: build all

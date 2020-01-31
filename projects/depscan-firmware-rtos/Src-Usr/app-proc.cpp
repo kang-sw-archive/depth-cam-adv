@@ -86,7 +86,7 @@ void API_SendHostRaw( void const* data, size_t len )
     apndToHostBuf( data, len );
 }
 
-extern "C" void print( char const* fmt, ... )
+extern "C" void API_Logf( char const* fmt, ... )
 {
     va_list vp;
     va_list vp2;
@@ -102,7 +102,7 @@ extern "C" void print( char const* fmt, ... )
     API_SendHostString( buf, allocsz );
 }
 
-extern "C" int putstr( char const* txt )
+extern "C" int API_Log( char const* txt )
 {
     API_SendHostString( txt, strlen( txt ) + 1 );
     return 0;
@@ -175,7 +175,7 @@ void stringCmdHandler( char* str, size_t len )
             delay = std::max( 100, atoi( argv[2] ) );
 
         if ( ti.cnt != ti.num ) {
-            putstr( "Yet timer task is running ... \n" );
+            API_Log( "Yet timer task is running ... \n" );
             break;
         }
         ti.init  = API_GetTime_us();
@@ -189,7 +189,7 @@ void stringCmdHandler( char* str, size_t len )
             uint64_t now     = API_GetTime_us();
             int      elapsed = now - init;
 
-            print(
+            API_Logf(
                 "[%3d] %llu: %d us (error %d us)\n",
                 t.cnt,
                 now,
@@ -207,7 +207,7 @@ void stringCmdHandler( char* str, size_t len )
     } break;
 
     case STRCASE( "test-input" ): {
-        print( "Hello, world!\n" );
+        API_Logf( "Hello, world!\n" );
     } break;
 
     case STRCASE( "ping" ): {
@@ -224,11 +224,11 @@ void stringCmdHandler( char* str, size_t len )
 extern "C" __weak_symbol bool
 AppHandler_CaptureCommand( int argc, char* argv[] )
 {
-    print( "info: Receiving :: " );
+    API_Logf( "info: Receiving :: " );
     for ( int i = 0; i < argc; i++ ) {
-        print( "%s ", argv[i] );
+        API_Logf( "%s ", argv[i] );
     }
-    putstr( "\n" );
+    API_Log( "\n" );
     return true;
 }
 
@@ -244,7 +244,7 @@ void binaryCmdHandler( char* data, size_t len )
         return;
     }
 
-    putstr( "warning: failed to process binary data\n" );
+    API_Log( "warning: failed to process binary data\n" );
 }
 
 int stringToTokens( char* str, char* argv[], size_t argv_len )

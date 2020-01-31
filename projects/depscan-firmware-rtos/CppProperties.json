@@ -14,7 +14,8 @@
         "${workspaceRoot}/Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Inc",
         "${workspaceRoot}/Drivers/CMSIS/Device/ST/STM32F4xx/Include",
         "${workspaceRoot}/Drivers/CMSIS/Include",
-        "${workspaceRoot}/Third/uEmbedded/src"
+        "${workspaceRoot}/Third/uEmbedded/src",
+        "${workspaceRoot}/Third/ADS0032v1.1/include"
       ],
       "defines": [
         "USE_HAL_DRIVER",
