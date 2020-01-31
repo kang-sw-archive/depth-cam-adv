@@ -9,6 +9,8 @@
 extern "C" {
 #endif // __cplusplus
 
+/////////////////////////////////////////////////////////////////////////////
+// Definitions
 typedef struct {
     float x;
     float y;
@@ -39,14 +41,18 @@ typedef struct capture_common_ty__ {
     //! Motor properties
     capture_fpoint_t AnglePerStep;
 
-    //! Scanner properties 
-
+    //! Scanner properties
 
     //! Point properties
     int NumMaxRequest;
-    
+
+    //! Capture buffer, for general use
+    char Buffer[CAPTURER_BUFFER_SIZE];
 } capture_t;
 
+/////////////////////////////////////////////////////////////////////////////
+// Functions
+void Capture_Point_Begin( void* ARG );
 #ifdef __cplusplus
 }
 #endif // __cplusplus

@@ -9,7 +9,7 @@
 
 /////////////////////////////////////////////////////////////////////////////
 // Globals
-capture_t* gCapture;
+capture_t gCapture;
 
 /////////////////////////////////////////////////////////////////////////////
 // Capture Handler
@@ -74,7 +74,6 @@ extern "C" bool AppHandler_CaptureCommand( int argc, char* argv[] )
             API_Putf( "%x ", rx[i] );
 
         API_Putf( "\n Elapsed: %d\n", (int)( API_GetTime_us() - us_start ) );
-
     } break;
 
     case CSTRHASH( "close" ): {

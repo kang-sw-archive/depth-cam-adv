@@ -25453,11 +25453,11 @@ inline const uint32_t fnv1a_32( const void* key )
 
     return true;
  80077ac:	2001      	movs	r0, #1
+        API_Log( "\n\t" );
         for ( size_t i = 0; i < sizeof( tx ); i++ )
             API_Putf( "%x ", rx[i] );
 
         API_Putf( "\n Elapsed: %d\n", (int)( API_GetTime_us() - us_start ) );
-
     } break;
  80077ae:	e000      	b.n	80077b2 <AppHandler_CaptureCommand+0x186>
 
