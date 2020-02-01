@@ -2,7 +2,7 @@
 #include <usb_device.h>
 #include <usbd_cdc_if.h>
 #include "../defs.h"
-#include "../app/rw.h"
+#include "../app/hal.h"
 
 /////////////////////////////////////////////////////////////////////////////
 // Globals

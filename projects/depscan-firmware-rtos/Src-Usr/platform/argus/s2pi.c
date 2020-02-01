@@ -93,6 +93,7 @@ static void timer_cb__spi( void* p )
     s->callback( s->latestTransferStatus, s->callbackParam );
 }
 
+#if ASYNC_SPI
 static void transfer_done( DMA_HandleTypeDef* h )
 {
     if ( g_rxtxRunning > 0 ) {
@@ -126,9 +127,7 @@ static void transfer_error( DMA_HandleTypeDef* h )
         API_SetTimerFromISR( 1, (void*)s, timer_cb__spi );
     }
 }
-
-// On transfer error
-#if ASYNC_SPI
+ 
 void HAL_SPI_ErrorCallback( SPI_HandleTypeDef* hspi )
 {
     transfer_error( NULL );
