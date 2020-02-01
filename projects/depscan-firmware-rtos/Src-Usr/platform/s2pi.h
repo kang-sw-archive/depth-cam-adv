@@ -12,7 +12,8 @@ extern "C" {
 //! @{
 
 // Slave index type
-typedef enum {
+typedef enum
+{
     S2PI_SLAVE_NONE,
     S2PI_SLAVE_ARGUS,
     S2PI_SLAVE_MAX,

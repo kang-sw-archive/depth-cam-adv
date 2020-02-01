@@ -24,7 +24,8 @@
 typedef uint64_t usec_t;
 
 //! @brief Timer adapter structure compatible with logical timer classes.
-typedef struct {
+typedef struct
+{
     uint64_t data_[2];
 } timer_handle_t;
 

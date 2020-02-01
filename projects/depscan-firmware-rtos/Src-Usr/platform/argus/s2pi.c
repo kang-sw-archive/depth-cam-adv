@@ -25,7 +25,8 @@
 /////////////////////////////////////////////////////////////////////////////
 // Definitions
 
-struct slave_desc {
+struct slave_desc
+{
     // For each slaves ...
     GPIO_TypeDef* chipSelectPort;
     //
@@ -127,7 +128,7 @@ static void transfer_error( DMA_HandleTypeDef* h )
         API_SetTimerFromISR( 1, (void*)s, timer_cb__spi );
     }
 }
- 
+
 void HAL_SPI_ErrorCallback( SPI_HandleTypeDef* hspi )
 {
     transfer_error( NULL );

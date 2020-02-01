@@ -27,7 +27,8 @@ extern "C" {
 typedef struct dist_sens__* dist_sens_t;
 
 //! @brief Sensor configuration descriptor
-typedef struct dist_sens_config__ {
+typedef struct dist_sens_config__
+{
     uint16_t Delay_us;           //!< Delays per capture
     bool     bCloseDistanceMode; //!< Distance mode. True if close distance & accuracy mode
 } dist_sens_config_t;
@@ -73,7 +74,7 @@ bool DistSens_MeasureSync( dist_sens_t, uint32_t Retry );
 //! @param cb Callback call when measurement done.
 //! @returns See \ref DistSens_MeasureSync
 //! @see DistSens_MeasureSync
-bool DistSens_MeasureAsync(dist_sens_t, uint32_t Retry, void* cb_obj, dist_sens_async_cb_t cb);
+bool DistSens_MeasureAsync( dist_sens_t, uint32_t Retry, void* cb_obj, dist_sens_async_cb_t cb );
 
 //! @}
 //! @}

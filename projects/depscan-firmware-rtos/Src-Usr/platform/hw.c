@@ -1,8 +1,8 @@
 #include "hw.h"
 #include <usb_device.h>
 #include <usbd_cdc_if.h>
-#include "../defs.h"
 #include "../app/hal.h"
+#include "../defs.h"
 
 /////////////////////////////////////////////////////////////////////////////
 // Globals

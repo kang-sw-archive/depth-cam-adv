@@ -8,25 +8,29 @@
 #ifdef __cplusplus
 extern "C" {
 #endif // __cplusplus
-     
-typedef struct {
+
+typedef struct
+{
     float x;
     float y;
 } capture_fpoint_t;
 
-typedef struct {
+typedef struct
+{
     int x;
     int y;
 } capture_point_t;
 
-typedef enum {
+typedef enum
+{
     CAPTURE_MODE_NONE,
     CAPTURE_MODE_LINE,
     CAPTURE_MODE_POINT
 } capture_mode_t;
 
 //! @brief A struct indicates common capture status
-typedef struct capture_common_ty__ {
+typedef struct capture_common_ty__
+{
     //! Basic property
     capture_mode_t Mode;
     void*          Substat;

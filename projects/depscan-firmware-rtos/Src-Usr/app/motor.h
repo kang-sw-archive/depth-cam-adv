@@ -23,7 +23,8 @@ extern "C" {
 typedef struct motor__* motor_t;
 
 //! @brief An constant label that indicates motor status
-typedef enum {
+typedef enum
+{
     MOTOR_STATE_IDLE   = 0,
     MOTOR_STATE_MOVING = 1,
     MOTOR_STATE_ABORT  = -0x8001,
@@ -61,7 +62,7 @@ motor_status_t Motor_MoveTo( motor_t, int steps );
 int Motor_Pos( motor_t );
 
 //! @brief Get motor's velocity.
-//! @returns velocity. 
+//! @returns velocity.
 //!     \n Since the output value can be negative value, it'll return zero if the
 //!     motor is in error state. To get exact error status of motor,
 //!     @ref Motor_Stat function must be used.

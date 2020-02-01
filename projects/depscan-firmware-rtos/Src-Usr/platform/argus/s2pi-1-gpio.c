@@ -31,7 +31,8 @@
 // <+> Statics
 //
 //=====================================================================//
-struct pinstruct {
+struct pinstruct
+{
     GPIO_TypeDef* port;
     uint16_t      pin;
     bool          bWrite;

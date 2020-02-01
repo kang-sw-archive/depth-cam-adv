@@ -22,7 +22,8 @@ static transceiver_vtable const usb_vt = {
     .ioctl = cdc_ioctl,
     .close = cdc_close };
 
-static struct usb_rw {
+static struct usb_rw
+{
     transceiver_vtable_t const* vt_ = &usb_vt;
     ring_buffer                 rdqueue_;
     char                        rdbuf_[USB_READ_BUF_SIZE];

@@ -1,8 +1,8 @@
 #include "..\..\app\dist-sensor.h"
 
 //! Static sensor instance
-static struct dist_sens__ {
-
+static struct dist_sens__
+{
 } s_inst;
 
 //! Exported distance sensor handle

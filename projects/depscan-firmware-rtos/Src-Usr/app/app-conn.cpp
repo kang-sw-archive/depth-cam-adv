@@ -104,8 +104,10 @@ void API_SendHostRaw( void const* data, size_t len )
     apndToHostBuf( data, len );
 }
 
-static struct export_data {
-    struct node {
+static struct export_data
+{
+    struct node
+    {
         uint32_t    id_;
         void const* mem_;
         size_t      len_;
@@ -224,38 +226,38 @@ void stringCmdHandler( char* str, size_t len )
 #define STRCASE( v ) upp::hash::fnv1a_32_const( v )
 
     switch ( upp::hash::fnv1a_32( argv[0] ) ) {
-    case STRCASE( "env-report" ): {
-    } break;
+        case STRCASE( "env-report" ): {
+        } break;
 
-    case STRCASE( "ping" ): {
-        API_SendHostBinary( "ping", 4 );
-    } break;
+        case STRCASE( "ping" ): {
+            API_SendHostBinary( "ping", 4 );
+        } break;
 
-    case STRCASE( "capture" ): {
-        if ( argc == 1 ) {
-            API_Log( "error: command 'capture' requires argument.\n" );
-            break;
+        case STRCASE( "capture" ): {
+            if ( argc == 1 ) {
+                API_Log( "error: command 'capture' requires argument.\n" );
+                break;
+            }
+            AppHandler_CaptureCommand( argc - 1, argv + 1 );
+        } break;
+
+        case STRCASE( "test" ): {
+            if ( argc == 1 ) {
+                API_Log( "error: command 'test' requires argument. \n" );
+                break;
+            }
+            AppHandler_TestCommand( argc - 1, argv + 1 );
         }
-        AppHandler_CaptureCommand( argc - 1, argv + 1 );
-    } break;
 
-    case STRCASE( "test" ): {
-        if ( argc == 1 ) {
-            API_Log( "error: command 'test' requires argument. \n" );
+        case STRCASE( "get" ): {
+            if ( argc == 1 ) {
+                API_Logf( "error: command 'get' requires argument.\n" );
+                break;
+            }
+            ProcessGet( argv[1] );
+        } break;
+        default:
             break;
-        }
-        AppHandler_TestCommand( argc - 1, argv + 1 );
-    }
-
-    case STRCASE( "get" ): {
-        if ( argc == 1 ) {
-            API_Logf( "error: command 'get' requires argument.\n" );
-            break;
-        }
-        ProcessGet( argv[1] );
-    } break;
-    default:
-        break;
     }
 }
 

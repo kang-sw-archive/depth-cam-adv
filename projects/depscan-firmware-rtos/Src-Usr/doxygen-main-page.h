@@ -1,6 +1,5 @@
 // This is not for compilation.
 
-
 /**
 
 @mainpage Depscan firmware

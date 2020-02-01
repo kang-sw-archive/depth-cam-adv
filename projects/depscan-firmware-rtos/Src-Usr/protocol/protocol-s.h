@@ -13,7 +13,8 @@
 
 typedef uint16_t SCANNER_COMMAND_TYPE;
 
-typedef struct {
+typedef struct
+{
     uint16_t StepPerPxlX;
     uint16_t StepPerPxlY;
     uint32_t SizeX;
@@ -36,7 +37,8 @@ typedef struct {
     bool bIsPaused;
 } FDeviceStat;
 
-enum ECaptureModeBit {
+enum ECaptureModeBit
+{
     ECMB_DISTANCE_AUTO = 1,
     ECMB_DISTANCE_FAR  = 2,
     ECMB_LOW_PRECISION = 4,
@@ -49,36 +51,42 @@ typedef uint16_t uq12_4_t;
 
 #define SCANNER_NUM_GET_TAG_LENGTH 20
 
-typedef struct {
+typedef struct
+{
     q9_22_t  Distance;
     uq12_4_t AMP;
 } FPxlData;
 
-typedef struct {
+typedef struct
+{
     uint32_t LineIdx;
     uint32_t OfstX;
     uint32_t NumPxls;
 } FLineDdesc;
 
-typedef struct {
+typedef struct
+{
     int16_t  X;     //!< Offset steps from initial point
     int16_t  Y;     //!< Offset steps from initial point
     FPxlData V;     //!< Actual distance value
     uint16_t pad__; //!< 4Byte align
 } FPointData;
 
-typedef struct {
+typedef struct
+{
     int16_t X;
     int16_t Y;
 } FPointReq;
 
-typedef struct {
+typedef struct
+{
     uint32_t ID;        //!< Simple 32bit value to identify request
     uint32_t IndexOfst; //!< Number of points sent from initial request
     uint32_t NumPoints; //!< Number of points in current transfer
 } FPointSetDesc;
 
-typedef struct {
+typedef struct
+{
     char   TAG[SCANNER_NUM_GET_TAG_LENGTH];
     size_t Length;
 } FGetDesc;
