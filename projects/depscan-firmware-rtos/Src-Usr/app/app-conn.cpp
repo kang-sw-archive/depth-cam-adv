@@ -13,7 +13,7 @@
 #include "../protocol/protocol-s.h"
 #include "../protocol/protocol.h"
 #include "app.h"
-#include "rw.h"
+#include "hal.h"
 /////////////////////////////////////////////////////////////////////////////
 // Defines host IO communication handler
 //
@@ -227,66 +227,25 @@ void stringCmdHandler( char* str, size_t len )
     case STRCASE( "env-report" ): {
     } break;
 
-    case STRCASE( "test-timer" ): {
-        static struct TI {
-            uint64_t init;
-            int      cnt = 0;
-            int      num = 0;
-            int      delay;
-        } ti;
-        int num = 1, delay = 1;
-
-        if ( argc >= 2 )
-            num = std::min( NUM_MAX_HWTIMER_NODE, std::max( 1, atoi( argv[1] ) ) );
-        if ( argc >= 3 )
-            delay = std::max( 100, atoi( argv[2] ) );
-
-        if ( ti.cnt != ti.num ) {
-            API_Log( "Yet timer task is running ... \n" );
-            break;
-        }
-        ti.init  = API_GetTime_us();
-        ti.cnt   = 0;
-        ti.num   = num;
-        ti.delay = delay;
-
-        auto timer_cb = []( void* beg ) {
-            auto&    t       = *(TI*)beg;
-            uint64_t init    = t.init;
-            uint64_t now     = API_GetTime_us();
-            int      elapsed = now - init;
-
-            API_Logf(
-                "<%3d> %d us (error %d us)\n",
-                t.cnt,
-                elapsed,
-                elapsed - ( t.delay * ( t.cnt + 1 ) ) );
-
-            t.cnt++;
-        };
-
-        for ( int i = 0; i < num; i++ ) {
-            auto correct_delay = delay * ( i + 1 ) - ( API_GetTime_us() - ti.init );
-            API_SetTimer( correct_delay, &ti, timer_cb );
-        }
-
-    } break;
-
-    case STRCASE( "test-input" ): {
-        API_Logf( "Hello, world!\n" );
-    } break;
-
     case STRCASE( "ping" ): {
         API_SendHostBinary( "ping", 4 );
     } break;
 
     case STRCASE( "capture" ): {
         if ( argc == 1 ) {
-            API_Logf( "error: command 'capture' requires argument.\n" );
+            API_Log( "error: command 'capture' requires argument.\n" );
             break;
         }
         AppHandler_CaptureCommand( argc - 1, argv + 1 );
     } break;
+
+    case STRCASE( "test" ): {
+        if ( argc == 1 ) {
+            API_Log( "error: command 'test' requires argument. \n" );
+            break;
+        }
+        AppHandler_TestCommand( argc - 1, argv + 1 );
+    }
 
     case STRCASE( "get" ): {
         if ( argc == 1 ) {
@@ -308,6 +267,12 @@ AppHandler_CaptureCommand( int argc, char* argv[] )
 
 extern "C" __weak_symbol bool
 AppHandler_CaptureBinary( char* data, size_t len )
+{
+    return false;
+}
+
+extern "C" __weak_symbol bool
+AppHandler_TestCommand( int argc, char* argv[] )
 {
     return false;
 }

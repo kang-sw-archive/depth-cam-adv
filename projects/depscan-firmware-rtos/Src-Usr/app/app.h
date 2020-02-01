@@ -22,8 +22,8 @@ extern "C" {
 //! Send host binary data. It'll automatically append header before transmit.
 void API_SendHostBinary( void const* data, size_t len );
 
-//! @brief Send host binary data in a row. 
-//! @details 
+//! @brief Send host binary data in a row.
+//! @details
 //!     Length of data array must be larger than cnt. \n
 //!     This function bundles the data and sends it in one packet.
 //! @param data: Array of data to transmit
@@ -34,12 +34,12 @@ void API_SendHostBinaries( void const* const data[], size_t const len[], size_t 
 //! @brief Send host string data.
 void API_SendHostString( void const* data, size_t len );
 
-//! @brief Send host raw data. 
-//! @details 
-//!      Since it does not append any packet header within the data transfer, 
-//!     you must transmit the packet first that contains size information 
-//!     before transferring main data 
-void API_SendHostRaw( void const* data, size_t len ); 
+//! @brief Send host raw data.
+//! @details
+//!      Since it does not append any packet header within the data transfer,
+//!     you must transmit the packet first that contains size information
+//!     before transferring main data
+void API_SendHostRaw( void const* data, size_t len );
 
 //! @}
 //! @defgroup Depscan_API_Log
@@ -51,7 +51,7 @@ void API_Putf( char const* fmt, ... ); //!< Print text without time header
 
 //! @brief Transmit log string. It'll automatically append time information in front.
 //! @return nothing. Don't use.
-int  API_Log( char const* txt );
+int API_Log( char const* txt );
 
 //! Formatted version of @ref API_Log
 void API_Logf( char const* fmt, ... ); //!< Print text out to host.
@@ -59,9 +59,9 @@ void API_Logf( char const* fmt, ... ); //!< Print text out to host.
 
 //! @defgroup Depscan_API_Exports
 //! @details
-//!      These functions allow the Host to access memory points exported by the 
+//!      These functions allow the Host to access memory points exported by the
 //!     device using the get command. \n
-//!      If this exported memory becomes invalid, you must delete the export to 
+//!      If this exported memory becomes invalid, you must delete the export to
 //!     avoid exporting invalid values.
 //! @{
 
@@ -83,7 +83,7 @@ void API_RemoveExport( uint32_t id, void const* ptr );
 
 //! @brief Get time in microseconds
 //! @returns total time from launch.
-usec_t         API_GetTime_us();
+usec_t API_GetTime_us();
 
 //! @brief Set timer.
 //! @param delay: Delay in microseconds.
@@ -98,20 +98,24 @@ timer_handle_t API_SetTimerFromISR( usec_t delay, void* obj, void ( *cb )( void*
 
 //! @brief Abort timer.
 //! @param h: Timer handle that was return from @ref API_SetTimer, @ref API_SetTimerFromISR
-void           API_AbortTimer( timer_handle_t h );
+void API_AbortTimer( timer_handle_t h );
 
 //! @brief Check timer validity.
 //! @param[out] usLeft: Time left to trigger in microseconds. Not substituted when timer handle is not valid.
 //! @returns true if given timer handle is valid.
-bool           API_CheckTimer( timer_handle_t h, usec_t* usLeft );
+bool API_CheckTimer( timer_handle_t h, usec_t* usLeft );
 
 //! @}
 //! @defgroup Depscan_API_Procedures
+//! @{
+//! @brief Procedures
 //! @warning DO NOT CALL THESE FUNCTIONS
 //! @{
 _Noreturn void AppProc_HostIO( void* nouse_ );
 bool           AppHandler_CaptureCommand( int argc, char* argv[] );
 bool           AppHandler_CaptureBinary( char* data, size_t len );
+bool           AppHandler_TestCommand( int argc, char* argv[] );
+//! @}
 //! @}
 
 //! @}
@@ -119,4 +123,3 @@ bool           AppHandler_CaptureBinary( char* data, size_t len );
 #ifdef __cplusplus
 }
 #endif // __cplusplus
-
