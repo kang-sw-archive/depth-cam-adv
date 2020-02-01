@@ -1,3 +1,12 @@
+//! \file       name.x
+//! \brief      File brief description
+//!
+//! \author     Seungwoo Kang (ki6080@gmail.com)
+//! \copyright  Copyright (c) 2019. Seungwoo Kang. All rights reserved.
+//!
+//! \details
+//!             File detailed description
+//! \bug        Fix error on timer logic
 #include <FreeRTOS.h>
 
 #include <stdbool.h>
@@ -140,12 +149,10 @@ void Test_Timer( int argc, char* argv[] )
         t.cnt++;
     };
 
-    // Shuffles timer tick
-    //! \bug     Error on timer logic
-    //!          If the timers are assigned in random order, the problem is that
-    //!          the
-    //!         order of nodes is not guaranteed. A careful examination of the
-    //!         free space list is required.
+    //! Shuffles timer tick
+    //!  If the timers are assigned in random order, the problem is that
+    //! the order of nodes is not guaranteed. A careful examination of
+    //! the free space list is required.
     int arr[num];
     for ( size_t i = 0; i < num; i++ ) {
         arr[i] = i;

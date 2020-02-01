@@ -1,3 +1,14 @@
+//! \file       name.x
+//! \brief      File brief description
+//!
+//! \author     Seungwoo Kang (ki6080@gmail.com)
+//! \copyright  Copyright (c) 2019. Seungwoo Kang. All rights reserved.
+//!
+//! \details
+//!             File detailed description
+//! \bug        Static timer logic is not working correctly.
+//! \todo       Optimize API_SetTimerFromISR
+//! \todo       Check for potential data corruption during overall timer usage
 #include <FreeRTOS.h>
 
 #include <cmsis_os2.h>

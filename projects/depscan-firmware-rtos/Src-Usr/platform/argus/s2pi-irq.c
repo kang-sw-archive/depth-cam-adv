@@ -12,9 +12,9 @@ static StaticTask_t s_irq_task_tcb;
 void EXTI1_IRQHandler( void )
 {
     if ( __HAL_GPIO_EXTI_GET_IT( GPIO_PIN_1 ) != RESET && g_cbIrq ) {
-        // print( "IRQ function call. \n" );
+        //~ print( "IRQ function call. \n" );
+        //~ g_cbIrq( g_cbIrqObj );
         API_SetTimerFromISR( 0, g_cbIrqObj, g_cbIrq );
-        // g_cbIrq( g_cbIrqObj );
     }
     __HAL_GPIO_EXTI_CLEAR_IT( GPIO_PIN_1 );
 }

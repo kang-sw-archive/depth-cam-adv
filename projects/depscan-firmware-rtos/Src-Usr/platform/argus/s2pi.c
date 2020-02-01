@@ -1,12 +1,13 @@
-/*! \brief
-    \file s2pi-1.c
-    \author Seungwoo Kang (ki6080@gmail.com)
-    \version 0.1
-    \date 2019-09-14
-
-    \copyright Copyright (c) 2019. Seungwoo Kang. All rights reserved.
-
- */
+//! \file       s2pi.c
+//! \brief      File brief description
+//!
+//! \author     Seungwoo Kang (ki6080@gmail.com)
+//! \copyright  Copyright (c) 2019. Seungwoo Kang. All rights reserved.
+//!
+//! \details
+//!             File detailed description
+//! \todo       Stabilize s2pi-irq operation
+//! \note       If possible, resolve SPI DMA transfer issue with HAL library.
 #include <FreeRTOS.h>
 
 #include <platform/argus_s2pi.h>

@@ -6,7 +6,6 @@
 //!
 //! \details
 //! \todo Check if default calibration is required or not
-//! \todo Check if Argus_TriggerMeasurement callback is called from timer or irq
 #include <FreeRTOS.h>
 
 #include <argus.h>
