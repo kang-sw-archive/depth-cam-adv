@@ -109,7 +109,8 @@ status_t S2PI_ReleaseGpioControl( void )
     return STATUS_OK;
 }
 
-status_t S2PI_WriteGpioPin( s2pi_slave_t nouse_, s2pi_pin_t pin, uint32_t value )
+status_t
+S2PI_WriteGpioPin( s2pi_slave_t nouse_, s2pi_pin_t pin, uint32_t value )
 {
     pinstruct_t* p = pins + pin;
 
@@ -128,7 +129,8 @@ status_t S2PI_WriteGpioPin( s2pi_slave_t nouse_, s2pi_pin_t pin, uint32_t value 
     return STATUS_OK;
 }
 
-status_t S2PI_ReadGpioPin( s2pi_slave_t nouse_, s2pi_pin_t pin, uint32_t* value )
+status_t
+S2PI_ReadGpioPin( s2pi_slave_t nouse_, s2pi_pin_t pin, uint32_t* value )
 {
     pinstruct_t* p = pins + pin;
 

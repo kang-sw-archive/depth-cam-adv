@@ -12,7 +12,8 @@
 #include "../defs.h"
 #include "mem.h"
 static transceiver_result_t cdc_read( void* desc, char* buf, size_t len );
-static transceiver_result_t cdc_write( void* desc, char const* buf, size_t len );
+static transceiver_result_t
+                            cdc_write( void* desc, char const* buf, size_t len );
 static transceiver_result_t cdc_ioctl( void* desc, intptr_t cmd )
 {
     return TRANSCEIVER_OK;
@@ -20,7 +21,10 @@ static transceiver_result_t cdc_ioctl( void* desc, intptr_t cmd )
 static transceiver_result_t cdc_close( void* desc );
 
 static transceiver_vtable const usb_vt
-    = { .read = cdc_read, .write = cdc_write, .ioctl = cdc_ioctl, .close = cdc_close };
+    = { .read  = cdc_read,
+        .write = cdc_write,
+        .ioctl = cdc_ioctl,
+        .close = cdc_close };
 
 static struct usb_rw
 {

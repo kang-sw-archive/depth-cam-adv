@@ -13,9 +13,9 @@ extern TIM_HandleTypeDef htim2;
 /////////////////////////////////////////////////////////////////////////////
 // Statics
 using timer_t = upp::static_timer_logic<usec_t, uint8_t, NUM_MAX_HWTIMER_NODE>;
-static timer_t            s_tim;
-static usec_t             s_total_us = std::numeric_limits<usec_t>::max() - (usec_t)1e9;
-static TIM_HandleTypeDef& htim       = htim2;
+static timer_t s_tim;
+static usec_t  s_total_us = std::numeric_limits<usec_t>::max() - (usec_t)1e9;
+static TIM_HandleTypeDef& htim = htim2;
 
 static TaskHandle_t sTimerTask;
 static StackType_t  sTimerStack[NUM_TIMER_TASK_STACK_WORDS];
@@ -75,7 +75,8 @@ extern "C" usec_t API_GetTime_us()
     return s_total_us + GET_TICK();
 }
 
-extern "C" timer_handle_t API_SetTimer( usec_t delay, void* obj, void ( *cb )( void* ) )
+extern "C" timer_handle_t
+API_SetTimer( usec_t delay, void* obj, void ( *cb )( void* ) )
 {
     uassert( s_tim.capacity() > 0 );
     taskENTER_CRITICAL();
@@ -86,7 +87,8 @@ extern "C" timer_handle_t API_SetTimer( usec_t delay, void* obj, void ( *cb )( v
     return { r.id_, r.time_ };
 }
 
-extern "C" timer_handle_t API_SetTimerFromISR( usec_t delay, void* obj, void ( *cb )( void* ) )
+extern "C" timer_handle_t
+API_SetTimerFromISR( usec_t delay, void* obj, void ( *cb )( void* ) )
 {
     uassert( s_tim.capacity() > 0 );
     auto r = s_tim.add( std::max( 10ull, delay - 10ull ), obj, cb );
@@ -139,7 +141,8 @@ extern "C" bool API_CheckTimer( timer_handle_t h, usec_t* usLeft )
     return true;
 }
 
-// This code is a dummy function to prevent link errors that occur when using the std :: function class.
+// This code is a dummy function to prevent link errors that occur when using
+// the std :: function class.
 namespace std {
 void __throw_bad_function_call()
 {

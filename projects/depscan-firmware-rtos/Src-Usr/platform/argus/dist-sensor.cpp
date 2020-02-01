@@ -23,7 +23,11 @@ bool DistSens_MeasureSync( dist_sens_t, uint32_t Retry )
     return false;
 }
 
-bool DistSens_MeasureAsync( dist_sens_t, uint32_t Retry, void* cb_obj, dist_sens_async_cb_t cb )
+bool DistSens_MeasureAsync(
+    dist_sens_t,
+    uint32_t             Retry,
+    void*                cb_obj,
+    dist_sens_async_cb_t cb )
 {
     return false;
 }

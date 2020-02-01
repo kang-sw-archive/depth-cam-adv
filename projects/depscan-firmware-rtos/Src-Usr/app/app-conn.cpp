@@ -51,7 +51,8 @@ extern "C" _Noreturn void AppProc_HostIO( void* nouse_ )
             continue;
 
         // Check packet validity
-        // If any data was delivered in bad condition, it'll consume all pending bytes.
+        // If any data was delivered in bad condition, it'll consume all pending
+        // bytes.
         if ( PACKET_IS_PACKET( packet ) == false )
             continue;
 
@@ -64,7 +65,8 @@ extern "C" _Noreturn void AppProc_HostIO( void* nouse_ )
             continue;
 
         // Call command procedure
-        ( PACKET_IS_STR( packet ) ? stringCmdHandler : binaryCmdHandler )( buf, len );
+        ( PACKET_IS_STR( packet ) ? stringCmdHandler
+                                  : binaryCmdHandler )( buf, len );
     }
 }
 
@@ -78,7 +80,10 @@ void API_SendHostBinary( void const* data, size_t len )
     apndToHostBuf( data, len );
 }
 
-void API_SendHostBinaries( void const* const data[], size_t const len[], size_t cnt )
+void API_SendHostBinaries(
+    void const* const data[],
+    size_t const      len[],
+    size_t            cnt )
 {
     size_t sum = 0;
     for ( size_t i = 0; i < cnt; i++ )
@@ -115,7 +120,8 @@ static struct export_data
     size_t     size_ = 0;
     static int compare( void const* a, void const* b )
     {
-        return reinterpret_cast<node const*>( a )->id_ - reinterpret_cast<node const*>( b )->id_;
+        return reinterpret_cast<node const*>( a )->id_
+               - reinterpret_cast<node const*>( b )->id_;
     }
 } s_xd;
 
@@ -124,12 +130,17 @@ void API_ExportBin( uint32_t id, void const* mem, size_t len )
     using ed      = export_data::node;
     ed* const arr = s_xd.node_;
 
-    auto idx  = lowerbound( arr, &id, sizeof( ed ), s_xd.size_, export_data::compare );
+    auto idx = lowerbound(
+        arr,
+        &id,
+        sizeof( ed ),
+        s_xd.size_,
+        export_data::compare );
     auto head = arr + idx;
 
     if ( head->id_ != id ) {
         uassert( idx < NUM_MAX_EXPORT_BINARY );
-        head      = (ed*)array_insert( arr, NULL, idx, sizeof( ed ), &s_xd.size_ );
+        head = (ed*)array_insert( arr, NULL, idx, sizeof( ed ), &s_xd.size_ );
         head->id_ = id;
     }
 
@@ -144,7 +155,12 @@ void API_RemoveExport( uint32_t id, void const* ptr )
     using ed      = export_data::node;
     ed* const arr = s_xd.node_;
 
-    auto idx = lowerbound( arr, &id, sizeof( ed ), s_xd.size_, export_data::compare );
+    auto idx = lowerbound(
+        arr,
+        &id,
+        sizeof( ed ),
+        s_xd.size_,
+        export_data::compare );
     if ( arr[idx].id_ == id ) {
         //! @todo. Implement array_remove from uEmbedded ...
     }
@@ -158,8 +174,13 @@ static void ProcessGet( char const* name )
     using ed      = export_data::node;
     ed* const arr = s_xd.node_;
 
-    auto idx = lowerbound( arr, &id, sizeof( ed ), s_xd.size_, export_data::compare );
-    auto at  = arr + idx;
+    auto idx = lowerbound(
+        arr,
+        &id,
+        sizeof( ed ),
+        s_xd.size_,
+        export_data::compare );
+    auto at = arr + idx;
 
     if ( at->id_ != id ) {
         API_Logf( "Given name %s is not exported data name\n", name );
@@ -259,7 +280,8 @@ void stringCmdHandler( char* str, size_t len )
     }
 }
 
-extern "C" __weak_symbol bool AppHandler_CaptureCommand( int argc, char* argv[] )
+extern "C" __weak_symbol bool
+AppHandler_CaptureCommand( int argc, char* argv[] )
 {
     return true;
 }

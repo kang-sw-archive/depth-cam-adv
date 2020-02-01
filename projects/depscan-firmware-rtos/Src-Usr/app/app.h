@@ -27,9 +27,13 @@ void API_SendHostBinary( void const* data, size_t len );
 //!     Length of data array must be larger than cnt. \n
 //!     This function bundles the data and sends it in one packet.
 //! @param data: Array of data to transmit
-//! @param len: Array of lengths corresponding to the same indexed value of 'data'
+//! @param len: Array of lengths corresponding to the same indexed value of
+//! 'data'
 //! @param cnt: Number of transmit requests
-void API_SendHostBinaries( void const* const data[], size_t const len[], size_t cnt );
+void API_SendHostBinaries(
+    void const* const data[],
+    size_t const      len[],
+    size_t            cnt );
 
 //! @brief Send host string data.
 void API_SendHostString( void const* data, size_t len );
@@ -46,10 +50,12 @@ void API_SendHostRaw( void const* data, size_t len );
 //! @brief Logging functionalities.
 //! @{
 
-//! @brief Simply puts string. It is format text version of @ref API_SendHostString
+//! @brief Simply puts string. It is format text version of @ref
+//! API_SendHostString
 void API_Putf( char const* fmt, ... ); //!< Print text without time header
 
-//! @brief Transmit log string. It'll automatically append time information in front.
+//! @brief Transmit log string. It'll automatically append time information in
+//! front.
 //! @return nothing. Don't use.
 int API_Log( char const* txt );
 
@@ -94,14 +100,17 @@ timer_handle_t API_SetTimer( usec_t delay, void* obj, void ( *cb )( void* ) );
 
 //! @brief Set timer. ISR safe version.
 //! @ref API_SetTimer
-timer_handle_t API_SetTimerFromISR( usec_t delay, void* obj, void ( *cb )( void* ) );
+timer_handle_t
+API_SetTimerFromISR( usec_t delay, void* obj, void ( *cb )( void* ) );
 
 //! @brief Abort timer.
-//! @param h: Timer handle that was return from @ref API_SetTimer, @ref API_SetTimerFromISR
+//! @param h: Timer handle that was return from @ref API_SetTimer, @ref
+//! API_SetTimerFromISR
 void API_AbortTimer( timer_handle_t h );
 
 //! @brief Check timer validity.
-//! @param[out] usLeft: Time left to trigger in microseconds. Not substituted when timer handle is not valid.
+//! @param[out] usLeft: Time left to trigger in microseconds. Not substituted
+//! when timer handle is not valid.
 //! @returns true if given timer handle is valid.
 bool API_CheckTimer( timer_handle_t h, usec_t* usLeft );
 

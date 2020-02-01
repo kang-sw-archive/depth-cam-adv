@@ -30,7 +30,8 @@ typedef struct dist_sens__* dist_sens_t;
 typedef struct dist_sens_config__
 {
     uint16_t Delay_us;           //!< Delays per capture
-    bool     bCloseDistanceMode; //!< Distance mode. True if close distance & accuracy mode
+    bool     bCloseDistanceMode; //!< Distance mode. True if close distance &
+                                 //!< accuracy mode
 } dist_sens_config_t;
 
 //! @brief Constants
@@ -46,7 +47,8 @@ typedef int32_t fxp9_22_t;
 typedef uint16_t ufxp_12_4_t;
 
 //! @brief Asynchronous measurement notifier callback type.
-typedef void ( *dist_sens_async_cb_t )( dist_sens_t, void* /*obj*/, int /* error_code */ );
+typedef void (
+    *dist_sens_async_cb_t )( dist_sens_t, void* /*obj*/, int /* error_code */ );
 
 //! @brief Configure sensor with given configuration properties
 void DistSens_Configure( dist_sens_t, dist_sens_config_t const* opt );
@@ -63,8 +65,8 @@ void DistSens_GetDistanceFxp( dist_sens_t, fxp9_22_t* out );
 
 //! @brief Trigger measurement synchronously
 //! @param Retry Number of retry chance when measurement fails. \n
-//!      Specify DIST_SENS_RETRY_MAX to retry until succeed. Actual retry time is
-//!     associated with Delay_us in @ref dist_sens_config_t.
+//!      Specify DIST_SENS_RETRY_MAX to retry until succeed. Actual retry time
+//!     is associated with Delay_us in @ref dist_sens_config_t.
 //! @returns false when all retry exhausted.
 bool DistSens_MeasureSync( dist_sens_t, uint32_t Retry );
 
@@ -74,7 +76,11 @@ bool DistSens_MeasureSync( dist_sens_t, uint32_t Retry );
 //! @param cb Callback call when measurement done.
 //! @returns See \ref DistSens_MeasureSync
 //! @see DistSens_MeasureSync
-bool DistSens_MeasureAsync( dist_sens_t, uint32_t Retry, void* cb_obj, dist_sens_async_cb_t cb );
+bool DistSens_MeasureAsync(
+    dist_sens_t,
+    uint32_t             Retry,
+    void*                cb_obj,
+    dist_sens_async_cb_t cb );
 
 //! @}
 //! @}

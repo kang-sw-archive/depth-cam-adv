@@ -63,8 +63,8 @@ int Motor_Pos( motor_t );
 
 //! @brief Get motor's velocity.
 //! @returns velocity.
-//!     \n Since the output value can be negative value, it'll return zero if the
-//!     motor is in error state. To get exact error status of motor,
+//!     \n Since the output value can be negative value, it'll return zero if
+//!     the motor is in error state. To get exact error status of motor,
 //!     @ref Motor_Stat function must be used.
 int Motor_Velocity( motor_t );
 

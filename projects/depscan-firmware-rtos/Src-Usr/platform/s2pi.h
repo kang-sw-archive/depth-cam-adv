@@ -23,7 +23,8 @@ typedef enum
 //! @param slave: Predefined integer constant index to specify S2PI slave.
 //! @param txData: Data pointer to transmit. Necessary.
 //! @param rxData: Data pointer to receive. Optional.
-//! @param frameSize: Size of Tx/Rx request. Buffer size must be larger than this value.
+//! @param frameSize: Size of Tx/Rx request. Buffer size must be larger than
+//! this value.
 //! @param callback: Called when transfer is finished.
 //! @param callbackData: Additional argument which will be passed into callback.
 void S2PI_TransferFrameSync(
