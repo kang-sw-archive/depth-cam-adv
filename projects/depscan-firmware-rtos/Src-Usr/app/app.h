@@ -24,7 +24,7 @@ void API_SendHostBinary( void const* data, size_t len );
 
 //! @brief Send host binary data in a row. 
 //! @details 
-//!     Length of data array must be larger than cnt.
+//!     Length of data array must be larger than cnt. \n
 //!     This function bundles the data and sends it in one packet.
 //! @param data: Array of data to transmit
 //! @param len: Array of lengths corresponding to the same indexed value of 'data'
@@ -36,8 +36,9 @@ void API_SendHostString( void const* data, size_t len );
 
 //! @brief Send host raw data. 
 //! @details 
-//!     Since it does not append any packet header within the data transfer, you must transmit 
-//!      the packet first that contains size information before transferring main data 
+//!      Since it does not append any packet header within the data transfer, 
+//!     you must transmit the packet first that contains size information 
+//!     before transferring main data 
 void API_SendHostRaw( void const* data, size_t len ); 
 
 //! @}
@@ -58,12 +59,14 @@ void API_Logf( char const* fmt, ... ); //!< Print text out to host.
 
 //! @defgroup Depscan_API_Exports
 //! @details
-//!     These functions allow the Host to access memory points exported by the device using the get command.
-//!     If this exported memory becomes invalid, you must delete the export to avoid exporting invalid values.
+//!      These functions allow the Host to access memory points exported by the 
+//!     device using the get command. \n
+//!      If this exported memory becomes invalid, you must delete the export to 
+//!     avoid exporting invalid values.
 //! @{
 
 //! @brief Export memory location and its size.
-//! @param id: ID value must be generated via fnv1a_32.
+//! @param id: ID value must be generated via fnv1a_32. \n
 //!     It'll override existing information if given id is duplicated.
 //! @param mem: This must sustain until overwritten or removed.
 //! @param len: Memory length.

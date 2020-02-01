@@ -11,8 +11,8 @@ extern "C" {
 //! @defgroup Depscan_Motor
 //! @brief This motor class only provides an interface for handling stepper motors.
 //! @details
-//!     Since motors are very hardware dependent, all motor initialization must already be done on the
-//!      platform stage before use.
+//!      Since motors are very hardware dependent, all motor initialization must
+//!     already be done on the platform stage before use.
 //! @{
 //! @defgroup Depscan_Motor_Exported_Types
 //! @{
@@ -64,8 +64,9 @@ int Motor_Pos( motor_t );
 
 //! @brief Get motor's velocity.
 //! @returns velocity.
-//!     Since the output value can be negative value, it'll return zero if the motor is in error state.
-//!     To get exact error status of motor, @ref Motor_Stat function must be used.
+//!      Since the output value can be negative value, it'll return zero if the
+//!     motor is in error state. To get exact error status of motor, 
+//!     @ref Motor_Stat function must be used.
 int Motor_Velocity( motor_t );
 
 //! @brief Reset motor's origin to zero.
