@@ -85,15 +85,12 @@ extern "C" int API_Msg( char const* txt )
 //
 // - Launches host communication process
 // - Launches command queue/procedure process
-// - Initializes hi-precision hardware timer
 // - Initializes motor control logic
+// - Initializes hi-precision hardware timer
 extern "C" void StartDefaultTask( void* nouse_ )
 {
     InitHW();
     InitRW();
-
-    // launch hw timer manager
-    //! \todo. implement this
 
     // this function never returns.
     AppProc_HostIO( NULL );

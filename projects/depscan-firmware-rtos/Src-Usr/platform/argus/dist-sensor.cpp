@@ -43,28 +43,34 @@ static bool RefreshArgusSens();
 /////////////////////////////////////////////////////////////////////////////
 // Defs
 extern "C" {
+bool DistSens_IsAvailable( dist_sens_t h )
+{
+    return h->init_correct_ && !h->capturing_
+           && Argus_GetStatus( h->hnd_ ) == STATUS_OK;
+}
+
 bool DistSens_Configure( dist_sens_t h, dist_sens_config_t const* opt )
 {
-    if ( RefreshArgusSens() == false ) {
-        API_Msg(
-          "error: Configuration "
-          "failed.\n" );
+    if ( h->capturing_ ) {
+        API_Msg( "Cannot configure sensor during capture \n" );
         return false;
     }
 
-    if (
-      STATUS_OK != Argus_SetConfigurationFrameTime( h->hnd_, opt->Delay_us ) ) {
-        API_Msg(
-          "error: Sensor frame time "
-          "setting failed.\n" );
+    if ( RefreshArgusSens() == false ) {
+        API_Msg( "error: Configuration failed.\n" );
+        return false;
+    }
+
+    if ( STATUS_OK
+         != Argus_SetConfigurationFrameTime( h->hnd_, opt->Delay_us ) ) {
+        API_Msg( "error: Sensor frame time setting failed.\n" );
         return false;
     }
     h->conf_.Delay_us = opt->Delay_us;
 
-    if (
-      STATUS_OK
-      != Argus_SetConfigurationMeasurementMode(
-        h->hnd_, opt->bCloseDistanceMode ? ARGUS_MODE_B : ARGUS_MODE_A ) ) {
+    if ( STATUS_OK
+         != Argus_SetConfigurationMeasurementMode(
+           h->hnd_, opt->bCloseDistanceMode ? ARGUS_MODE_B : ARGUS_MODE_A ) ) {
         API_Msg(
           "error: Sensor mode setting "
           "failed.\n" );
@@ -101,11 +107,10 @@ bool DistSens_MeasureSync( dist_sens_t h, uint32_t Retry )
     return cb_param.result;
 }
 
-bool DistSens_MeasureAsync(
-  dist_sens_t          nouse_,
-  uint32_t             Retry,
-  void*                cb_obj,
-  dist_sens_async_cb_t cb )
+bool DistSens_MeasureAsync( dist_sens_t nouse_,
+  uint32_t                              Retry,
+  void*                                 cb_obj,
+  dist_sens_async_cb_t                  cb )
 {
     if ( !si.init_correct_ ) {
         API_Msg( "error: sensor is not initialized correctly.\n" );

@@ -87,7 +87,9 @@ bool DistSens_MeasureAsync(
   void*                cb_obj,
   dist_sens_async_cb_t cb );
 
-//! \param 
+//! \brief      Check if sensor is ready
+//! \returns    true if capture can begin.
+bool DistSens_IsAvailable( dist_sens_t );
 
 //! \}
 //! \}

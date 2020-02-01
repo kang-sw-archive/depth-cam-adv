@@ -15,6 +15,8 @@ extern transceiver_handle_t gHostConnection;
 //! Initailize all architecture associated to read-write operation.
 void InitRW();
 
+extern struct dist_sens__* ghDistSens;
+
 #ifdef __cplusplus
 }
 #endif // __cplusplus
