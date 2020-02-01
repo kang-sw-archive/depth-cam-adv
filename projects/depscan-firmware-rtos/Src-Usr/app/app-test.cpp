@@ -190,9 +190,13 @@ void Test_DistSensor( int argc, char* argv[] )
         }
 
         q9_22_t val;
-        DistSens_GetDistanceFxp( h, &val );
+        if ( DistSens_GetDistanceFxp( h, &val ) == false ) {
+            API_Msg( "warning: failed to get measure result.\n" );
+            return;
+        }
         API_Msg( "info: succeeded to capture image\n" );
-        API_Msgf( "info: measured distance is %f \n", val / (float)Q9_22_ONE );
+        API_Msgf( "info: measured distance is %x.%x \n", val >> 22,
+          val & ( ( 1 << 22 ) - 1 ) );
     };
 
     if ( DistSens_MeasureAsync( ghDistSens, retry, NULL, cb ) == false ) {

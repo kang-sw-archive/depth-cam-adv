@@ -122,6 +122,8 @@ bool DistSens_MeasureAsync( dist_sens_t nouse_,
     }
     si.capturing_ = true;
     si.valid_data = false;
+    si.cb_        = cb;
+    si.cb_obj_    = cb_obj;
 
     // Trigger measurement
     const argus_callback_t cb_a = []( status_t result, void* raw ) -> status_t {
@@ -142,7 +144,8 @@ bool DistSens_MeasureAsync( dist_sens_t nouse_,
         // Callback is always invoked regardless the measurement was
         // successful or not.
         si.capturing_ = false;
-        si.cb_( ghDistSens, si.cb_obj_, result );
+        if ( si.cb_ )
+            si.cb_( ghDistSens, si.cb_obj_, result );
         return result;
     };
 
