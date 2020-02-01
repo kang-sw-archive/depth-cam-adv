@@ -9,16 +9,18 @@ extern "C" {
 //! @addtogroup Depscan
 //! @{
 //! @defgroup Depscan_Motor
-//! @brief This motor class only provides an interface for handling stepper motors.
+//! @brief This motor class only provides an interface for handling
+//!     stepper motors.
 //! @details
-//!      Since motors are very hardware dependent, all motor initialization must
-//!     already be done on the platform stage before use.
-//! @{
-//! @defgroup Depscan_Motor_Exported_Types
+//!      Since motors are very hardware dependent, all motor initialization
+//!     must already be done on the platform stage before use. Therefore, the
+//!     motor handle must already be defined and available in the hardware
+//!     association layer header, such as hal.h, rather than created through
+//!     a function call.
 //! @{
 
 //! @brief Motor handle type
-typedef void* motor_t;
+typedef struct motor__* motor_t;
 
 //! @brief An constant label that indicates motor status
 typedef enum {
@@ -30,10 +32,6 @@ typedef enum {
     MOTOR_BUSY  = 2,
     MOTOR_ABORT = -1,
 } motor_status_t;
-
-//! @}
-//! @defgroup Depscan_Motor_APIs
-//! @{
 
 //! @brief Get motor status
 motor_status_t Motor_Stat( motor_t );
@@ -63,9 +61,9 @@ motor_status_t Motor_MoveTo( motor_t, int steps );
 int Motor_Pos( motor_t );
 
 //! @brief Get motor's velocity.
-//! @returns velocity.
-//!      Since the output value can be negative value, it'll return zero if the
-//!     motor is in error state. To get exact error status of motor, 
+//! @returns velocity. 
+//!     \n Since the output value can be negative value, it'll return zero if the
+//!     motor is in error state. To get exact error status of motor,
 //!     @ref Motor_Stat function must be used.
 int Motor_Velocity( motor_t );
 
@@ -75,7 +73,6 @@ motor_status_t Motor_ResetPos( motor_t );
 //! @brief Stop motor immediately. This does not assure exact motor position
 motor_status_t Motor_EmergencyStop( motor_t m );
 
-//! @}
 //! @}
 //! @}
 
