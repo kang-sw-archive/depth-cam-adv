@@ -330,7 +330,9 @@ int stringToTokens( char* str, char* argv[], size_t argv_len )
 
 void apndToHostBuf( void const* d, size_t len )
 {
-    uassert( s_hostTrBufHead + len < sizeof( s_hostTrBuf ) );
+    if ( s_hostTrBufHead + len >= sizeof(s_hostTrBuf) ) {
+        return;
+    }
 
     while ( s_bFlushing )
         vTaskDelay( 1 );

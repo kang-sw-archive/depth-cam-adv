@@ -3,7 +3,7 @@
 #include <cmsis_os2.h>
 #include <stm32f4xx_hal.h>
 #include <task.h>
-#include <uEmbedded-pp/static_timer_logic.hxx>
+#include <uEmbedded-pp/timer_logic.hxx>
 #include "../defs.h"
 
 /////////////////////////////////////////////////////////////////////////////
@@ -12,14 +12,24 @@ extern TIM_HandleTypeDef htim2;
 
 /////////////////////////////////////////////////////////////////////////////
 // Statics
-using timer_t = upp::static_timer_logic<usec_t, uint8_t, NUM_MAX_HWTIMER_NODE>;
+// using timer_t = upp::static_timer_logic<usec_t, uint8_t,
+// NUM_MAX_HWTIMER_NODE>;
+using timer_t = upp::linked_timer_logic<usec_t>;
 static timer_t s_tim;
 static usec_t  s_total_us = std::numeric_limits<usec_t>::max() - (usec_t)1e9;
 static TIM_HandleTypeDef& htim = htim2;
+static TaskHandle_t       sTimerTask;
+static StackType_t        sTimerStack[NUM_TIMER_TASK_STACK_WORDS];
+static StaticTask_t       sTimerTaskStaticCb;
 
-static TaskHandle_t sTimerTask;
-static StackType_t  sTimerStack[NUM_TIMER_TASK_STACK_WORDS];
-static StaticTask_t sTimerTaskStaticCb;
+static struct
+{
+    usec_t delay_;
+    void*  obj_;
+    void ( *cb_ )( void* );
+} s_isr_pending_timer[8];
+static size_t s_isr_pending_cnt_h = 0;
+static size_t s_isr_pending_cnt_t = 0;
 
 /////////////////////////////////////////////////////////////////////////////
 // Decls
@@ -73,7 +83,7 @@ extern "C" usec_t API_GetTime_us()
 extern "C" timer_handle_t
 API_SetTimer( usec_t delay, void* obj, void ( *cb )( void* ) )
 {
-    uassert( s_tim.capacity() > 0 );
+    uassert( s_tim.capacity() > 0 && cb );
     taskENTER_CRITICAL();
     auto r = s_tim.add( std::max( 11ull, delay ) - 10ull, obj, cb );
     // Wake update task
@@ -82,18 +92,24 @@ API_SetTimer( usec_t delay, void* obj, void ( *cb )( void* ) )
     return { r.id_, r.time_ };
 }
 
-extern "C" timer_handle_t
+extern "C" int print( char const* fmt, ... );
+
+extern "C" void
 API_SetTimerFromISR( usec_t delay, void* obj, void ( *cb )( void* ) )
 {
-    uassert( s_tim.capacity() > 0 );
-    auto prio = taskENTER_CRITICAL_FROM_ISR();
-    auto r    = s_tim.add( std::max( 11ull, delay ) - 10ull, obj, cb );
+#define countof( v ) ( sizeof( v ) / sizeof( *v ) )
+    size_t add[2] = { (size_t)1 - countof( s_isr_pending_timer ), 1 };
+
+    auto& pending = s_isr_pending_timer[s_isr_pending_cnt_h];
+    s_isr_pending_cnt_h
+      += add[s_isr_pending_cnt_h + 1 != countof( s_isr_pending_timer )];
+    pending.cb_    = cb;
+    pending.obj_   = obj;
+    pending.delay_ = std::max( 11ull, delay ) - 10ull;
 
     BaseType_t bHigherTaskPriorityWoken = pdFALSE;
-    taskEXIT_CRITICAL_FROM_ISR( prio );
     vTaskNotifyGiveFromISR( sTimerTask, &bHigherTaskPriorityWoken );
     portYIELD_FROM_ISR( bHigherTaskPriorityWoken );
-    return { r.id_, r.time_ };
 }
 
 extern "C" void API_AbortTimer( timer_handle_t h )
@@ -107,10 +123,27 @@ _Noreturn void TimerUpdateTask( void* nouse__ )
 {
     for ( ;; ) {
         ulTaskNotifyTake( pdTRUE, 100 /* For case if lost ... */ );
-
         __HAL_TIM_DISABLE_IT( &htim, TIM_FLAG_CC1 );
-        auto next = s_tim.update_lock(
-          []() { taskENTER_CRITICAL(); }, []() { taskEXIT_CRITICAL(); } );
+
+        // Process pending timers from ISR
+        size_t add[2] = { (size_t)1 - countof( s_isr_pending_timer ), 1 };
+        while ( s_isr_pending_cnt_h != s_isr_pending_cnt_t ) {
+            auto const& ref = s_isr_pending_timer[s_isr_pending_cnt_t];
+            s_isr_pending_cnt_t
+              += add[s_isr_pending_cnt_t + 1 != countof( s_isr_pending_timer )];
+
+            if ( ref.delay_ < 20ull ) {
+                ref.cb_( ref.obj_ );
+            }
+            else {
+                print( "info: Longer timer queue \n" );
+                s_tim.add( ref.delay_, ref.obj_, ref.cb_ );
+            }
+        }
+
+        // auto next = s_tim.update_lock(
+        //   []() { taskENTER_CRITICAL(); }, []() { taskEXIT_CRITICAL(); } );
+        auto next = s_tim.update();
 
         if ( next != (usec_t)-1 ) {
             int delay = next - API_GetTime_us();

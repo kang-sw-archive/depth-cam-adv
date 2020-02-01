@@ -66,8 +66,12 @@ void Test_S2PI()
     usec_t us_start = API_GetTime_us();
 
     API_Msg( "Testing first pattern:\n\t" );
-    S2PI_TransferFrameSync(
-      S2PI_SLAVE_ARGUS, tx, rx, sizeof( tx ), NULL, NULL );
+    auto cb = []( status_t, void* ) -> status_t {
+        API_Msg( "Async function call successful.\n" );
+        return 0;
+    };
+
+    S2PI_TransferFrameSync( S2PI_SLAVE_ARGUS, tx, rx, sizeof( tx ), cb, NULL );
 
     for ( size_t i = 0; i < sizeof( tx ); i++ )
         API_Putf( "%x ", tx[i] );
@@ -77,8 +81,7 @@ void Test_S2PI()
 
     memset( tx + 1, 0, sizeof( tx ) - 1 );
     API_Msg( "\nTesting second pattern:\n\t" );
-    S2PI_TransferFrameSync(
-      S2PI_SLAVE_ARGUS, tx, rx, sizeof( tx ), NULL, NULL );
+    S2PI_TransferFrameSync( S2PI_SLAVE_ARGUS, tx, rx, sizeof( tx ), cb, NULL );
 
     for ( size_t i = 0; i < sizeof( tx ); i++ )
         API_Putf( "%x ", tx[i] );
@@ -88,8 +91,7 @@ void Test_S2PI()
 
     memset( tx + 1, 0, 16 );
     API_Msg( "\nTesting third pattern:\n\t" );
-    S2PI_TransferFrameSync(
-      S2PI_SLAVE_ARGUS, tx, rx, sizeof( tx ), NULL, NULL );
+    S2PI_TransferFrameSync( S2PI_SLAVE_ARGUS, tx, rx, sizeof( tx ), cb, NULL );
 
     for ( size_t i = 0; i < sizeof( tx ); i++ )
         API_Putf( "%x ", tx[i] );
@@ -140,9 +142,10 @@ void Test_Timer( int argc, char* argv[] )
 
     // Shuffles timer tick
     //! \bug     Error on timer logic
-    //!          If the timers are assigned in random order, the problem is that the
-    //!         order of nodes is not guaranteed. A careful examination of the free
-    //!         space list is required.
+    //!          If the timers are assigned in random order, the problem is that
+    //!          the
+    //!         order of nodes is not guaranteed. A careful examination of the
+    //!         free space list is required.
     int arr[num];
     for ( size_t i = 0; i < num; i++ ) {
         arr[i] = i;
@@ -156,7 +159,12 @@ void Test_Timer( int argc, char* argv[] )
     for ( int i = 0; i < num; i++ ) {
         auto correct_delay
           = delay * ( arr[i] + 1 ) - ( API_GetTime_us() - ti.init );
-        API_SetTimer( correct_delay, &ti, timer_cb );
+        if ( i < num / 2 ) {
+            API_SetTimerFromISR( correct_delay, &ti, timer_cb );
+        }
+        else {
+            API_SetTimer( correct_delay, &ti, timer_cb );
+        }
     }
 }
 

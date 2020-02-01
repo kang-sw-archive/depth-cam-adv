@@ -171,7 +171,7 @@ void S2PI_TransferFrameSync( s2pi_slave_t slave,
     while ( S2PI_TransferFrame(
               slave, txData, rxData, frameSize, callback, callbackData )
             != STATUS_OK ) {
-        ; 
+        ;
     }
     while ( S2PI_GetStatus() != STATUS_IDLE ) {
     }
@@ -232,7 +232,7 @@ status_t S2PI_TransferFrame( s2pi_slave_t slave,
 
     HAL_StatusTypeDef res;
     status_t          retval;
-
+    
     if ( rxData ) {
         g_rxtxRunning = 1;
 #if !ASYNC_SPI
@@ -274,7 +274,7 @@ status_t S2PI_TransferFrame( s2pi_slave_t slave,
     HAL_GPIO_WritePin( s->chipSelectPort, s->chipSelectPin, !s->csActiveVal );
     s->latestTransferStatus = retval;
     if ( callback )
-        API_SetTimer( 15, s, timer_cb__spi );
+        API_SetTimerFromISR( 15, s, timer_cb__spi );
     g_rxtxRunning = 0;
 #endif
 

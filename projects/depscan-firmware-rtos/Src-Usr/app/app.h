@@ -103,8 +103,7 @@ timer_handle_t API_SetTimer( usec_t delay, void* obj, void ( *cb )( void* ) );
 
 //! \brief      Set timer. ISR safe version.
 //! \ref        API_SetTimer
-timer_handle_t
-API_SetTimerFromISR( usec_t delay, void* obj, void ( *cb )( void* ) );
+void API_SetTimerFromISR( usec_t delay, void* obj, void ( *cb )( void* ) );
 
 //! \brief      Abort timer.
 //! \param      h
