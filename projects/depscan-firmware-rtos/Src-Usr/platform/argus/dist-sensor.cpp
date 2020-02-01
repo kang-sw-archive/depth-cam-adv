@@ -61,16 +61,18 @@ bool DistSens_Configure( dist_sens_t h, dist_sens_config_t const* opt )
         return false;
     }
 
-    if ( STATUS_OK
-         != Argus_SetConfigurationFrameTime( h->hnd_, opt->Delay_us ) ) {
+    if (
+      Argus_SetConfigurationFrameTime( h->hnd_, opt->Delay_us ) != STATUS_OK ) {
         API_Msg( "error: Sensor frame time setting failed.\n" );
         return false;
     }
     h->conf_.Delay_us = opt->Delay_us;
 
-    if ( STATUS_OK
-         != Argus_SetConfigurationMeasurementMode(
-           h->hnd_, opt->bCloseDistanceMode ? ARGUS_MODE_B : ARGUS_MODE_A ) ) {
+    if (
+      Argus_SetConfigurationMeasurementMode(
+        h->hnd_,
+        opt->bCloseDistanceMode ? ARGUS_MODE_B : ARGUS_MODE_A )
+      != STATUS_OK ) {
         API_Msg(
           "error: Sensor mode setting "
           "failed.\n" );
@@ -107,10 +109,11 @@ bool DistSens_MeasureSync( dist_sens_t h, uint32_t Retry )
     return cb_param.result;
 }
 
-bool DistSens_MeasureAsync( dist_sens_t nouse_,
-  uint32_t                              Retry,
-  void*                                 cb_obj,
-  dist_sens_async_cb_t                  cb )
+bool DistSens_MeasureAsync(
+  dist_sens_t          nouse_,
+  uint32_t             Retry,
+  void*                cb_obj,
+  dist_sens_async_cb_t cb )
 {
     if ( !si.init_correct_ ) {
         API_Msg( "error: sensor is not initialized correctly.\n" );
@@ -127,12 +130,15 @@ bool DistSens_MeasureAsync( dist_sens_t nouse_,
     const argus_callback_t cb_a = []( status_t result, void* raw ) -> status_t {
         if ( result == STATUS_OK ) {
             result = Argus_EvaluateData(
-              si.hnd_, &si.result_, (ads_value_buf_t*)raw );
+              si.hnd_,
+              &si.result_,
+              (ads_value_buf_t*)raw );
             si.valid_data = true;
 
             if ( result != STATUS_OK ) {
                 API_Msgf(
-                  "error: failed to evaluate data for code %d\n", result );
+                  "error: failed to evaluate data for code %d\n",
+                  result );
             }
         }
         else {
