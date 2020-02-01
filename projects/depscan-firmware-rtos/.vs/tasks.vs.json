@@ -11,10 +11,16 @@
       ]
     },
     {
-      "taskLabel": "launch",
-      "appliesTo": "depscan-firmware-rtos.elf",
+      "taskLabel": "openocd",
+      "appliesTo": "*",
       "contextType": "custom",
       "command": ".dbgpkg/.launch.bat"
+    },
+    {
+      "taskLabel": "gdb-run",
+      "appliesTo": "*",
+      "contextType": "custom",
+      "command": ".dbgpkg/.gdb.bat"
     },
     {
       "taskLabel": "build",
@@ -25,11 +31,6 @@
         "all",
         "-j8"
       ]
-    },
-    {
-      "taskLabel": "task-depscan-firmware-rtos",
-      "appliesTo": "depscan-firmware-rtos.ioc",
-      "type": "launch"
     }
   ]
 }

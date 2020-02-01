@@ -19,5 +19,4 @@ echo monitor reset halt>>%TP%
 echo end>>%TP%
 echo set listsize 25>>%TP%
  
-
-%ARM_NONE_EABI_DIR%\arm-none-eabi-gdb.exe -x %TP%
+start %ARM_NONE_EABI_DIR%\arm-none-eabi-gdb.exe -x %TP%
