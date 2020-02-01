@@ -21,7 +21,24 @@ extern "C" bool AppHandler_TestCommand( int argc, char* argv[] )
 
     switch ( STRHASH( argv[0] ) ) {
         case CSTRHASH( "s2pi" ): {
-            uint8_t tx[] = { 0x04, 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f };
+            uint8_t tx[]
+                = { 0x04,
+                    0x00,
+                    0x01,
+                    0x02,
+                    0x03,
+                    0x04,
+                    0x05,
+                    0x06,
+                    0x07,
+                    0x08,
+                    0x09,
+                    0x0a,
+                    0x0b,
+                    0x0c,
+                    0x0d,
+                    0x0e,
+                    0x0f };
             uint8_t rx[sizeof( tx )];
             memset( rx, 0, sizeof( rx ) );
             usec_t us_start = API_GetTime_us();
@@ -88,11 +105,7 @@ extern "C" bool AppHandler_TestCommand( int argc, char* argv[] )
                 uint64_t now     = API_GetTime_us();
                 int      elapsed = now - init;
 
-                API_Logf(
-                    "<%3d> %d us (error %d us)\n",
-                    t.cnt,
-                    elapsed,
-                    elapsed - ( t.delay * ( t.cnt + 1 ) ) );
+                API_Logf( "<%3d> %d us (error %d us)\n", t.cnt, elapsed, elapsed - ( t.delay * ( t.cnt + 1 ) ) );
 
                 t.cnt++;
             };

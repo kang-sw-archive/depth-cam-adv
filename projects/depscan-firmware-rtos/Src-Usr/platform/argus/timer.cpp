@@ -1,11 +1,13 @@
 /*************************************************************************/ /**
- * @file
- * @brief    	This file is part of the Argus API.
- * @details		This file provides an interface for the required timer modules.
- *
- * @copyright	Copyright c 2016-2018, Avago Technologies GmbH.
- * 				All rights reserved.
- *****************************************************************************/
+                                                                             * @file
+                                                                             * @brief    	This file is part of the
+                                                                             *Argus API.
+                                                                             * @details		This file provides an
+                                                                             *interface for the required timer modules.
+                                                                             *
+                                                                             * @copyright	Copyright c 2016-2018, Avago
+                                                                             *Technologies GmbH. All rights reserved.
+                                                                             *****************************************************************************/
 
 /*!***************************************************************************
  * @defgroup	argus_timer Timer: Argus Timer Interface

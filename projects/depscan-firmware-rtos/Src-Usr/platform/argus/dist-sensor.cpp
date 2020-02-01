@@ -10,16 +10,13 @@ dist_sens_t ghDistSens = &s_inst;
 
 extern "C" {
 void DistSens_Configure( dist_sens_t, dist_sens_config_t const* opt )
-{
-}
+{ }
 
 void DistSens_GetConfigure( dist_sens_t, dist_sens_config_t* out )
-{
-}
+{ }
 
 void DistSens_GetDistanceFxp( dist_sens_t, fxp9_22_t* out )
-{
-}
+{ }
 
 bool DistSens_MeasureSync( dist_sens_t, uint32_t Retry )
 {

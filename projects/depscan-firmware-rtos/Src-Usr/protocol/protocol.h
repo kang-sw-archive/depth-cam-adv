@@ -15,5 +15,5 @@ typedef uint32_t packetinfo_t;
 #define PACKET_IS_STR( V )    ( (V)&PACKET_STRBITMASK )
 #define PACKET_LENGTH( V )    ( (V)&PACKET_LENGTHMASK )
 
-#define PACKET_MAKE( IS_STR, DATALEN ) \
+#define PACKET_MAKE( IS_STR, DATALEN )                                                                                 \
     ( ( packetinfo_t )( PACKET_ID | ( PACKET_STRBITMASK * ( IS_STR != 0 ) ) | ( PACKET_LENGTHMASK & ( DATALEN ) ) ) )

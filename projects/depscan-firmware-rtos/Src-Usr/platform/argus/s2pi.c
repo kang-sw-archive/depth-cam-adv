@@ -84,7 +84,7 @@ extern DMA_HandleTypeDef hdma_spi1_rx;
    <----------------------------------------------------------------<> */
 
 //
-//void HAL_SPI_AbortCpltCallback( SPI_HandleTypeDef* hspi )
+// void HAL_SPI_AbortCpltCallback( SPI_HandleTypeDef* hspi )
 //{
 //    transfer_done( ERROR_ABORTED );
 //}
@@ -160,7 +160,13 @@ void S2PI_Init()
     }
 }
 
-void S2PI_TransferFrameSync( s2pi_slave_t slave, uint8_t const* txData, uint8_t* rxData, size_t frameSize, s2pi_callback_t callback, void* callbackData )
+void S2PI_TransferFrameSync(
+    s2pi_slave_t    slave,
+    uint8_t const*  txData,
+    uint8_t*        rxData,
+    size_t          frameSize,
+    s2pi_callback_t callback,
+    void*           callbackData )
 {
     while ( S2PI_TransferFrame( slave, txData, rxData, frameSize, callback, callbackData ) != STATUS_OK ) { }
     while ( S2PI_GetStatus() != STATUS_IDLE ) { }
@@ -191,12 +197,13 @@ status_t S2PI_GetStatus( void )
     }
 }
 
-status_t S2PI_TransferFrame( s2pi_slave_t    slave,
-                             uint8_t const*  txData,
-                             uint8_t*        rxData,
-                             size_t          frameSize,
-                             s2pi_callback_t callback,
-                             void*           callbackData )
+status_t S2PI_TransferFrame(
+    s2pi_slave_t    slave,
+    uint8_t const*  txData,
+    uint8_t*        rxData,
+    size_t          frameSize,
+    s2pi_callback_t callback,
+    void*           callbackData )
 {
     uassert( txData );
     uassert( frameSize );

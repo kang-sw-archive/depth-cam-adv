@@ -29,8 +29,7 @@ extern "C" bool AppHandler_CaptureCommand( int argc, char* argv[] )
             }
 
             auto arg = STRHASH( argv[1] );
-            if ( arg == CSTRHASH( "scan" ) ) {
-            }
+            if ( arg == CSTRHASH( "scan" ) ) { }
             else if ( arg == CSTRHASH( "point" ) ) {
             }
             else {
@@ -39,8 +38,7 @@ extern "C" bool AppHandler_CaptureCommand( int argc, char* argv[] )
 
         case CSTRHASH( "close" ): {
         }
-        default:
-            return false;
+        default: return false;
     }
 
     return true;

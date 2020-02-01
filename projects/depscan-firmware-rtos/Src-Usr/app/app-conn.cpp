@@ -115,8 +115,7 @@ static struct export_data
     size_t     size_ = 0;
     static int compare( void const* a, void const* b )
     {
-        return reinterpret_cast<node const*>( a )->id_
-               - reinterpret_cast<node const*>( b )->id_;
+        return reinterpret_cast<node const*>( a )->id_ - reinterpret_cast<node const*>( b )->id_;
     }
 } s_xd;
 
@@ -256,25 +255,21 @@ void stringCmdHandler( char* str, size_t len )
             }
             ProcessGet( argv[1] );
         } break;
-        default:
-            break;
+        default: break;
     }
 }
 
-extern "C" __weak_symbol bool
-AppHandler_CaptureCommand( int argc, char* argv[] )
+extern "C" __weak_symbol bool AppHandler_CaptureCommand( int argc, char* argv[] )
 {
     return true;
 }
 
-extern "C" __weak_symbol bool
-AppHandler_CaptureBinary( char* data, size_t len )
+extern "C" __weak_symbol bool AppHandler_CaptureBinary( char* data, size_t len )
 {
     return false;
 }
 
-extern "C" __weak_symbol bool
-AppHandler_TestCommand( int argc, char* argv[] )
+extern "C" __weak_symbol bool AppHandler_TestCommand( int argc, char* argv[] )
 {
     return false;
 }
