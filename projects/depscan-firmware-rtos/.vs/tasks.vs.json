@@ -13,7 +13,7 @@
     {
       "taskLabel": "launch",
       "appliesTo": "depscan-firmware-rtos.elf",
-      "contextType": "build",
+      "contextType": "custom",
       "command": ".dbgpkg/.launch.bat"
     },
     {

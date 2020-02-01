@@ -75,7 +75,7 @@ API_SetTimer( usec_t delay, void* obj, void ( *cb )( void* ) )
 {
     uassert( s_tim.capacity() > 0 );
     taskENTER_CRITICAL();
-    auto r = s_tim.add( std::max( 10ull, delay - 10ull ), obj, cb );
+    auto r = s_tim.add( std::max( 11ull, delay ) - 10ull, obj, cb );
     // Wake update task
     xTaskNotifyGive( sTimerTask );
     taskEXIT_CRITICAL();
@@ -86,9 +86,11 @@ extern "C" timer_handle_t
 API_SetTimerFromISR( usec_t delay, void* obj, void ( *cb )( void* ) )
 {
     uassert( s_tim.capacity() > 0 );
-    auto r = s_tim.add( std::max( 10ull, delay - 10ull ), obj, cb );
+    auto prio = taskENTER_CRITICAL_FROM_ISR();
+    auto r    = s_tim.add( std::max( 11ull, delay ) - 10ull, obj, cb );
 
     BaseType_t bHigherTaskPriorityWoken = pdFALSE;
+    taskEXIT_CRITICAL_FROM_ISR( prio );
     vTaskNotifyGiveFromISR( sTimerTask, &bHigherTaskPriorityWoken );
     portYIELD_FROM_ISR( bHigherTaskPriorityWoken );
     return { r.id_, r.time_ };
@@ -107,7 +109,8 @@ _Noreturn void TimerUpdateTask( void* nouse__ )
         ulTaskNotifyTake( pdTRUE, 100 /* For case if lost ... */ );
 
         __HAL_TIM_DISABLE_IT( &htim, TIM_FLAG_CC1 );
-        auto next = s_tim.update();
+        auto next = s_tim.update_lock(
+          []() { taskENTER_CRITICAL(); }, []() { taskEXIT_CRITICAL(); } );
 
         if ( next != (usec_t)-1 ) {
             int delay = next - API_GetTime_us();

@@ -171,7 +171,7 @@ void S2PI_TransferFrameSync( s2pi_slave_t slave,
     while ( S2PI_TransferFrame(
               slave, txData, rxData, frameSize, callback, callbackData )
             != STATUS_OK ) {
-        (void*)0; // Do nothing
+        ; 
     }
     while ( S2PI_GetStatus() != STATUS_IDLE ) {
     }

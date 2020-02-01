@@ -254,7 +254,7 @@ void stringCmdHandler( char* str, size_t len )
             break;
         }
         AppHandler_TestCommand( argc - 1, argv + 1 );
-    }
+    } break;
 
     case STRCASE( "get" ): {
         if ( argc == 1 ) {

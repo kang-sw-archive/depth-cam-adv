@@ -9,6 +9,8 @@
 #include "../platform/hw.h"
 #include "../platform/s2pi.h"
 #include "app.h"
+#include "dist-sensor.h"
+#include "hal.h"
 
 /////////////////////////////////////////////////////////////////////////////
 // Static decls
@@ -52,7 +54,7 @@ extern "C" bool AppHandler_TestCommand( int argc, char* argv[] )
 
 /////////////////////////////////////////////////////////////////////////////
 // Static impls
-static void Test_S2PI()
+void Test_S2PI()
 {
     // clang-format off
     uint8_t tx[] = {
@@ -136,8 +138,58 @@ void Test_Timer( int argc, char* argv[] )
         t.cnt++;
     };
 
+    // Shuffles timer tick
+    //! \bug     Error on timer logic
+    //!          If the timers are assigned in random order, the problem is that the
+    //!         order of nodes is not guaranteed. A careful examination of the free
+    //!         space list is required.
+    int arr[num];
+    for ( size_t i = 0; i < num; i++ ) {
+        arr[i] = i;
+    }
+
+    srand( (uint32_t)API_GetTime_us() );
+    for ( size_t i = 0; i < num * 4; i++ ) {
+        std::swap( arr[rand() % num], arr[rand() % num] );
+    }
+
     for ( int i = 0; i < num; i++ ) {
-        auto correct_delay = delay * ( i + 1 ) - ( API_GetTime_us() - ti.init );
+        auto correct_delay
+          = delay * ( arr[i] + 1 ) - ( API_GetTime_us() - ti.init );
         API_SetTimer( correct_delay, &ti, timer_cb );
     }
+}
+
+void Test_DistSensor( int argc, char* argv[] )
+{
+    dist_sens_config_t conf;
+    DistSens_GetConfigure( ghDistSens, &conf );
+    if ( DistSens_Configure( ghDistSens, &conf ) == false ) {
+        API_Msg( "error: failed to initialize distance sensor.\n" );
+        return;
+    }
+
+    auto retry = 5;
+    if ( argc >= 1 )
+        retry = std::max( retry, atoi( argv[1] ) );
+
+    API_Msgf( "info: retry count is set to %d\n", retry );
+
+    dist_sens_async_cb_t const cb = []( dist_sens_t h, void*, int result ) {
+        if ( result != DIST_SENS_OK ) {
+            API_Msgf( "info: failed to capture image with error %d\n", result );
+            return;
+        }
+
+        q9_22_t val;
+        DistSens_GetDistanceFxp( h, &val );
+        API_Msg( "info: succeeded to capture image\n" );
+        API_Msgf( "info: measured distance is %f \n", val / (float)Q9_22_ONE );
+    };
+
+    if ( DistSens_MeasureAsync( ghDistSens, retry, NULL, cb ) == false ) {
+        API_Msg( "error: failed to start measurement. \n" );
+        return;
+    }
+    API_Msg( "info: measurement triggered. \n" );
 }
