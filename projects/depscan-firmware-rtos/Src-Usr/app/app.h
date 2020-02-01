@@ -32,10 +32,9 @@ void API_SendHostBinary( void const* data, size_t len );
 //!             'data'
 //! \param      cnt
 //!              Number of transmit requests
-void API_SendHostBinaries(
-  void const* const data[],
-  size_t const      len[],
-  size_t            cnt );
+void API_SendHostBinaries( void const* const data[],
+  size_t const                               len[],
+  size_t                                     cnt );
 
 //! \brief      Send host string data.
 void API_SendHostString( void const* data, size_t len );

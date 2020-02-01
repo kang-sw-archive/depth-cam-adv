@@ -81,8 +81,7 @@ bool DistSens_MeasureSync( dist_sens_t, uint32_t Retry );
 //! \param      cb Callback call when measurement done.
 //! \returns    See \ref DistSens_MeasureSync
 //! \see        DistSens_MeasureSync
-bool DistSens_MeasureAsync(
-  dist_sens_t,
+bool DistSens_MeasureAsync( dist_sens_t,
   uint32_t             Retry,
   void*                cb_obj,
   dist_sens_async_cb_t cb );

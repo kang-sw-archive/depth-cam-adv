@@ -69,10 +69,7 @@ extern "C" int API_Msg( char const* txt )
 {
     auto t = API_GetTime_us();
     char buf[16];
-    sprintf(
-      buf,
-      "[%6u.%06u]",
-      ( uint32_t )( t / 1000000u ),
+    sprintf( buf, "[%6u.%06u]", ( uint32_t )( t / 1000000u ),
       ( uint32_t )( t % 1000000u ) );
     API_SendHostString( buf, sizeof( buf ) );
     API_SendHostString( txt, strlen( txt ) + 1 );

@@ -157,27 +157,19 @@ void S2PI_Init()
     for ( i = 0; i < S2PI_SLAVE_MAX; i++ ) {
         struct slave_desc volatile* s = g_slaves + i;
         HAL_GPIO_WritePin(
-          s->chipSelectPort,
-          s->chipSelectPin,
-          !s->csActiveVal );
+          s->chipSelectPort, s->chipSelectPin, !s->csActiveVal );
     }
 }
 
-void S2PI_TransferFrameSync(
-  s2pi_slave_t    slave,
-  uint8_t const*  txData,
-  uint8_t*        rxData,
-  size_t          frameSize,
-  s2pi_callback_t callback,
-  void*           callbackData )
+void S2PI_TransferFrameSync( s2pi_slave_t slave,
+  uint8_t const*                          txData,
+  uint8_t*                                rxData,
+  size_t                                  frameSize,
+  s2pi_callback_t                         callback,
+  void*                                   callbackData )
 {
     while ( S2PI_TransferFrame(
-              slave,
-              txData,
-              rxData,
-              frameSize,
-              callback,
-              callbackData )
+              slave, txData, rxData, frameSize, callback, callbackData )
             != STATUS_OK ) {
         (void*)0; // Do nothing
     }
@@ -210,13 +202,12 @@ status_t S2PI_GetStatus( void )
     }
 }
 
-status_t S2PI_TransferFrame(
-  s2pi_slave_t    slave,
-  uint8_t const*  txData,
-  uint8_t*        rxData,
-  size_t          frameSize,
-  s2pi_callback_t callback,
-  void*           callbackData )
+status_t S2PI_TransferFrame( s2pi_slave_t slave,
+  uint8_t const*                          txData,
+  uint8_t*                                rxData,
+  size_t                                  frameSize,
+  s2pi_callback_t                         callback,
+  void*                                   callbackData )
 {
     uassert( txData );
     uassert( frameSize );
@@ -246,17 +237,10 @@ status_t S2PI_TransferFrame(
         g_rxtxRunning = 1;
 #if !ASYNC_SPI
         res = HAL_SPI_TransmitReceive(
-          &hspi1,
-          (uint8_t*)txData,
-          rxData,
-          frameSize,
-          1000 );
+          &hspi1, (uint8_t*)txData, rxData, frameSize, 1000 );
 #else
         res = HAL_SPI_TransmitReceive_DMA(
-          &hspi1,
-          (uint8_t*)txData,
-          rxData,
-          frameSize );
+          &hspi1, (uint8_t*)txData, rxData, frameSize );
 #endif
     }
     else {
@@ -276,17 +260,13 @@ status_t S2PI_TransferFrame(
         // print("Hal device is busy. \n" );
         retval = STATUS_BUSY;
         HAL_GPIO_WritePin(
-          s->chipSelectPort,
-          s->chipSelectPin,
-          !s->csActiveVal );
+          s->chipSelectPort, s->chipSelectPin, !s->csActiveVal );
     }
     else {
         // print( "Transmit error. \n" );
         retval = ERROR_ABORTED;
         HAL_GPIO_WritePin(
-          s->chipSelectPort,
-          s->chipSelectPin,
-          !s->csActiveVal );
+          s->chipSelectPort, s->chipSelectPin, !s->csActiveVal );
     }
 
 #if !ASYNC_SPI

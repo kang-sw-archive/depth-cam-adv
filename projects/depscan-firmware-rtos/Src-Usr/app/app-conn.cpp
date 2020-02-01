@@ -65,8 +65,8 @@ extern "C" _Noreturn void AppProc_HostIO( void* nouse_ )
             continue;
 
         // Call command procedure
-        ( PACKET_IS_STR( packet ) ? stringCmdHandler
-                                  : binaryCmdHandler )( buf, len );
+        ( PACKET_IS_STR( packet ) ? stringCmdHandler : binaryCmdHandler )(
+          buf, len );
     }
 }
 
@@ -80,10 +80,9 @@ void API_SendHostBinary( void const* data, size_t len )
     apndToHostBuf( data, len );
 }
 
-void API_SendHostBinaries(
-  void const* const data[],
-  size_t const      len[],
-  size_t            cnt )
+void API_SendHostBinaries( void const* const data[],
+  size_t const                               len[],
+  size_t                                     cnt )
 {
     size_t sum = 0;
     for ( size_t i = 0; i < cnt; i++ )
@@ -269,8 +268,8 @@ void stringCmdHandler( char* str, size_t len )
     }
 }
 
-extern "C" __weak_symbol bool
-AppHandler_CaptureCommand( int argc, char* argv[] )
+extern "C" __weak_symbol bool AppHandler_CaptureCommand( int argc,
+  char*                                                      argv[] )
 {
     return true;
 }

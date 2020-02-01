@@ -29,13 +29,12 @@ typedef enum
 //! \param      callback: Called when transfer is finished.
 //! \param      callbackData: Additional argument which will be passed into
 //!             callback.
-void S2PI_TransferFrameSync(
-  s2pi_slave_t    slave,
-  uint8_t const*  txData,
-  uint8_t*        rxData,
-  size_t          frameSize,
-  s2pi_callback_t callback,
-  void*           callbackData );
+void S2PI_TransferFrameSync( s2pi_slave_t slave,
+  uint8_t const*                          txData,
+  uint8_t*                                rxData,
+  size_t                                  frameSize,
+  s2pi_callback_t                         callback,
+  void*                                   callbackData );
 
 //! \}
 //! \}
