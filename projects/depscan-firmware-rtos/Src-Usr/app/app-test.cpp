@@ -21,36 +21,16 @@ extern "C" bool AppHandler_TestCommand( int argc, char* argv[] )
 
     switch ( STRHASH( argv[0] ) ) {
         case CSTRHASH( "s2pi" ): {
-            uint8_t tx[]
-                = { 0x04,
-                    0x00,
-                    0x01,
-                    0x02,
-                    0x03,
-                    0x04,
-                    0x05,
-                    0x06,
-                    0x07,
-                    0x08,
-                    0x09,
-                    0x0a,
-                    0x0b,
-                    0x0c,
-                    0x0d,
-                    0x0e,
-                    0x0f };
+            // clang-format off
+            uint8_t tx[] = { 0x04, 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 
+                0x06, 0x07, 0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f };
+            // clang-format on
             uint8_t rx[sizeof( tx )];
             memset( rx, 0, sizeof( rx ) );
             usec_t us_start = API_GetTime_us();
 
             API_Msg( "Testing first pattern:\n\t" );
-            S2PI_TransferFrameSync(
-                S2PI_SLAVE_ARGUS,
-                tx,
-                rx,
-                sizeof( tx ),
-                NULL,
-                NULL );
+            S2PI_TransferFrameSync( S2PI_SLAVE_ARGUS, tx, rx, sizeof( tx ), NULL, NULL );
 
             for ( size_t i = 0; i < sizeof( tx ); i++ )
                 API_Putf( "%x ", tx[i] );
@@ -60,13 +40,7 @@ extern "C" bool AppHandler_TestCommand( int argc, char* argv[] )
 
             memset( tx + 1, 0, sizeof( tx ) - 1 );
             API_Msg( "\nTesting second pattern:\n\t" );
-            S2PI_TransferFrameSync(
-                S2PI_SLAVE_ARGUS,
-                tx,
-                rx,
-                sizeof( tx ),
-                NULL,
-                NULL );
+            S2PI_TransferFrameSync( S2PI_SLAVE_ARGUS, tx, rx, sizeof( tx ), NULL, NULL );
 
             for ( size_t i = 0; i < sizeof( tx ); i++ )
                 API_Putf( "%x ", tx[i] );
@@ -76,13 +50,7 @@ extern "C" bool AppHandler_TestCommand( int argc, char* argv[] )
 
             memset( tx + 1, 0, 16 );
             API_Msg( "\nTesting third pattern:\n\t" );
-            S2PI_TransferFrameSync(
-                S2PI_SLAVE_ARGUS,
-                tx,
-                rx,
-                sizeof( tx ),
-                NULL,
-                NULL );
+            S2PI_TransferFrameSync( S2PI_SLAVE_ARGUS, tx, rx, sizeof( tx ), NULL, NULL );
 
             for ( size_t i = 0; i < sizeof( tx ); i++ )
                 API_Putf( "%x ", tx[i] );
@@ -90,9 +58,7 @@ extern "C" bool AppHandler_TestCommand( int argc, char* argv[] )
             for ( size_t i = 0; i < sizeof( tx ); i++ )
                 API_Putf( "%x ", rx[i] );
 
-            API_Putf(
-                "\n Elapsed: %d\n",
-                (int)( API_GetTime_us() - us_start ) );
+            API_Putf( "\n Elapsed: %d\n", (int)( API_GetTime_us() - us_start ) );
         } break;
 
         case CSTRHASH( "test-timer" ): {
@@ -106,9 +72,7 @@ extern "C" bool AppHandler_TestCommand( int argc, char* argv[] )
             int num = 1, delay = 1;
 
             if ( argc >= 2 )
-                num = std::min(
-                    NUM_MAX_HWTIMER_NODE,
-                    std::max( 1, atoi( argv[1] ) ) );
+                num = std::min( NUM_MAX_HWTIMER_NODE, std::max( 1, atoi( argv[1] ) ) );
             if ( argc >= 3 )
                 delay = std::max( 100, atoi( argv[2] ) );
 
@@ -128,17 +92,16 @@ extern "C" bool AppHandler_TestCommand( int argc, char* argv[] )
                 int      elapsed = now - init;
 
                 API_Msgf(
-                    "<%3d> %d us (error %d us)\n",
-                    t.cnt,
-                    elapsed,
-                    elapsed - ( t.delay * ( t.cnt + 1 ) ) );
+                  "<%3d> %d us (error %d us)\n",
+                  t.cnt,
+                  elapsed,
+                  elapsed - ( t.delay * ( t.cnt + 1 ) ) );
 
                 t.cnt++;
             };
 
             for ( int i = 0; i < num; i++ ) {
-                auto correct_delay
-                    = delay * ( i + 1 ) - ( API_GetTime_us() - ti.init );
+                auto correct_delay = delay * ( i + 1 ) - ( API_GetTime_us() - ti.init );
                 API_SetTimer( correct_delay, &ti, timer_cb );
             }
         } break;

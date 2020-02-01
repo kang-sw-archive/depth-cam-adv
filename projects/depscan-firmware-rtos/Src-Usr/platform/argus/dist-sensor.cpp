@@ -141,6 +141,7 @@ bool DistSens_MeasureAsync(
         // successful or not.
         si.capturing_ = false;
         si.cb_( ghDistSens, si.cb_obj_, result );
+        return result;
     };
 
     for ( size_t i = 0; i < Retry; ) {
