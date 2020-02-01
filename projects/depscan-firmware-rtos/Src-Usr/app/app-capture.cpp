@@ -20,7 +20,7 @@ extern "C" bool AppHandler_CaptureCommand( int argc, char* argv[] )
     switch ( upp::hash::fnv1a_32( argv[0] ) ) {
         case CSTRHASH( "init" ): {
             if ( argc < 2 ) {
-                API_Log(
+                API_Msg(
                     "Initialization must specify capture options. usage: \n"
                     "  capture-init <mode>\n"
                     "       mode: scan  - Scanning mode. \n"

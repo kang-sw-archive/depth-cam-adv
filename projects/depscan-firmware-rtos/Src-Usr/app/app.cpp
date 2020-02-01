@@ -49,7 +49,7 @@ extern "C" void API_Putf( char const* fmt, ... )
     API_SendHostString( buf, allocsz );
 }
 
-void API_Logf( char const* fmt, ... )
+void API_Msgf( char const* fmt, ... )
 {
     va_list vp;
     va_list vp2;
@@ -62,10 +62,10 @@ void API_Logf( char const* fmt, ... )
     vsprintf( buf, fmt, vp2 );
     va_end( vp2 );
 
-    API_Log( buf );
+    API_Msg( buf );
 }
 
-extern "C" int API_Log( char const* txt )
+extern "C" int API_Msg( char const* txt )
 {
     auto t = API_GetTime_us();
     char buf[16];

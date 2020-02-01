@@ -57,10 +57,10 @@ void API_Putf( char const* fmt, ... ); //!< Print text without time header
 //! @brief Transmit log string. It'll automatically append time information in
 //! front.
 //! @return nothing. Don't use.
-int API_Log( char const* txt );
+int API_Msg( char const* txt );
 
-//! Formatted version of @ref API_Log
-void API_Logf( char const* fmt, ... ); //!< Print text out to host.
+//! Formatted version of @ref API_Msg
+void API_Msgf( char const* fmt, ... ); //!< Print text out to host.
 //! @}
 
 //! @defgroup Depscan_API_Exports

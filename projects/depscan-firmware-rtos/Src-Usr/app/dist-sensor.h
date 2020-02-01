@@ -51,17 +51,19 @@ typedef void (
     *dist_sens_async_cb_t )( dist_sens_t, void* /*obj*/, int /* error_code */ );
 
 //! @brief Configure sensor with given configuration properties
-void DistSens_Configure( dist_sens_t, dist_sens_config_t const* opt );
+bool DistSens_Configure( dist_sens_t, dist_sens_config_t const* opt );
 
 //! @param Get configuration info from sensor
 void DistSens_GetConfigure( dist_sens_t, dist_sens_config_t* out );
 
 //! @brief Get measurement result value as FXP9_22_t.
 //! @param [out] out Get measurement result in fxp format
-void DistSens_GetDistanceFxp( dist_sens_t, fxp9_22_t* out );
+//! @returns false if there's no data to read out.
+bool DistSens_GetDistanceFxp( dist_sens_t, fxp9_22_t* out );
 
 //! @brief Get amplitude value as UFXP4_8_t
-void DistSens_GetDistanceFxp( dist_sens_t, fxp9_22_t* out );
+//! @returns false if there's no data to read out.
+bool DistSens_GetAmpFxp( dist_sens_t, ufxp_12_4_t* out );
 
 //! @brief Trigger measurement synchronously
 //! @param Retry Number of retry chance when measurement fails. \n

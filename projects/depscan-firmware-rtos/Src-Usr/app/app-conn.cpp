@@ -183,7 +183,7 @@ static void ProcessGet( char const* name )
     auto at = arr + idx;
 
     if ( at->id_ != id ) {
-        API_Logf( "Given name %s is not exported data name\n", name );
+        API_Msgf( "Given name %s is not exported data name\n", name );
         return;
     }
 
@@ -255,7 +255,7 @@ void stringCmdHandler( char* str, size_t len )
 
         case STRCASE( "capture" ): {
             if ( argc == 1 ) {
-                API_Log( "error: command 'capture' requires argument.\n" );
+                API_Msg( "error: command 'capture' requires argument.\n" );
                 break;
             }
             AppHandler_CaptureCommand( argc - 1, argv + 1 );
@@ -263,7 +263,7 @@ void stringCmdHandler( char* str, size_t len )
 
         case STRCASE( "test" ): {
             if ( argc == 1 ) {
-                API_Log( "error: command 'test' requires argument. \n" );
+                API_Msg( "error: command 'test' requires argument. \n" );
                 break;
             }
             AppHandler_TestCommand( argc - 1, argv + 1 );
@@ -271,7 +271,7 @@ void stringCmdHandler( char* str, size_t len )
 
         case STRCASE( "get" ): {
             if ( argc == 1 ) {
-                API_Logf( "error: command 'get' requires argument.\n" );
+                API_Msgf( "error: command 'get' requires argument.\n" );
                 break;
             }
             ProcessGet( argv[1] );
@@ -302,7 +302,7 @@ void binaryCmdHandler( char* data, size_t len )
         return;
     }
 
-    API_Log( "warning: failed to process binary data\n" );
+    API_Msg( "warning: failed to process binary data\n" );
 }
 
 int stringToTokens( char* str, char* argv[], size_t argv_len )

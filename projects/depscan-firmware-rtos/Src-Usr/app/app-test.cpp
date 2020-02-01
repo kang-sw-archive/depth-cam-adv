@@ -17,7 +17,7 @@
 
 extern "C" bool AppHandler_TestCommand( int argc, char* argv[] )
 {
-    API_Logf( "info: Test sequence for ::%s:: \n", argv[0] );
+    API_Msgf( "info: Test sequence for ::%s:: \n", argv[0] );
 
     switch ( STRHASH( argv[0] ) ) {
         case CSTRHASH( "s2pi" ): {
@@ -43,7 +43,7 @@ extern "C" bool AppHandler_TestCommand( int argc, char* argv[] )
             memset( rx, 0, sizeof( rx ) );
             usec_t us_start = API_GetTime_us();
 
-            API_Log( "Testing first pattern:\n\t" );
+            API_Msg( "Testing first pattern:\n\t" );
             S2PI_TransferFrameSync(
                 S2PI_SLAVE_ARGUS,
                 tx,
@@ -54,12 +54,12 @@ extern "C" bool AppHandler_TestCommand( int argc, char* argv[] )
 
             for ( size_t i = 0; i < sizeof( tx ); i++ )
                 API_Putf( "%x ", tx[i] );
-            API_Log( "\n\t" );
+            API_Msg( "\n\t" );
             for ( size_t i = 0; i < sizeof( tx ); i++ )
                 API_Putf( "%x ", rx[i] );
 
             memset( tx + 1, 0, sizeof( tx ) - 1 );
-            API_Log( "\nTesting second pattern:\n\t" );
+            API_Msg( "\nTesting second pattern:\n\t" );
             S2PI_TransferFrameSync(
                 S2PI_SLAVE_ARGUS,
                 tx,
@@ -70,12 +70,12 @@ extern "C" bool AppHandler_TestCommand( int argc, char* argv[] )
 
             for ( size_t i = 0; i < sizeof( tx ); i++ )
                 API_Putf( "%x ", tx[i] );
-            API_Log( "\n\t" );
+            API_Msg( "\n\t" );
             for ( size_t i = 0; i < sizeof( tx ); i++ )
                 API_Putf( "%x ", rx[i] );
 
             memset( tx + 1, 0, 16 );
-            API_Log( "\nTesting third pattern:\n\t" );
+            API_Msg( "\nTesting third pattern:\n\t" );
             S2PI_TransferFrameSync(
                 S2PI_SLAVE_ARGUS,
                 tx,
@@ -86,7 +86,7 @@ extern "C" bool AppHandler_TestCommand( int argc, char* argv[] )
 
             for ( size_t i = 0; i < sizeof( tx ); i++ )
                 API_Putf( "%x ", tx[i] );
-            API_Log( "\n\t" );
+            API_Msg( "\n\t" );
             for ( size_t i = 0; i < sizeof( tx ); i++ )
                 API_Putf( "%x ", rx[i] );
 
@@ -113,7 +113,7 @@ extern "C" bool AppHandler_TestCommand( int argc, char* argv[] )
                 delay = std::max( 100, atoi( argv[2] ) );
 
             if ( ti.cnt != ti.num ) {
-                API_Log( "Yet timer task is running ... \n" );
+                API_Msg( "Yet timer task is running ... \n" );
                 break;
             }
             ti.init  = API_GetTime_us();
@@ -127,7 +127,7 @@ extern "C" bool AppHandler_TestCommand( int argc, char* argv[] )
                 uint64_t now     = API_GetTime_us();
                 int      elapsed = now - init;
 
-                API_Logf(
+                API_Msgf(
                     "<%3d> %d us (error %d us)\n",
                     t.cnt,
                     elapsed,
@@ -143,7 +143,7 @@ extern "C" bool AppHandler_TestCommand( int argc, char* argv[] )
             }
         } break;
         default: {
-            API_Log( "error: Given test argument is not valid. \n" );
+            API_Msg( "error: Given test argument is not valid. \n" );
             return false;
         }
     }
