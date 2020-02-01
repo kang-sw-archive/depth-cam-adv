@@ -1,9 +1,9 @@
+//! \brief      
 //!
+//! \author     Seungwoo Kang (ki6080@gmail.com)
+//! \copyright  Copyright (c) 2019. Seungwoo Kang. All rights reserved.
 //!
-//! @author Seungwoo Kang (ki6080@gmail.com)
-//! @copyright Copyright (c) 2019. Seungwoo Kang. All rights reserved.
-//!
-//! @details
+//! \details
 #include <stdlib.h>
 #include <uEmbedded/ring_buffer.h>
 #include <uEmbedded/transceiver.h>

@@ -27,9 +27,11 @@ void API_SendHostBinary( void const* data, size_t len );
 //! @details    Length of data array must be larger than cnt. \n
 //!             This function bundles the data and sends it in one packet.
 //! @param      data: Array of data to transmit
-//! @param      len: Array of lengths corresponding to the same indexed value of
+//! @param      len
+//!              Array of lengths corresponding to the same indexed value of
 //!             'data'
-//! @param      cnt: Number of transmit requests
+//! @param      cnt
+//!              Number of transmit requests
 void API_SendHostBinaries(
   void const* const data[],
   size_t const      len[],
@@ -40,7 +42,7 @@ void API_SendHostString( void const* data, size_t len );
 
 //! @brief      Send host raw data.
 //! @details
-//!             \n Since it does not append any packet header within the data
+//!              Since it does not append any packet header within the data
 //!             transfer, you must transmit the packet first that contains size
 //!             information before transferring main data
 void API_SendHostRaw( void const* data, size_t len );
@@ -64,23 +66,25 @@ void API_Msgf( char const* fmt, ... ); //!< Print text out to host.
 //! @}
 
 //! @defgroup   Depscan_API_Exports
-//! @details    These functions allow the Host to access memory points
-//!             exported by the device using the get command.
-//!             \n If this exported memory becomes invalid, you must delete the
+//! @details
+//!              These functions allow the Host to access memory points
+//!             exported by the device using the get command. \n
+//!              If this exported memory becomes invalid, you must delete the
 //!             export to avoid exporting invalid values.
 //! @{
 
 //! @brief      Export memory location and its size.
-//! @param      id: ID value must be generated via fnv1a_32.
-//!             @n It'll override existing information if given id is
+//! @param      id
+//!             ID value must be generated via fnv1a_32. \n
+//!              It'll override existing information if given id is
 //!             duplicated.
-//! @param      mem: This must sustain until overwritten or removed.
-//! @param      len: Memory length.
+//! @param      mem This must sustain until overwritten or removed.
+//! @param      len Memory length.
 void API_ExportBin( uint32_t id, void const* mem, size_t len );
 
 //! @brief      Remove exported memory information.
-//! @param      id: @ref API_ExportBin
-//! @param      ptr: This is used to prevent erasing overwritten export.
+//! @param      id @ref API_ExportBin
+//! @param      ptr This is used to prevent erasing overwritten export.
 void API_RemoveExport( uint32_t id, void const* ptr );
 
 //! @}
@@ -92,9 +96,9 @@ void API_RemoveExport( uint32_t id, void const* ptr );
 usec_t API_GetTime_us();
 
 //! @brief      Set timer.
-//! @param      delay: Delay in microseconds.
-//! @param      obj: Object that delievered into callback when triggering timer.
-//! @param      cb: Timer callback. Should NOT be null.
+//! @param      delay Delay in microseconds.
+//! @param      obj Object that delievered into callback when triggering timer.
+//! @param      cb Timer callback. Should NOT be null.
 //! @returns    timer handle to control timer.
 timer_handle_t API_SetTimer( usec_t delay, void* obj, void ( *cb )( void* ) );
 
@@ -104,12 +108,14 @@ timer_handle_t
 API_SetTimerFromISR( usec_t delay, void* obj, void ( *cb )( void* ) );
 
 //! @brief      Abort timer.
-//! @param      h:   Timer handle that was return from @ref API_SetTimer, @ref
+//! @param      h
+//!              Timer handle that was return from @ref API_SetTimer, @ref
 //!             API_SetTimerFromISR
 void API_AbortTimer( timer_handle_t h );
 
 //! @brief      Check timer validity.
-//! @param[out] usLeft: Time left to trigger in microseconds. Not substituted
+//! @param[out] usLeft
+//!              Time left to trigger in microseconds. Not substituted
 //!             when timer  handle is not valid.
 //! @returns    true if given timer handle is valid.
 bool API_CheckTimer( timer_handle_t h, usec_t* usLeft );
