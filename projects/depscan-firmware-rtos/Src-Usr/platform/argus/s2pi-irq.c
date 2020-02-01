@@ -14,9 +14,9 @@ void EXTI1_IRQHandler( void )
 }
 
 status_t S2PI_SetIrqCallback(
-    s2pi_slave_t        slave,
-    s2pi_irq_callback_t callback,
-    void*               callbackData )
+  s2pi_slave_t        slave,
+  s2pi_irq_callback_t callback,
+  void*               callbackData )
 {
     g_cbIrq    = callback;
     g_cbIrqObj = callbackData;

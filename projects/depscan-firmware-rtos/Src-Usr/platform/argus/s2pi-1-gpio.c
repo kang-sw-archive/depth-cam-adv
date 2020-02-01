@@ -42,16 +42,16 @@ typedef struct pinstruct pinstruct_t;
 extern __IO bool         g_isGpioMode;
 
 static pinstruct_t pins[5] = {
-    // CLK
-    { .port = GPIOA, .pin = GPIO_PIN_5, .bWrite = false },
-    // CS
-    { .port = GPIOC, .pin = GPIO_PIN_0, .bWrite = false },
-    // MOSI
-    { .port = GPIOA, .pin = GPIO_PIN_7, .bWrite = false },
-    // MISO
-    { .port = GPIOA, .pin = GPIO_PIN_6, .bWrite = false },
-    // IRQ
-    { .port = GPIOC, .pin = GPIO_PIN_1, .bWrite = false },
+  // CLK
+  { .port = GPIOA, .pin = GPIO_PIN_5, .bWrite = false },
+  // CS
+  { .port = GPIOC, .pin = GPIO_PIN_0, .bWrite = false },
+  // MOSI
+  { .port = GPIOA, .pin = GPIO_PIN_7, .bWrite = false },
+  // MISO
+  { .port = GPIOA, .pin = GPIO_PIN_6, .bWrite = false },
+  // IRQ
+  { .port = GPIOC, .pin = GPIO_PIN_1, .bWrite = false },
 };
 
 #define countof( v ) ( sizeof( v ) / sizeof( *v ) )

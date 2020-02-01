@@ -15,6 +15,7 @@
 #include "../../app/app.h"
 #include "../../app/dist-sensor.h"
 #include "../../platform/s2pi.h"
+
 /////////////////////////////////////////////////////////////////////////////
 // Types
 //! Static sensor instance
@@ -63,8 +64,7 @@ bool DistSens_Configure( dist_sens_t h, dist_sens_config_t const* opt )
     if (
       STATUS_OK
       != Argus_SetConfigurationMeasurementMode(
-        h->hnd_,
-        opt->bCloseDistanceMode ? ARGUS_MODE_B : ARGUS_MODE_A ) ) {
+        h->hnd_, opt->bCloseDistanceMode ? ARGUS_MODE_B : ARGUS_MODE_A ) ) {
         API_Msg(
           "error: Sensor mode setting "
           "failed.\n" );
@@ -122,15 +122,12 @@ bool DistSens_MeasureAsync(
     const argus_callback_t cb_a = []( status_t result, void* raw ) -> status_t {
         if ( result == STATUS_OK ) {
             result = Argus_EvaluateData(
-              si.hnd_,
-              &si.result_,
-              (ads_value_buf_t*)raw );
+              si.hnd_, &si.result_, (ads_value_buf_t*)raw );
             si.valid_data = true;
 
             if ( result != STATUS_OK ) {
                 API_Msgf(
-                  "error: failed to evaluate data for code %d\n",
-                  result );
+                  "error: failed to evaluate data for code %d\n", result );
             }
         }
         else {
@@ -156,15 +153,15 @@ bool DistSens_MeasureAsync(
 
         // If failed ...
         switch ( result ) {
-            case STATUS_BUSY:
-                // Argus_Abort( si.hnd_ );
-                break;
-            case ERROR_ABORTED:
-                RefreshArgusSens();
-                DistSens_Configure( ghDistSens, &si.conf_ );
-                break;
-            default:
-                break;
+        case STATUS_BUSY:
+            // Argus_Abort( si.hnd_ );
+            break;
+        case ERROR_ABORTED:
+            RefreshArgusSens();
+            DistSens_Configure( ghDistSens, &si.conf_ );
+            break;
+        default:
+            break;
         }
         ++i;
     }

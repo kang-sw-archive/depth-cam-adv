@@ -1,4 +1,4 @@
-//! \brief      
+//! \brief
 //!
 //! \author     Seungwoo Kang (ki6080@gmail.com)
 //! \copyright  Copyright (c) 2019. Seungwoo Kang. All rights reserved.
@@ -20,11 +20,11 @@ static transceiver_result_t cdc_ioctl( void* desc, intptr_t cmd )
 }
 static transceiver_result_t cdc_close( void* desc );
 
-static transceiver_vtable const usb_vt
-    = { .read  = cdc_read,
-        .write = cdc_write,
-        .ioctl = cdc_ioctl,
-        .close = cdc_close };
+static transceiver_vtable const usb_vt = {
+  .read  = cdc_read,
+  .write = cdc_write,
+  .ioctl = cdc_ioctl,
+  .close = cdc_close };
 
 static struct usb_rw
 {

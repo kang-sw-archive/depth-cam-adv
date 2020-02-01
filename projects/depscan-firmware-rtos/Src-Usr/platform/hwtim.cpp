@@ -41,13 +41,8 @@ extern "C" void HW_TIMER_INIT()
     s_tim.tick_function( []() { return API_GetTime_us(); } );
 
     sTimerTask = xTaskCreateStatic(
-        TimerUpdateTask,
-        "TIMER",
-        sizeof( sTimerStack ) / sizeof( *sTimerStack ),
-        NULL,
-        osPriorityRealtime4,
-        sTimerStack,
-        &sTimerTaskStaticCb );
+      TimerUpdateTask, "TIMER", sizeof( sTimerStack ) / sizeof( *sTimerStack ),
+      NULL, osPriorityRealtime4, sTimerStack, &sTimerTaskStaticCb );
 
     HAL_TIM_Base_Start_IT( &htim );
     TIM_CCxChannelCmd( htim.Instance, TIM_CHANNEL_1, TIM_CCx_ENABLE );
@@ -147,6 +142,7 @@ namespace std {
 void __throw_bad_function_call()
 {
     uassert( false );
-    for ( ;; ) { }
+    for ( ;; ) {
+    }
 }
 } // namespace std

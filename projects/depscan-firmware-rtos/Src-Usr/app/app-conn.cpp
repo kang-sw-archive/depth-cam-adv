@@ -81,9 +81,9 @@ void API_SendHostBinary( void const* data, size_t len )
 }
 
 void API_SendHostBinaries(
-    void const* const data[],
-    size_t const      len[],
-    size_t            cnt )
+  void const* const data[],
+  size_t const      len[],
+  size_t            cnt )
 {
     size_t sum = 0;
     for ( size_t i = 0; i < cnt; i++ )
@@ -130,12 +130,8 @@ void API_ExportBin( uint32_t id, void const* mem, size_t len )
     using ed      = export_data::node;
     ed* const arr = s_xd.node_;
 
-    auto idx = lowerbound(
-        arr,
-        &id,
-        sizeof( ed ),
-        s_xd.size_,
-        export_data::compare );
+    auto idx
+      = lowerbound( arr, &id, sizeof( ed ), s_xd.size_, export_data::compare );
     auto head = arr + idx;
 
     if ( head->id_ != id ) {
@@ -155,12 +151,8 @@ void API_RemoveExport( uint32_t id, void const* ptr )
     using ed      = export_data::node;
     ed* const arr = s_xd.node_;
 
-    auto idx = lowerbound(
-        arr,
-        &id,
-        sizeof( ed ),
-        s_xd.size_,
-        export_data::compare );
+    auto idx
+      = lowerbound( arr, &id, sizeof( ed ), s_xd.size_, export_data::compare );
     if ( arr[idx].id_ == id ) {
         //! @todo. Implement array_remove from uEmbedded ...
     }
@@ -174,12 +166,8 @@ static void ProcessGet( char const* name )
     using ed      = export_data::node;
     ed* const arr = s_xd.node_;
 
-    auto idx = lowerbound(
-        arr,
-        &id,
-        sizeof( ed ),
-        s_xd.size_,
-        export_data::compare );
+    auto idx
+      = lowerbound( arr, &id, sizeof( ed ), s_xd.size_, export_data::compare );
     auto at = arr + idx;
 
     if ( at->id_ != id ) {
@@ -246,37 +234,38 @@ void stringCmdHandler( char* str, size_t len )
 #define STRCASE( v ) upp::hash::fnv1a_32_const( v )
 
     switch ( upp::hash::fnv1a_32( argv[0] ) ) {
-        case STRCASE( "env-report" ): {
-        } break;
+    case STRCASE( "env-report" ): {
+    } break;
 
-        case STRCASE( "ping" ): {
-            API_SendHostBinary( "ping", 4 );
-        } break;
+    case STRCASE( "ping" ): {
+        API_SendHostBinary( "ping", 4 );
+    } break;
 
-        case STRCASE( "capture" ): {
-            if ( argc == 1 ) {
-                API_Msg( "error: command 'capture' requires argument.\n" );
-                break;
-            }
-            AppHandler_CaptureCommand( argc - 1, argv + 1 );
-        } break;
-
-        case STRCASE( "test" ): {
-            if ( argc == 1 ) {
-                API_Msg( "error: command 'test' requires argument. \n" );
-                break;
-            }
-            AppHandler_TestCommand( argc - 1, argv + 1 );
+    case STRCASE( "capture" ): {
+        if ( argc == 1 ) {
+            API_Msg( "error: command 'capture' requires argument.\n" );
+            break;
         }
+        AppHandler_CaptureCommand( argc - 1, argv + 1 );
+    } break;
 
-        case STRCASE( "get" ): {
-            if ( argc == 1 ) {
-                API_Msgf( "error: command 'get' requires argument.\n" );
-                break;
-            }
-            ProcessGet( argv[1] );
-        } break;
-        default: break;
+    case STRCASE( "test" ): {
+        if ( argc == 1 ) {
+            API_Msg( "error: command 'test' requires argument. \n" );
+            break;
+        }
+        AppHandler_TestCommand( argc - 1, argv + 1 );
+    }
+
+    case STRCASE( "get" ): {
+        if ( argc == 1 ) {
+            API_Msgf( "error: command 'get' requires argument.\n" );
+            break;
+        }
+        ProcessGet( argv[1] );
+    } break;
+    default:
+        break;
     }
 }
 
@@ -328,7 +317,8 @@ int stringToTokens( char* str, char* argv[], size_t argv_len )
         if ( *head == 0 )
             break;
 
-        for ( *head = 0; *++head == ' '; ) { }
+        for ( *head = 0; *++head == ' '; ) {
+        }
 
         if ( *head == 0 )
             break;

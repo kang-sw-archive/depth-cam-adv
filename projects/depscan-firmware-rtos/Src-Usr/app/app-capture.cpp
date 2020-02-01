@@ -18,27 +18,29 @@ capture_t gCapture;
 extern "C" bool AppHandler_CaptureCommand( int argc, char* argv[] )
 {
     switch ( upp::hash::fnv1a_32( argv[0] ) ) {
-        case CSTRHASH( "init" ): {
-            if ( argc < 2 ) {
-                API_Msg(
-                    "Initialization must specify capture options. usage: \n"
-                    "  capture-init <mode>\n"
-                    "       mode: scan  - Scanning mode. \n"
-                    "             point - Point specification mode. \n" );
-                break;
-            }
-
-            auto arg = STRHASH( argv[1] );
-            if ( arg == CSTRHASH( "scan" ) ) { }
-            else if ( arg == CSTRHASH( "point" ) ) {
-            }
-            else {
-            }
-        } break;
-
-        case CSTRHASH( "close" ): {
+    case CSTRHASH( "init" ): {
+        if ( argc < 2 ) {
+            API_Msg(
+              "Initialization must specify capture options. usage: \n"
+              "  capture-init <mode>\n"
+              "       mode: scan  - Scanning mode. \n"
+              "             point - Point specification mode. \n" );
+            break;
         }
-        default: return false;
+
+        auto arg = STRHASH( argv[1] );
+        if ( arg == CSTRHASH( "scan" ) ) {
+        }
+        else if ( arg == CSTRHASH( "point" ) ) {
+        }
+        else {
+        }
+    } break;
+
+    case CSTRHASH( "close" ): {
+    }
+    default:
+        return false;
     }
 
     return true;
