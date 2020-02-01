@@ -1,11 +1,11 @@
-//! @brief
+//! \brief
 //!
-//! @file scanner_protocol.h
-//! @author Seungwoo Kang (ki6080@gmail.com)
-//! @date 2019-12-26
-//! @copyright Copyright (c) 2019. Seungwoo Kang. All rights reserved.
+//! \file scanner_protocol.h
+//! \author Seungwoo Kang (ki6080@gmail.com)
+//! \date 2019-12-26
+//! \copyright Copyright (c) 2019. Seungwoo Kang. All rights reserved.
 //!
-//! @details
+//! \details
 #pragma once
 #include <stdint.h>
 

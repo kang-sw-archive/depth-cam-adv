@@ -60,10 +60,11 @@ extern "C" bool AppHandler_TestCommand( int argc, char* argv[] )
         for ( size_t i = 0; i < sizeof( tx ); i++ )
             API_Putf( "%x ", rx[i] );
 
-        API_Putf( "\n Elapsed: %d\n", (int)( API_GetTime_us() - us_start ) );
+        API_Putf( "\n" );
+        API_Msgf( "Elapsed:% d\n", (int)( API_GetTime_us() - us_start ) );
     } break;
 
-    case CSTRHASH( "test-timer" ): {
+    case CSTRHASH( "timer" ): {
         static struct TI
         {
             uint64_t init;
@@ -107,8 +108,17 @@ extern "C" bool AppHandler_TestCommand( int argc, char* argv[] )
             API_SetTimer( correct_delay, &ti, timer_cb );
         }
     } break;
+
+    case CSTRHASH( "dist-sensor" ): {
+    } break;
+
     default: {
         API_Msg( "error: Given test argument is not valid. \n" );
+        API_Msg(
+          "Available commands: \n"
+          "     dist-sensor\n"
+          "     s2pi\n"
+          "     timer\n" );
         return false;
     }
     }
