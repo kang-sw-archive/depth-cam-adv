@@ -8,22 +8,34 @@
 //!             File detailed description
 #pragma once
 #include <uEmbedded/transceiver.h>
+#include "dist-sensor.h"
+#include "motor.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-/////////////////////////////////////////////////////////////////////////////
-// Decls
-//! Connection to host.
-//! This is to adapt various IO devices via the unity interface.
+//! @addtogroup Depscan
+//! @{
+//! @addtogroup Depscan_HW
+//! @{
+//! @defgroup Depscan_HW_Internals
+//! @{
+
+void Internal_InitRW();
+
+//! @}
+//! @defgroup Depscan_HW_Exports
+//! @{
+
+extern motor_t              gMotX;
+extern motor_t              gMotY;
+extern dist_sens_t          ghDistSens;
 extern transceiver_handle_t gHostConnection;
 
-/////////////////////////////////////////////////////////////////////////////
-// Functions
-//! Initailize all architecture associated to read-write operation.
-void InitRW();
-
-extern struct dist_sens__* ghDistSens;
+//! @}
+//! @}
+//! @}
 
 #ifdef __cplusplus
 }

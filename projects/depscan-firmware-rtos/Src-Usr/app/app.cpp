@@ -89,7 +89,7 @@ extern "C" int API_Msg( char const* txt )
 extern "C" void StartDefaultTask( void* nouse_ )
 {
     InitHW();
-    InitRW();
+    Internal_InitRW();
 
     // this function never returns.
     AppProc_HostIO( NULL );

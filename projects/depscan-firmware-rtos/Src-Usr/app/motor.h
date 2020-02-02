@@ -8,7 +8,9 @@ extern "C" {
 
 //! @addtogroup Depscan
 //! @{
-//! @defgroup   Depscan_Motor
+//! @addtogroup Depscan_HW
+//! @{
+//! @defgroup   Depscan_HW_Motor
 //! @brief      This motor class only provides an interface for handling
 //!             stepper motors.
 //! @details
@@ -75,6 +77,7 @@ motor_status_t Motor_ResetPos( motor_t );
 //!             position
 motor_status_t Motor_EmergencyStop( motor_t m );
 
+//! @}
 //! @}
 //! @}
 

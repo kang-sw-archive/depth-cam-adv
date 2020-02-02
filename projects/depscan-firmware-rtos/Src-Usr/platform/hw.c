@@ -14,7 +14,7 @@ transceiver_handle_t OpenUsbHostConnection();
 
 /////////////////////////////////////////////////////////////////////////////
 // Defs
-void InitRW()
+void Internal_InitRW()
 {
     gHostConnection = OpenUsbHostConnection();
 }

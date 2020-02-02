@@ -8,7 +8,9 @@ extern "C" {
 
 //! @addtogroup Depscan
 //! @{
-//! @defgroup   Depscan_DistanceSensor
+//! @addtogroup Depscan_HW
+//! @{
+//! @defgroup   Depscan_HW_DistanceSensor
 //! @brief      Provides a platform independent interface for handling distance
 //!     sensors.
 //! @details
@@ -90,6 +92,7 @@ bool DistSens_MeasureAsync( dist_sens_t,
 //! @returns    true if capture can begin.
 bool DistSens_IsAvailable( dist_sens_t );
 
+//! @}
 //! @}
 //! @}
 
