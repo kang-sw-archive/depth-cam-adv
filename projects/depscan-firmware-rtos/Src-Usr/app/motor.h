@@ -21,10 +21,13 @@ extern "C" {
 //!             hal.h, rather than created through a function call.
 //! @{
 
-//! @brief Motor handle type
+//! @brief      Motor handle type
 typedef struct motor__* motor_t;
 
-//! @brief An constant label that indicates motor status
+//! @brief      Motor callback type
+typedef void ( *motor_cb_t )( motor_t, void* );
+
+//! @brief      An constant label that indicates motor status
 typedef enum
 {
     MOTOR_STATE_IDLE   = 0,
@@ -45,6 +48,12 @@ motor_status_t Motor_SetMaxSpeed( motor_t, uint32_t value );
 //! @brief      Get motor's desired max speed in Hz
 uint32_t Motor_GetMaxSpeed( motor_t );
 
+//! @brief      Set motor's desired min speed in Hz
+motor_status_t Motor_SetMinSpeed( motor_t, uint32_t value );
+
+//! @brief      Get motor's desired min speed in Hz
+uint32_t Motor_GetMinSpeed( motor_t );
+
 //! @brief      Set motor's acceleration [Hz/s]
 motor_status_t Motor_SetAcceleration( motor_t, uint32_t value );
 
@@ -53,11 +62,11 @@ uint32_t Motor_GetAcceleration( motor_t );
 
 //! @brief      Request relative movement
 //! @returns    MOTOR_OK if successfully requested movement.
-motor_status_t Motor_MoveBy( motor_t, int steps );
+motor_status_t Motor_MoveBy( motor_t, int steps, motor_cb_t* cb, void* obj );
 
 //! @brief      Request absolute movement
 //! @returns    MOTOR_OK if successfully requested movement.
-motor_status_t Motor_MoveTo( motor_t, int steps );
+motor_status_t Motor_MoveTo( motor_t, int steps, motor_cb_t* cb, void* obj );
 
 //! @brief      Get motor's position
 //! @returns    motor's current position from origin point. Units are steps.
@@ -74,7 +83,7 @@ int Motor_Velocity( motor_t );
 motor_status_t Motor_ResetPos( motor_t );
 
 //! @brief       Stop motor immediately. This does not assure exact motor
-//!             position
+//!             position preserve
 motor_status_t Motor_EmergencyStop( motor_t m );
 
 //! @}
