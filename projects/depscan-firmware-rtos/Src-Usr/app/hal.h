@@ -28,8 +28,8 @@ void Internal_InitRW();
 //! @defgroup Depscan_HW_Exports
 //! @{
 
-extern motor_t              gMotX;
-extern motor_t              gMotY;
+extern motor_hnd_t              gMotX;
+extern motor_hnd_t              gMotY;
 extern dist_sens_t          ghDistSens;
 extern transceiver_handle_t gHostConnection;
 
