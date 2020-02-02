@@ -58,9 +58,14 @@ extern "C" void HW_TIMER_INIT()
 {
     s_tim.tick_function( []() { return API_GetTime_us(); } );
 
-    sTimerTask = xTaskCreateStatic( TimerUpdateTask, "TIMER",
-      sizeof( sTimerStack ) / sizeof( *sTimerStack ), NULL, osPriorityRealtime4,
-      sTimerStack, &sTimerTaskStaticCb );
+    sTimerTask = xTaskCreateStatic(
+      TimerUpdateTask,
+      "TIMER",
+      sizeof( sTimerStack ) / sizeof( *sTimerStack ),
+      NULL,
+      osPriorityRealtime4,
+      sTimerStack,
+      &sTimerTaskStaticCb );
 
     HAL_TIM_Base_Start_IT( &htim );
     TIM_CCxChannelCmd( htim.Instance, TIM_CHANNEL_1, TIM_CCx_ENABLE );
@@ -123,7 +128,7 @@ _Noreturn void TimerUpdateTask( void* nouse__ )
     for ( ;; ) {
         ulTaskNotifyTake( pdTRUE, 100 /* For case if lost ... */ );
         __HAL_TIM_DISABLE_IT( &htim, TIM_FLAG_CC1 );
-        
+
         auto next = s_tim.update_lock(
           []() { taskENTER_CRITICAL(); }, []() { taskEXIT_CRITICAL(); } );
         // auto next = s_tim.update();

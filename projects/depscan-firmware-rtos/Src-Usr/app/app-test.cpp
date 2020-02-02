@@ -142,7 +142,10 @@ void Test_Timer( int argc, char* argv[] )
         uint64_t now     = API_GetTime_us();
         int      elapsed = now - init;
 
-        API_Msgf( "<%3d> %d us (error %d us)\n", t.cnt, elapsed,
+        API_Msgf(
+          "<%3d> %d us (error %d us)\n",
+          t.cnt,
+          elapsed,
           elapsed - ( t.delay * ( t.cnt + 1 ) ) );
 
         t.cnt++;
@@ -201,7 +204,9 @@ void Test_DistSensor( int argc, char* argv[] )
             return;
         }
         API_Msg( "info: succeeded to capture image\n" );
-        API_Msgf( "info: measured distance is %x.%x \n", val >> 22,
+        API_Msgf(
+          "info: measured distance is %x.%x \n",
+          val >> 22,
           val & ( ( 1 << 22 ) - 1 ) );
     };
 

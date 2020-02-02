@@ -67,7 +67,7 @@ motor_status_t Motor_MoveBy( motor_hnd_t, int steps, motor_cb_t cb, void* obj );
 //! @brief      Request absolute movement
 //! @returns    MOTOR_OK if successfully requested movement.
 motor_status_t
-Motor_MoveTo( motor_hnd_t, int destination, motor_cb_t cb, void* obj ); 
+Motor_MoveTo( motor_hnd_t, int destination, motor_cb_t cb, void* obj );
 
 //! @brief      Get motor's acceleration range
 uint16_t Motor_GetAccelRange( motor_hnd_t );
