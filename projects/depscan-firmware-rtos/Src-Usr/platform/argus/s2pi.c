@@ -6,7 +6,6 @@
 //!
 //! \details
 //!             File detailed description
-//! \todo       Stabilize s2pi-irq operation
 //! \note       If possible, resolve SPI DMA transfer issue with HAL library.
 #include <FreeRTOS.h>
 

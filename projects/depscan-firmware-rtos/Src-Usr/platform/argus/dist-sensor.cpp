@@ -51,7 +51,7 @@ bool DistSens_IsAvailable( dist_sens_t h )
 bool DistSens_Configure( dist_sens_t h, dist_sens_config_t const* opt )
 {
     if ( h->capturing_ ) {
-        API_Msg( "Cannot configure sensor during capture \n" );
+        API_Msg( "error: Cannot configure sensor during capture \n" );
         return false;
     }
 

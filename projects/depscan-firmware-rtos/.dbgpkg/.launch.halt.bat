@@ -8,7 +8,6 @@ set TP=%TMP%\ff%RANDOM%.txt
 
 nul>%TP%
 echo reset halt>>%TP%
-echo reset init>>%TP%
 echo program %FILE%>>%TP%
 
 rem Send rq

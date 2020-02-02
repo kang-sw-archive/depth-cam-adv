@@ -6,8 +6,6 @@
 //!
 //! \details
 //!             File detailed description
-//! \bug        Static timer logic is not working correctly.
-//! \todo       Optimize API_SetTimerFromISR
 //! \todo       Check for potential data corruption during overall timer usage
 #include <FreeRTOS.h>
 
@@ -23,9 +21,8 @@ extern TIM_HandleTypeDef htim2;
 
 /////////////////////////////////////////////////////////////////////////////
 // Statics
-// using timer_t = upp::static_timer_logic<usec_t, uint8_t,
-// NUM_MAX_HWTIMER_NODE>;
-using timer_t = upp::linked_timer_logic<usec_t>;
+// using timer_t = upp::linked_timer_logic<usec_t>;
+using timer_t = upp::static_timer_logic<usec_t, uint8_t, NUM_MAX_HWTIMER_NODE>;
 static timer_t s_tim;
 static usec_t  s_total_us = std::numeric_limits<usec_t>::max() - (usec_t)1e9;
 static TIM_HandleTypeDef& htim = htim2;
@@ -108,16 +105,7 @@ extern "C" int print( char const* fmt, ... );
 extern "C" void
 API_SetTimerFromISR( usec_t delay, void* obj, void ( *cb )( void* ) )
 {
-#define countof( v ) ( sizeof( v ) / sizeof( *v ) )
-    size_t add[2] = { (size_t)1 - countof( s_isr_pending_timer ), 1 };
-
-    auto& pending = s_isr_pending_timer[s_isr_pending_cnt_h];
-    s_isr_pending_cnt_h
-      += add[s_isr_pending_cnt_h + 1 != countof( s_isr_pending_timer )];
-    pending.cb_    = cb;
-    pending.obj_   = obj;
-    pending.delay_ = std::max( 11ull, delay ) - 10ull;
-
+    s_tim.add( std::max( 11ull, delay ) - 10ull, obj, cb );
     BaseType_t bHigherTaskPriorityWoken = pdFALSE;
     vTaskNotifyGiveFromISR( sTimerTask, &bHigherTaskPriorityWoken );
     portYIELD_FROM_ISR( bHigherTaskPriorityWoken );
@@ -135,26 +123,10 @@ _Noreturn void TimerUpdateTask( void* nouse__ )
     for ( ;; ) {
         ulTaskNotifyTake( pdTRUE, 100 /* For case if lost ... */ );
         __HAL_TIM_DISABLE_IT( &htim, TIM_FLAG_CC1 );
-
-        // Process pending timers from ISR
-        size_t add[2] = { (size_t)1 - countof( s_isr_pending_timer ), 1 };
-        while ( s_isr_pending_cnt_h != s_isr_pending_cnt_t ) {
-            auto const& ref = s_isr_pending_timer[s_isr_pending_cnt_t];
-            s_isr_pending_cnt_t
-              += add[s_isr_pending_cnt_t + 1 != countof( s_isr_pending_timer )];
-
-            if ( ref.delay_ < 20ull ) {
-                ref.cb_( ref.obj_ );
-            }
-            else {
-                print( "info: Longer timer queue \n" );
-                s_tim.add( ref.delay_, ref.obj_, ref.cb_ );
-            }
-        }
-
-        // auto next = s_tim.update_lock(
-        //   []() { taskENTER_CRITICAL(); }, []() { taskEXIT_CRITICAL(); } );
-        auto next = s_tim.update();
+        
+        auto next = s_tim.update_lock(
+          []() { taskENTER_CRITICAL(); }, []() { taskEXIT_CRITICAL(); } );
+        // auto next = s_tim.update();
 
         if ( next != (usec_t)-1 ) {
             int delay = next - API_GetTime_us();

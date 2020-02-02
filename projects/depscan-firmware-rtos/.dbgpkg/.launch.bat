@@ -11,4 +11,4 @@ if "%ERRORLEVEL%" neq "0" (
 )
 
 echo Flashing ...
-rem %~dp0.launch.halt.bat
+%~dp0.launch.halt.bat

@@ -6,7 +6,6 @@
 //!
 //! \details
 //!             File detailed description
-//! \bug        Fix error on timer logic
 #include <FreeRTOS.h>
 
 #include <stdbool.h>
