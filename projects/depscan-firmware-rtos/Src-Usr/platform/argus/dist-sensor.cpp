@@ -1,11 +1,11 @@
-//! \file
-//! \brief
+//! @file
+//! @brief
 //!
-//! \author Seungwoo Kang (ki6080@gmail.com)
-//! \copyright Copyright (c) 2019. Seungwoo Kang. All rights reserved.
+//! @author Seungwoo Kang (ki6080@gmail.com)
+//! @copyright Copyright (c) 2019. Seungwoo Kang. All rights reserved.
 //!
-//! \details
-//! \todo Check if default calibration is required or not
+//! @details
+//! @todo Check if default calibration is required or not
 #include <FreeRTOS.h>
 
 #include <argus.h>

@@ -21,7 +21,7 @@ void InitRW()
 
 bool HW_CheckUsbConnection()
 {
-    //! \todo. Implement VBUS detection
+    //! @todo. Implement VBUS detection
     return false;
 }
 

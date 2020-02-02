@@ -1,10 +1,10 @@
-//! \file       hal.h
-//! \brief      File brief description
+//! @file       hal.h
+//! @brief      File brief description
 //!
-//! \author     Seungwoo Kang (ki6080@gmail.com)
-//! \copyright  Copyright (c) 2019. Seungwoo Kang. All rights reserved.
+//! @author     Seungwoo Kang (ki6080@gmail.com)
+//! @copyright  Copyright (c) 2019. Seungwoo Kang. All rights reserved.
 //!
-//! \details
+//! @details
 //!             File detailed description
 #pragma once
 #include <uEmbedded/transceiver.h>

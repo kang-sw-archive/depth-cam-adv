@@ -1,12 +1,12 @@
-//! \file       name.x
-//! \brief      File brief description
+//! @file       name.x
+//! @brief      File brief description
 //!
-//! \author     Seungwoo Kang (ki6080@gmail.com)
-//! \copyright  Copyright (c) 2019. Seungwoo Kang. All rights reserved.
+//! @author     Seungwoo Kang (ki6080@gmail.com)
+//! @copyright  Copyright (c) 2019. Seungwoo Kang. All rights reserved.
 //!
-//! \details
+//! @details
 //!             File detailed description
-//! \todo       Check for potential data corruption during overall timer usage
+//! @todo       Check for potential data corruption during overall timer usage
 #include <FreeRTOS.h>
 
 #include <cmsis_os2.h>

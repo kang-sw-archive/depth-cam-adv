@@ -1,12 +1,12 @@
-//! \file       s2pi.c
-//! \brief      File brief description
+//! @file       s2pi.c
+//! @brief      File brief description
 //!
-//! \author     Seungwoo Kang (ki6080@gmail.com)
-//! \copyright  Copyright (c) 2019. Seungwoo Kang. All rights reserved.
+//! @author     Seungwoo Kang (ki6080@gmail.com)
+//! @copyright  Copyright (c) 2019. Seungwoo Kang. All rights reserved.
 //!
-//! \details
+//! @details
 //!             File detailed description
-//! \note       If possible, resolve SPI DMA transfer issue with HAL library.
+//! @note       If possible, resolve SPI DMA transfer issue with HAL library.
 #include <FreeRTOS.h>
 
 #include <platform/argus_s2pi.h>

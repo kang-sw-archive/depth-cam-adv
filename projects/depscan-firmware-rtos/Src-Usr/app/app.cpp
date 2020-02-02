@@ -1,10 +1,10 @@
 /////////////////////////////////////////////////////////////////////////////
 //! Defines fundamental logics for overall system.
 //!
-//! \author Seungwoo Kang (ki6080@gmail.com)
-//! \copyright Copyright (c) 2019. Seungwoo Kang. All rights reserved.
+//! @author Seungwoo Kang (ki6080@gmail.com)
+//! @copyright Copyright (c) 2019. Seungwoo Kang. All rights reserved.
 //!
-//! \details
+//! @details
 #include <FreeRTOS.h>
 
 #include <alloca.h>

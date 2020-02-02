@@ -28,7 +28,7 @@ typedef enum
     CAPTURE_MODE_POINT
 } capture_mode_t;
 
-//! \brief A struct indicates common capture status
+//! @brief A struct indicates common capture status
 typedef struct capture_common_ty__
 {
     //! Basic property

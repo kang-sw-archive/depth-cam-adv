@@ -30,6 +30,7 @@ extern "C" bool AppHandler_CaptureCommand( int argc, char* argv[] )
 
         auto arg = STRHASH( argv[1] );
         if ( arg == CSTRHASH( "scan" ) ) {
+            //! @todo 
         }
         else if ( arg == CSTRHASH( "point" ) ) {
         }

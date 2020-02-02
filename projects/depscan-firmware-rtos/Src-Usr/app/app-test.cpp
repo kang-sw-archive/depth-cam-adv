@@ -1,10 +1,10 @@
-//! \file       name.x
-//! \brief      File brief description
+//! @file       name.x
+//! @brief      File brief description
 //!
-//! \author     Seungwoo Kang (ki6080@gmail.com)
-//! \copyright  Copyright (c) 2019. Seungwoo Kang. All rights reserved.
+//! @author     Seungwoo Kang (ki6080@gmail.com)
+//! @copyright  Copyright (c) 2019. Seungwoo Kang. All rights reserved.
 //!
-//! \details
+//! @details
 //!             File detailed description
 #include <FreeRTOS.h>
 

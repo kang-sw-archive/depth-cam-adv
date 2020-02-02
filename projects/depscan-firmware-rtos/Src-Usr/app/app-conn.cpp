@@ -145,7 +145,7 @@ void API_ExportBin( uint32_t id, void const* mem, size_t len )
 
 void API_RemoveExport( uint32_t id, void const* ptr )
 {
-    //! \warning. Should not call this!
+    //! @warning. Should not call this!
     uassert( false );
     using ed      = export_data::node;
     ed* const arr = s_xd.node_;
@@ -153,7 +153,7 @@ void API_RemoveExport( uint32_t id, void const* ptr )
     auto idx
       = lowerbound( arr, &id, sizeof( ed ), s_xd.size_, export_data::compare );
     if ( arr[idx].id_ == id ) {
-        //! \todo. Implement array_remove from uEmbedded ...
+        //! @todo. Implement array_remove from uEmbedded ...
     }
 }
 }
