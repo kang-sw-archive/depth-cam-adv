@@ -35,11 +35,12 @@ struct motor__
     void*      cb_obj           = nullptr;
 
     // Calculates motor speed / accelerations
-    usec_t phy_prev_time = 0;
-    float  phy_accel     = 100000.f;
-    float  phy_velocity  = 0.f;
-    float  phy_maxs      = 10000.f;
-    float  phy_mins      = 200.f;
+    usec_t   phy_prev_time   = 0;
+    float    phy_accel       = 100000.f;
+    float    phy_velocity    = 0.f;
+    float    phy_maxs        = 10000.f;
+    float    phy_mins        = 200.f;
+    uint32_t phy_speed_cache = 0;
 
     // Calculated on start sequence.
     float phy_progress      = 0.f;
@@ -129,7 +130,6 @@ extern "C" void InitMotors()
     for ( size_t i = 0; i < countof( htim_xy ); i++ ) {
         auto tim = htim_xy[i];
         auto prs = SystemCoreClock / clk_xy[i];
-        auto ch  = ccr_ch_xy[i];
         auto m   = motors.begin()[i];
 
         __HAL_TIM_SET_PRESCALER( tim, prs );
@@ -245,7 +245,10 @@ uint32_t Motor_GetMinSpeed( motor_hnd_t m )
 //! @brief      Set motor's acceleration [Hz/s]
 motor_status_t Motor_SetAcceleration( motor_hnd_t m, uint32_t value )
 {
+    if ( Motor_Stat( m ) != MOTOR_STATE_IDLE )
+        return MOTOR_BUSY;
     m->phy_accel = (float)std::max( (uint32_t)100u, value );
+    return MOTOR_OK;
 }
 
 //! @brief      Set motor's acceleration [Hz/s]
@@ -310,6 +313,7 @@ int Motor_Velocity( motor_hnd_t m )
 motor_status_t Motor_ResetPos( motor_hnd_t m )
 {
     m->position = 0;
+    return MOTOR_OK;
 }
 
 //! @brief       Stop motor immediately. This does not assure exact motor
@@ -319,6 +323,8 @@ motor_status_t Motor_EmergencyStop( motor_hnd_t m )
     // Make it finish on next IRQ
     m->pending_movement
       = m->pending_movement * ( m->pending_movement > 0 ? 1 : -1 );
+
+    return MOTOR_OK;
 }
 }
 
@@ -341,19 +347,27 @@ int update_motor( motor_hnd_t m )
         m->phy_velocity = 0.f;
         return 0;
     }
-    auto  now   = API_GetTime_us();
-    float delta = (float)( now - m->phy_prev_time ) * 1e-6f; // 1us
+    auto  now        = API_GetTime_us();
+    int   delta_us   = now - m->phy_prev_time;
+    float delta      = (float)(delta_us)*1e-6f; // 1us
+    m->phy_prev_time = now;
+
+    //! @todo Error detection using delta_us
+    // Compare delta_us with phy_speed_cache value ... if delta_us is much
+    // larger than phy_speed_cache, it means there have been an error.
 
     // Determine direction and amount of acceleration
-    bool const bFwd    = m->pending_movement > 0;
-    bool const bRising = m->phy_progress < 0.5f;
-    float      accel   = m->phy_accel * delta * (float)xor_( bFwd, bRising );
+    bool const bFwd         = m->pending_movement > 0;
+    bool const bShouldAccel = m->phy_progress < 0.5f;
+    float      accel = m->phy_accel * delta * (float)xor_( bFwd, bShouldAccel );
 
-    m->phy_prev_time = now;
     m->phy_velocity += accel;
     m->phy_progress += m->phy_progress_step;
-    m->pending_movement -= ( m->pending_movement > 0 ? 1 : -1 );
+    auto delta_pos = ( m->pending_movement > 0 ? 1 : -1 );
+    m->position += delta_pos;
+    m->pending_movement -= delta_pos;
 
     // Clamp value in range
-    return (int)std::max( m->phy_mins, std::min( m->phy_maxs, m->speed() ) );
+    return m->phy_speed_cache
+           = (int)std::max( m->phy_mins, std::min( m->phy_maxs, m->speed() ) );
 }

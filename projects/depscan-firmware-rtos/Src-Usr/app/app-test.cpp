@@ -25,6 +25,7 @@
 static void Test_S2PI();
 static void Test_Timer( int argc, char* argv[] );
 static void Test_DistSensor( int argc, char* argv[] );
+static void Test_Motor( int argc, char* argv[] );
 
 /////////////////////////////////////////////////////////////////////////////
 #define CSTRHASH( str ) upp::hash::fnv1a_32_const( str )
@@ -32,30 +33,35 @@ static void Test_DistSensor( int argc, char* argv[] );
 
 extern "C" bool AppHandler_TestCommand( int argc, char* argv[] )
 {
+    if ( argc == 0 ) {
+        API_Msg( "error: this command requires additional argument. \n" );
+        return true;
+    }
+
     API_Msgf( "info: Test sequence for ::%s:: \n", argv[0] );
 
     switch ( STRHASH( argv[0] ) ) {
-    case CSTRHASH( "s2pi" ): {
+    case CSTRHASH( "s2pi" ):
         Test_S2PI();
-    } break;
-
-    case CSTRHASH( "timer" ): {
+        break;
+    case CSTRHASH( "timer" ):
         Test_Timer( argc, argv );
-    } break;
-
-    case CSTRHASH( "dist-sensor" ): {
+        break;
+    case CSTRHASH( "dist-sensor" ):
         Test_DistSensor( argc, argv );
-    } break;
-
-    default: {
-        API_Msg( "error: Given test argument is not valid. \n" );
+        break;
+    case CSTRHASH( "motor" ):
+        Test_Motor( argc, argv );
+        break;
+    default:
         API_Msg(
+          "error: Given test argument is not valid. \n"
           "Available commands: \n"
           "     dist-sensor\n"
           "     s2pi\n"
-          "     timer\n" );
+          "     motor [args]\n"
+          "     timer [num-try] [interval]\n" );
         return false;
-    }
     }
     return true;
 }
@@ -215,4 +221,65 @@ void Test_DistSensor( int argc, char* argv[] )
         return;
     }
     API_Msg( "info: measurement triggered. \n" );
+}
+
+void Test_Motor( int argc, char* argv[] )
+{
+    auto const motors = { gMotX, gMotY };
+
+    // Get index
+    if ( argc == 1 ) {
+        // Report motor status
+        int id = 0;
+        for ( auto& m : motors ) {
+            auto accel = Motor_GetAcceleration( m );
+            auto maxs  = Motor_GetMaxSpeed( m );
+            auto mins  = Motor_GetMinSpeed( m );
+            auto pos   = Motor_Pos( m );
+
+            API_Msgf( // clang-format off
+              "info: --- MOTOR <%d> --- \n"
+              "         ACCEL   : %u\n"
+              "         MAXS    : %u\n"
+              "         MINS    : %u\n"
+              "         POSITION: %d\n",
+              id, accel, maxs, mins, pos ); // clang-format on
+            ++id;
+        }
+        return;
+    }
+    if ( argc < 3 ) {
+        API_Msg( "error: test motor <hw-idx> <delta-steps> " );
+        return;
+    }
+
+    int hwid  = argv[1][0] == 'x' ? 0 : argv[1][0] == 'y' ? 1 : -1;
+    int steps = atoi( argv[2] );
+
+    if ( hwid < 0 || hwid > 1 ) {
+        API_Msg( "HWID must be x or y\n" );
+        return;
+    }
+
+    auto m = motors.begin()[hwid];
+
+    if ( Motor_Stat( m ) != MOTOR_STATE_IDLE ) {
+        API_Msg( "error: motor is still running. \n" );
+    }
+
+    auto const motor_cb = []( motor_hnd_t m, void* init_pos ) {
+        API_Msgf(
+          "info: motor movement done. %d ---> %d\n",
+          (intptr_t)init_pos,
+          Motor_Pos( m ) );
+    };
+
+    auto result = Motor_MoveBy( m, steps, motor_cb, (void*)Motor_Pos( m ) );
+    if ( result != MOTOR_OK ) {
+        API_Msgf(
+          "error: motor movement request has failed for code %d\n", result );
+        return;
+    }
+
+    API_Msg( "info: requested motor movement.\n" );
 }
