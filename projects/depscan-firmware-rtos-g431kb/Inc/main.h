@@ -61,15 +61,19 @@ void Error_Handler(void);
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
-#define SPI_IRQ_Pin GPIO_PIN_1
-#define SPI_IRQ_GPIO_Port GPIOA
-#define SPI_IRQ_EXTI_IRQn EXTI1_IRQn
+#define ARGUS_CS_Pin GPIO_PIN_0
+#define ARGUS_CS_GPIO_Port GPIOA
+#define ARGUS_IRQ_Pin GPIO_PIN_1
+#define ARGUS_IRQ_GPIO_Port GPIOA
+#define ARGUS_IRQ_EXTI_IRQn EXTI1_IRQn
 #define USART2_TX_Pin GPIO_PIN_2
 #define USART2_TX_GPIO_Port GPIOA
 #define USART2_RX_Pin GPIO_PIN_3
 #define USART2_RX_GPIO_Port GPIOA
 #define MOT1_STEP_Pin GPIO_PIN_8
 #define MOT1_STEP_GPIO_Port GPIOA
+#define USB_VBUS_Pin GPIO_PIN_9
+#define USB_VBUS_GPIO_Port GPIOA
 #define T_SWDIO_Pin GPIO_PIN_13
 #define T_SWDIO_GPIO_Port GPIOA
 #define T_SWCLK_Pin GPIO_PIN_14
@@ -78,6 +82,10 @@ void Error_Handler(void);
 #define T_SWO_GPIO_Port GPIOB
 #define MOT2_STEP_Pin GPIO_PIN_4
 #define MOT2_STEP_GPIO_Port GPIOB
+#define MOT_DIR_1_Pin GPIO_PIN_5
+#define MOT_DIR_1_GPIO_Port GPIOB
+#define MOT_DIR_2_Pin GPIO_PIN_6
+#define MOT_DIR_2_GPIO_Port GPIOB
 #define LD2_Pin GPIO_PIN_8
 #define LD2_GPIO_Port GPIOB
 /* USER CODE BEGIN Private defines */
