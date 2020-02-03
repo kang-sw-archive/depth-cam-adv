@@ -36,7 +36,7 @@ struct motor__
 
     // Calculates motor speed / accelerations
     usec_t   phy_prev_time   = 0;
-    float    phy_accel       = 100000.f;
+    float    phy_accel       = 500000.f;
     float    phy_velocity    = 0.f;
     float    phy_maxs        = 10000.f;
     float    phy_mins        = 200.f;
@@ -129,11 +129,11 @@ extern "C" void InitMotors()
     // Set CC mode as PWM
     for ( size_t i = 0; i < countof( htim_xy ); i++ ) {
         auto tim = htim_xy[i];
-        auto prs = SystemCoreClock / clk_xy[i];
+        auto prs = SystemCoreClock / clk_xy[i] - 1;
         auto m   = motors.begin()[i];
 
         __HAL_TIM_SET_PRESCALER( tim, prs );
-        __HAL_TIM_ENABLE_IT( tim, prs );
+        __HAL_TIM_ENABLE_IT( tim, TIM_IT_UPDATE );
         Motor_SetMaxSpeed( m, (uint32_t)m->phy_maxs ); // Since motor isn't
                                                        // driven by PWM itself
                                                        // but by the clock
@@ -163,12 +163,15 @@ static void START_FNC( motor_hnd_t m )
     auto hwid = m->hwid_;
     uassert( abs( hwid ) <= 1 );
 
-    auto tim = htim_xy[hwid];
-    auto ch  = ccr_ch_xy[hwid];
+    auto tim      = htim_xy[hwid];
+    auto ch       = ccr_ch_xy[hwid];
+    auto init_spd = int( 1e6f / m->phy_mins ) - 1;
 
     __HAL_TIM_SetCounter( tim, 0 );
+    __HAL_TIM_SetAutoreload( tim, __HAL_TIM_GET_COMPARE( tim, ch ) );
     __HAL_TIM_CLEAR_IT( tim, TIM_IT_UPDATE );
-    HAL_TIM_OC_Start( tim, ch );
+    __HAL_TIM_ENABLE_IT( tim, TIM_IT_UPDATE );
+    HAL_TIM_PWM_Start( tim, ch );
 }
 
 // This function placed this section since it modifies CCR value, which means
@@ -187,13 +190,13 @@ motor_status_t Motor_SetMaxSpeed( motor_hnd_t m, uint32_t value )
 }
 
 // IRQs
-static void irq__( TIM_HandleTypeDef* htim, int ch, int clk )
+static void irq__( motor_hnd_t m, TIM_HandleTypeDef* htim, int ch, int clk )
 {
     __HAL_TIM_CLEAR_IT( htim, TIM_IT_UPDATE );
 
-    auto next_frq = update_motor( gMotX );
+    auto next_frq = update_motor( m );
     if ( next_frq <= 0 ) {
-        HAL_TIM_OC_Stop( htim, ch );
+        HAL_TIM_PWM_Stop( htim, ch );
         return;
     }
 
@@ -202,17 +205,27 @@ static void irq__( TIM_HandleTypeDef* htim, int ch, int clk )
     // DesiredPeriod = 1/next_frq = ActualPeriod
     // 1/next_frq = ARR*1/TimClk
     // therefore ARR = TimClk/next_frq
-    __HAL_TIM_SET_AUTORELOAD( htim, clk / next_frq - 1 );
+    auto ARR = clk / next_frq - 1;
+    __HAL_TIM_SET_AUTORELOAD( htim, ARR );
+
+    if ( ( m->pending_movement & 0x2f ) == 0 ) {
+        API_Msgf(
+          "ARR VALUE IS SET TO %d ... %d steps left \n"
+          "velocity: %d\n",
+          ARR,
+          m->pending_movement,
+          (int)m->velocity() );
+    }
 }
 
 extern "C" void TIM1_UP_TIM10_IRQHandler()
 {
-    irq__( &HTIM_X, ccr_ch_xy[0], clk_xy[0] );
+    irq__( gMotX, &HTIM_X, ccr_ch_xy[0], clk_xy[0] );
 }
 
 extern "C" void TIM3_IRQHandler()
 {
-    irq__( &HTIM_Y, ccr_ch_xy[1], clk_xy[1] );
+    irq__( gMotY, &HTIM_Y, ccr_ch_xy[1], clk_xy[1] );
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -333,18 +346,19 @@ motor_status_t Motor_EmergencyStop( motor_hnd_t m )
 // Separate wrapper to call motor callback on timer session.
 static void motor_tim_cb__( void* mt_ref )
 {
-    auto m = (motor_hnd_t)mt_ref;
-    m->cb( m, m->cb_obj );
+    auto m  = (motor_hnd_t)mt_ref;
+    auto cb = m->cb;
+    m->cb   = nullptr; // Always reset callback
+    cb( m, m->cb_obj );
 }
 
 int update_motor( motor_hnd_t m )
 {
-    if ( abs( m->pending_movement ) <= 1 ) {
+    if ( m->pending_movement == 0 ) {
+        m->phy_velocity = 0.f;
         if ( m->cb ) { // Make it invoke outside of ISR
             API_SetTimerFromISR( 0, m, motor_tim_cb__ );
-            m->cb = nullptr; // Always reset callback
         }
-        m->phy_velocity = 0.f;
         return 0;
     }
     auto  now        = API_GetTime_us();
@@ -359,7 +373,8 @@ int update_motor( motor_hnd_t m )
     // Determine direction and amount of acceleration
     bool const bFwd         = m->pending_movement > 0;
     bool const bShouldAccel = m->phy_progress < 0.5f;
-    float      accel = m->phy_accel * delta * (float)xor_( bFwd, bShouldAccel );
+    float      accel
+      = m->phy_accel * delta * (float)xor_( bFwd, bShouldAccel ) ? 1.f : -1.f;
 
     m->phy_velocity += accel;
     m->phy_progress += m->phy_progress_step;
