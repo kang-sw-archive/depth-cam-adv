@@ -30,8 +30,7 @@ static int stringToTokens( char* str, char* argv[], size_t argv_len );
 // Flush buffered data to host
 static char          s_hostTrBuf[HOST_TRANSFER_BUFFER_SIZE];
 static size_t        s_hostTrBufHead = 0;
-static volatile int  s_writingTask   = 0;
-static volatile bool s_bFlushing     = 0;
+static volatile int  s_writingTask   = 0; 
 static void          apndToHostBuf( void const* d, size_t len );
 static void          flushTransmitData();
 
@@ -241,11 +240,11 @@ void stringCmdHandler( char* str, size_t len )
         API_SendHostBinary( "ping", 4 );
     } break;
 
-    case STRCASE( "capture" ): { 
+    case STRCASE( "capture" ): {
         AppHandler_CaptureCommand( argc - 1, argv + 1 );
     } break;
 
-    case STRCASE( "test" ): { 
+    case STRCASE( "test" ): {
         AppHandler_TestCommand( argc - 1, argv + 1 );
     } break;
 
@@ -327,9 +326,6 @@ void apndToHostBuf( void const* d, size_t len )
         return;
     }
 
-    while ( s_bFlushing )
-        vTaskDelay( 1 );
-
     ++s_writingTask;
     s_hostTrBufHead += len;
     memcpy( s_hostTrBuf + s_hostTrBufHead - len, d, len );
@@ -345,8 +341,8 @@ void flushTransmitData()
     while ( s_writingTask > 0 )
         taskYIELD();
 
-    s_bFlushing = true;
+    taskENTER_CRITICAL();
     td_write( gHostConnection, s_hostTrBuf, s_hostTrBufHead );
     s_hostTrBufHead = 0;
-    s_bFlushing     = false;
+    taskEXIT_CRITICAL();
 }
