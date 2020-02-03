@@ -1,11 +1,13 @@
 {
   "ExpandedNodes": [
     "",
+    "\\.dbgpkg",
+    "\\build",
     "\\Src",
     "\\Src\\app",
     "\\Src\\arch",
     "\\third"
   ],
-  "SelectedNode": "\\Src\\arch\\hw-timer.c",
+  "SelectedNode": "\\.dbgpkg\\.gdb.bat",
   "PreviewInSolutionExplorer": true
 }
