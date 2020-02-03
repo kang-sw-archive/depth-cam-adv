@@ -241,19 +241,11 @@ void stringCmdHandler( char* str, size_t len )
         API_SendHostBinary( "ping", 4 );
     } break;
 
-    case STRCASE( "capture" ): {
-        if ( argc == 1 ) {
-            API_Msg( "error: command 'capture' requires argument.\n" );
-            break;
-        }
+    case STRCASE( "capture" ): { 
         AppHandler_CaptureCommand( argc - 1, argv + 1 );
     } break;
 
-    case STRCASE( "test" ): {
-        if ( argc == 1 ) {
-            API_Msg( "error: command 'test' requires argument. \n" );
-            break;
-        }
+    case STRCASE( "test" ): { 
         AppHandler_TestCommand( argc - 1, argv + 1 );
     } break;
 

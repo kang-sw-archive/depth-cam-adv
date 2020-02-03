@@ -3,7 +3,6 @@
 #include <usbd_cdc_if.h>
 #include "../app/hal.h"
 #include "../defs.h"
-
 /////////////////////////////////////////////////////////////////////////////
 // Globals
 transceiver_handle_t gHostConnection;
@@ -31,4 +30,6 @@ void InitHW()
     HW_TIMER_INIT();
     void S2PI_Init();
     S2PI_Init();
+    void InitMotors();
+    InitMotors();
 }

@@ -17,6 +17,11 @@ capture_t gCapture;
 
 extern "C" bool AppHandler_CaptureCommand( int argc, char* argv[] )
 {
+    if ( argc == 0 ) {
+        API_Msg( "error: this command requires addtional argument.\n" );
+        return true;
+    }
+
     switch ( upp::hash::fnv1a_32( argv[0] ) ) {
     case CSTRHASH( "init" ): {
         if ( argc < 2 ) {
