@@ -6,6 +6,6 @@
     "\\Src\\arch",
     "\\third"
   ],
-  "SelectedNode": "\\Src\\usbd_cdc_if.c",
+  "SelectedNode": "\\Src\\arch\\hw-timer.c",
   "PreviewInSolutionExplorer": true
 }

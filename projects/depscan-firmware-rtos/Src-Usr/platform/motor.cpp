@@ -17,8 +17,10 @@
 #include <FreeRTOS.h>
 
 #include <algorithm>
+#include <array>
 #include <main.h>
 #include <stm32f4xx_hal.h>
+#include <uEmbedded/uassert.h>
 #include "../app/app.h"
 #include "../app/motor.h"
 
@@ -29,8 +31,8 @@ struct motor__
 {
     int        pending_movement = 0;
     int        position         = 0;
-    motor_cb_t cb;
-    void*      cb_obj;
+    motor_cb_t cb               = nullptr;
+    void*      cb_obj           = nullptr;
 
     // Calculates motor speed / accelerations
     usec_t phy_prev_time = 0;
@@ -83,47 +85,134 @@ static void trig_pwm( motor_hnd_t );
 extern TIM_HandleTypeDef htim1;
 extern TIM_HandleTypeDef htim3;
 
-#define MX_HTIM htim1
-#define MY_HTIM htim3
+#define HTIM_X htim1
+#define HTIM_Y htim3
 
-#define MX_TIM_CLK SystemCoreClock
-#define MY_TIM_CLK SystemCoreClock
+template <class ty__, size_t n__>
+constexpr size_t countof( ty__ ( & )[n__] )
+{
+    return n__;
+}
+
+static TIM_HandleTypeDef* const htim_xy[]   = { &HTIM_X, &HTIM_Y };
+static int const                clk_xy[]    = { int( 1e6 ), int( 1e6 ) };
+static uint32_t const           ccr_ch_xy[] = { TIM_CHANNEL_1, TIM_CHANNEL_1 };
+static GPIO_TypeDef* const      dir_gpio_xy[]
+  = { MOT_DIR_1_GPIO_Port, MOT_DIR_2_GPIO_Port };
+static uint16_t const      dir_gpio_pin_xy[] = { MOT_DIR_1_Pin, MOT_DIR_2_Pin };
+static GPIO_PinState const dir_gpio_value_xy[][2] = {
+  // [hwid][fwd?]
+  { GPIO_PIN_RESET, GPIO_PIN_SET }, // Motor x
+  { GPIO_PIN_RESET, GPIO_PIN_SET }, // Motor y
+};
 
 /////////////////////////////////////////////////////////////////////////////
 // Hardware dependent codes
 //
+static void DIR_FNC( motor_hnd_t, bool is_fwd );
+static void START_FNC( motor_hnd_t );
+
 extern "C" void InitMotors()
 {
     //! @todo       Implement this!
+    auto motors = { &mx, &my };
+    for ( size_t i = 0; i < motors.size(); i++ ) {
+        auto m   = motors.begin()[i];
+        m->hwid_ = i;
+        m->START = START_FNC;
+        m->DIR   = DIR_FNC;
+    }
 
-    // Timer clocks should be equal with SystemCoreClock
-    //
+    // Timer clocks should be equal with TIM_CLK_X, TIM_CLK_Y
+    // Enable update interrupt
+    // Set CC mode as PWM
+    for ( size_t i = 0; i < countof( htim_xy ); i++ ) {
+        auto tim = htim_xy[i];
+        auto prs = SystemCoreClock / clk_xy[i];
+        auto ch  = ccr_ch_xy[i];
+        auto m   = motors.begin()[i];
+
+        __HAL_TIM_SET_PRESCALER( tim, prs );
+        __HAL_TIM_ENABLE_IT( tim, prs );
+        Motor_SetMaxSpeed( m, (uint32_t)m->phy_maxs ); // Since motor isn't
+                                                       // driven by PWM itself
+                                                       // but by the clock
+                                                       // signal generated on
+                                                       // the match, CCR can be
+                                                       // a fixed value during
+                                                       // operation. This
+                                                       // implementation, simply
+                                                       // set it as double of
+                                                       // the maximum frequency.
+    }
+}
+
+static void DIR_FNC( motor_hnd_t m, bool is_fwd )
+{
+    auto hwid = m->hwid_;
+    uassert( abs( hwid ) <= 1 );
+
+    HAL_GPIO_WritePin(
+      dir_gpio_xy[hwid],
+      dir_gpio_pin_xy[hwid],
+      dir_gpio_value_xy[hwid][is_fwd] );
+}
+
+static void START_FNC( motor_hnd_t m )
+{
+    auto hwid = m->hwid_;
+    uassert( abs( hwid ) <= 1 );
+
+    auto tim = htim_xy[hwid];
+    auto ch  = ccr_ch_xy[hwid];
+
+    __HAL_TIM_SetCounter( tim, 0 );
+    __HAL_TIM_CLEAR_IT( tim, TIM_IT_UPDATE );
+    HAL_TIM_OC_Start( tim, ch );
+}
+
+// This function placed this section since it modifies CCR value, which means
+// hardware associated.
+motor_status_t Motor_SetMaxSpeed( motor_hnd_t m, uint32_t value )
+{
+    m->phy_maxs      = std::max( m->phy_mins, (float)value );
+    auto period_us   = int( 1e6f / m->phy_maxs );
+    auto compare_val = period_us / 2;
+
+    auto tim = htim_xy[m->hwid_];
+    auto ch  = ccr_ch_xy[m->hwid_];
+    __HAL_TIM_SET_COMPARE( tim, ch, compare_val );
+
+    return MOTOR_OK;
 }
 
 // IRQs
-static void irq__( TIM_HandleTypeDef* htim, int clk )
+static void irq__( TIM_HandleTypeDef* htim, int ch, int clk )
 {
     __HAL_TIM_CLEAR_IT( htim, TIM_IT_UPDATE );
 
     auto next_frq = update_motor( gMotX );
     if ( next_frq <= 0 ) {
-        __HAL_TIM_DISABLE( htim );
-        __HAL_TIM_SET_COUNTER( htim, 0 );
+        HAL_TIM_OC_Stop( htim, ch );
         return;
     }
 
     // Calculate auto-reload value from frequency
+    // ActualPeriod := ARR * 1/TimClk [sec]
+    // DesiredPeriod = 1/next_frq = ActualPeriod
+    // 1/next_frq = ARR*1/TimClk
+    // therefore ARR = TimClk/next_frq
     __HAL_TIM_SET_AUTORELOAD( htim, clk / next_frq - 1 );
 }
 
 extern "C" void TIM1_UP_TIM10_IRQHandler()
 {
-    irq__( &MX_HTIM, MX_TIM_CLK );
+    irq__( &HTIM_X, ccr_ch_xy[0], clk_xy[0] );
 }
 
 extern "C" void TIM3_IRQHandler()
 {
-    irq__( &MY_HTIM, MY_TIM_CLK );
+    irq__( &HTIM_Y, ccr_ch_xy[1], clk_xy[1] );
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -133,14 +222,7 @@ extern "C" {
 //! @brief      Get motor status
 motor_status_t Motor_Stat( motor_hnd_t m )
 {
-    return m->pending_movement ? MOTOR_STATE_MOVING : MOTOR_STATE_IDLE;
-}
-
-//! @brief      Set motor's desired max speed in Hz
-motor_status_t Motor_SetMaxSpeed( motor_hnd_t m, uint32_t value )
-{
-    m->phy_maxs = std::max( m->phy_mins, (float)value );
-    return MOTOR_OK;
+    return m->pending_movement != 0 ? MOTOR_STATE_MOVING : MOTOR_STATE_IDLE;
 }
 
 //! @brief      Get motor's desired max speed in Hz
@@ -163,7 +245,7 @@ uint32_t Motor_GetMinSpeed( motor_hnd_t m )
 //! @brief      Set motor's acceleration [Hz/s]
 motor_status_t Motor_SetAcceleration( motor_hnd_t m, uint32_t value )
 {
-    m->phy_accel = (float)std::max( 100u, value );
+    m->phy_accel = (float)std::max( (uint32_t)100u, value );
 }
 
 //! @brief      Set motor's acceleration [Hz/s]
@@ -251,9 +333,11 @@ static void motor_tim_cb__( void* mt_ref )
 
 int update_motor( motor_hnd_t m )
 {
-    if ( abs( m->pending_movement ) == 1 ) {
-        if ( m->cb ) // Make it invoke outside of ISR
+    if ( abs( m->pending_movement ) <= 1 ) {
+        if ( m->cb ) { // Make it invoke outside of ISR
             API_SetTimerFromISR( 0, m, motor_tim_cb__ );
+            m->cb = nullptr; // Always reset callback
+        }
         m->phy_velocity = 0.f;
         return 0;
     }
