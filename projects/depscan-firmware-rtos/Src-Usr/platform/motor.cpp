@@ -19,7 +19,7 @@
 #include <algorithm>
 #include <array>
 #include <main.h>
-#include <stm32f4xx_hal.h>
+#include <main.h>
 #include <uEmbedded/uassert.h>
 #include "../app/app.h"
 #include "../app/motor.h"

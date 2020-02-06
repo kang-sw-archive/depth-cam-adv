@@ -18,7 +18,7 @@
 #include <stdbool.h>
 #include <stdlib.h>
 #include <uEmbedded/event-procedure.h>
-#include "stm32f4xx_hal.h"
+#include <main.h>
 
 #include "../../app/app.h"
 

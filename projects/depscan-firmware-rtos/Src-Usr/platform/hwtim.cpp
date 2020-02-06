@@ -10,7 +10,7 @@
 #include <FreeRTOS.h>
 
 #include <cmsis_os2.h>
-#include <stm32f4xx_hal.h>
+#include <main.h>
 #include <task.h>
 #include <uEmbedded-pp/timer_logic.hxx>
 #include "../defs.h"

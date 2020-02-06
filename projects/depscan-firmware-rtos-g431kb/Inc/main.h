@@ -66,10 +66,6 @@ void Error_Handler(void);
 #define ARGUS_IRQ_Pin GPIO_PIN_1
 #define ARGUS_IRQ_GPIO_Port GPIOA
 #define ARGUS_IRQ_EXTI_IRQn EXTI1_IRQn
-#define USART2_TX_Pin GPIO_PIN_2
-#define USART2_TX_GPIO_Port GPIOA
-#define USART2_RX_Pin GPIO_PIN_3
-#define USART2_RX_GPIO_Port GPIOA
 #define MOT1_STEP_Pin GPIO_PIN_8
 #define MOT1_STEP_GPIO_Port GPIOA
 #define USB_VBUS_Pin GPIO_PIN_9
