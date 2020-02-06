@@ -141,9 +141,9 @@ F 3 "https://www.st.com/resource/en/datasheet/DM00507199.pdf" H 3600 5700 50  00
 	1    0    0    -1  
 $EndComp
 Text Label 4550 6300 2    50   ~ 0
-SWCLK
-Text Label 4550 6400 2    50   ~ 0
 SWDIO
+Text Label 4550 6400 2    50   ~ 0
+SWCLK
 Wire Wire Line
 	4100 6400 4550 6400
 Wire Wire Line
@@ -589,9 +589,9 @@ Wire Wire Line
 	3700 6700 3700 7000
 Wire Wire Line
 	3700 4550 3700 4800
-Text Label 2000 3350 0    50   ~ 0
-SWCLK
 Text Label 2000 3450 0    50   ~ 0
+SWCLK
+Text Label 2000 3350 0    50   ~ 0
 SWDIO
 Text Label 2000 3550 0    50   ~ 0
 JTAG_SWO
@@ -1449,16 +1449,14 @@ BOOT0
 $Comp
 L Device:R_US R2
 U 1 1 5E99E7B0
-P 4450 3150
-F 0 "R2" H 4518 3196 50  0000 L CNN
-F 1 "22k" H 4518 3105 50  0000 L CNN
-F 2 "Resistor_SMD:R_0805_2012Metric_Pad1.15x1.40mm_HandSolder" V 4490 3140 50  0001 C CNN
-F 3 "~" H 4450 3150 50  0001 C CNN
-	1    4450 3150
+P 4450 3700
+F 0 "R2" H 4518 3746 50  0000 L CNN
+F 1 "22k" H 4518 3655 50  0000 L CNN
+F 2 "Resistor_SMD:R_0805_2012Metric_Pad1.15x1.40mm_HandSolder" V 4490 3690 50  0001 C CNN
+F 3 "~" H 4450 3700 50  0001 C CNN
+	1    4450 3700
 	-1   0    0    1   
 $EndComp
-Wire Wire Line
-	4450 3300 4450 3400
 Wire Wire Line
 	3650 3400 4450 3400
 Connection ~ 4450 3400
@@ -1474,7 +1472,7 @@ F 3 "" H 4450 3900 50  0001 C CNN
 	1    0    0    -1  
 $EndComp
 Wire Wire Line
-	4450 3400 4450 3900
+	4450 3400 4450 3550
 $Comp
 L power:VDD #PWR013
 U 1 1 5EA4D38C
@@ -1579,4 +1577,8 @@ Wire Wire Line
 	6250 3550 6250 3850
 Wire Wire Line
 	5850 3550 5850 3850
+Wire Wire Line
+	4450 3850 4450 3900
+Wire Wire Line
+	4450 3000 4450 3400
 $EndSCHEMATC

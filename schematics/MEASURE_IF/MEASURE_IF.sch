@@ -141,9 +141,9 @@ F 3 "https://www.st.com/resource/en/datasheet/DM00507199.pdf" H 3600 5700 50  00
 	1    0    0    -1  
 $EndComp
 Text Label 4550 6300 2    50   ~ 0
-SWCLK
-Text Label 4550 6400 2    50   ~ 0
 SWDIO
+Text Label 4550 6400 2    50   ~ 0
+SWCLK
 Wire Wire Line
 	4100 6400 4550 6400
 Wire Wire Line
