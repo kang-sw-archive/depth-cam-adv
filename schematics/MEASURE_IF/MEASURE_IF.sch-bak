@@ -589,9 +589,9 @@ Wire Wire Line
 	3700 6700 3700 7000
 Wire Wire Line
 	3700 4550 3700 4800
-Text Label 2000 3450 0    50   ~ 0
-SWCLK
 Text Label 2000 3350 0    50   ~ 0
+SWCLK
+Text Label 2000 3450 0    50   ~ 0
 SWDIO
 Text Label 2000 3550 0    50   ~ 0
 JTAG_SWO
