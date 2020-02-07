@@ -62,7 +62,7 @@ typedef struct
     uint32_t LineIdx;
     uint32_t OfstX;
     uint32_t NumPxls;
-} FLineDdesc;
+} FLineDesc;
 
 typedef struct
 {
