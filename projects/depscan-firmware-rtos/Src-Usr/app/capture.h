@@ -1,4 +1,6 @@
 #pragma once
+#include <FreeRTOS.h>
+
 #include <argus.h>
 #include <stdbool.h>
 #include <stdint.h>
@@ -9,6 +11,10 @@
 extern "C" {
 #endif // __cplusplus
 
+//! @addtogroup Depscan
+//! @{
+//! @addtogroup Depscan_Capture
+//! @{
 typedef struct
 {
     float x;
@@ -28,32 +34,44 @@ typedef enum
     CAPTURE_MODE_POINT
 } capture_mode_t;
 
-//! @brief A struct indicates common capture status
+//! @brief      A struct indicates common capture status
 typedef struct capture_common_ty__
 {
-    //! Basic property
-    capture_mode_t Mode;
-    void*          Substat;
-
-    //! Sensor properties
+    //! @brief      Sensor properties
     argus_hnd_t* SensorHandle;
-    argus_mode_t SensorMode;
-    uint32_t     SensorDelay;
 
-    //! Motor properties
+    //! @brief      Motor properties
     capture_fpoint_t AnglePerStep;
 
-    //! Scanner properties
+    //! @brief      Scanner props
+    //! @{
+    capture_point_t Scan_Resolution;
+    capture_point_t Scan_StepPerPxl;
+    capture_point_t Scan_CaptureOfst;
+    capture_point_t Scan_Pos;
+    //! @}
 
-    //! Point properties
-    int NumMaxRequest;
+    //! @brief      Point properties
+    //! @{
+    int      Point_NumMaxRequest;
+    int      Point_NumPendingRequest;
+    uint32_t Point_RequestID;
+    uint32_t Point_BufHead;
+    uint32_t Point_BufEnd;
+    //! @}
 
-    //! Capture buffer, for general use
+    //! @brief      Process handle
+    TaskHandle_t CaptureProcess;
+    bool         bPaused;
+
+    //! @brief      Data buffer for general usage
     char Buffer[CAPTURER_BUFFER_SIZE];
 } capture_t;
 
 void Capture_Point_Begin( void* ARG );
 
+//! @}
+//! @}
 #ifdef __cplusplus
 }
 #endif // __cplusplus
