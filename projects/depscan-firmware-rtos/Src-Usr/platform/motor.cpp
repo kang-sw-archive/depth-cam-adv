@@ -19,7 +19,6 @@
 #include <algorithm>
 #include <array>
 #include <main.h>
-#include <main.h>
 #include <uEmbedded/uassert.h>
 #include "../app/app.h"
 #include "../app/motor.h"
@@ -36,11 +35,13 @@ struct motor__
 
     // Calculates motor speed / accelerations
     usec_t   phy_prev_time   = 0;
-    float    phy_accel       = 500000.f;
+    float    phy_accel       = 4.4e4;
     float    phy_velocity    = 0.f;
-    float    phy_maxs        = 10000.f;
+    float    phy_maxs        = 15200.f;
     float    phy_mins        = 200.f;
     uint32_t phy_speed_cache = 0;
+
+    float debug_last_accel = 0.f;
 
     // Calculated on start sequence.
     float phy_progress      = 0.f;
@@ -208,14 +209,18 @@ static void irq__( motor_hnd_t m, TIM_HandleTypeDef* htim, int ch, int clk )
     auto ARR = clk / next_frq - 1;
     __HAL_TIM_SET_AUTORELOAD( htim, ARR );
 
+#if 1
     if ( ( m->pending_movement & 0x2f ) == 0 ) {
         API_Msgf(
           "ARR VALUE IS SET TO %d ... %d steps left \n"
-          "velocity: %d\n",
+          "velocity: %d\n"
+          "last accel: %de-6\n",
           ARR,
           m->pending_movement,
-          (int)m->velocity() );
+          (int)m->velocity(),
+          (int)( m->debug_last_accel * 1e6f ) );
     }
+#endif
 }
 
 extern "C" void TIM1_UP_TIM10_IRQHandler()
@@ -373,14 +378,15 @@ int update_motor( motor_hnd_t m )
     // Determine direction and amount of acceleration
     bool const bFwd         = m->pending_movement > 0;
     bool const bShouldAccel = m->phy_progress < 0.5f;
-    float      accel
-      = m->phy_accel * delta * (float)xor_( bFwd, bShouldAccel ) ? 1.f : -1.f;
+    float      accel        = m->phy_accel * delta
+                  * ( (float)xor_( bFwd, bShouldAccel ) ? 1.f : -1.f );
 
     m->phy_velocity += accel;
     m->phy_progress += m->phy_progress_step;
     auto delta_pos = ( m->pending_movement > 0 ? 1 : -1 );
     m->position += delta_pos;
     m->pending_movement -= delta_pos;
+    m->debug_last_accel = accel;
 
     // Clamp value in range
     return m->phy_speed_cache
