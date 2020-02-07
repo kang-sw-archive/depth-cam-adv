@@ -21,23 +21,14 @@ extern TIM_HandleTypeDef htim2;
 
 /////////////////////////////////////////////////////////////////////////////
 // Statics
-// using timer_t = upp::linked_timer_logic<usec_t>;
-using timer_t = upp::static_timer_logic<usec_t, uint8_t, NUM_MAX_HWTIMER_NODE>;
-static timer_t s_tim;
+// using hwtim_t = upp::linked_timer_logic<usec_t>;
+using hwtim_t = upp::static_timer_logic<usec_t, uint8_t, NUM_MAX_HWTIMER_NODE>;
+static hwtim_t s_tim;
 static usec_t  s_total_us = std::numeric_limits<usec_t>::max() - (usec_t)1e9;
 static TIM_HandleTypeDef& htim = htim2;
 static TaskHandle_t       sTimerTask;
 static StackType_t        sTimerStack[NUM_TIMER_TASK_STACK_WORDS];
 static StaticTask_t       sTimerTaskStaticCb;
-
-static struct
-{
-    usec_t delay_;
-    void*  obj_;
-    void ( *cb_ )( void* );
-} s_isr_pending_timer[8];
-static size_t s_isr_pending_cnt_h = 0;
-static size_t s_isr_pending_cnt_t = 0;
 
 /////////////////////////////////////////////////////////////////////////////
 // Decls
@@ -150,7 +141,7 @@ _Noreturn void TimerUpdateTask( void* nouse__ )
 
 extern "C" bool API_CheckTimer( timer_handle_t h, usec_t* usLeft )
 {
-    timer_t::desc_type d;
+    hwtim_t::desc_type d;
     if ( s_tim.browse( { h.data_[0], h.data_[1] }, d ) == false ) {
         return false;
     }
