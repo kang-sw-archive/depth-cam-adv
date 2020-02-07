@@ -4,6 +4,7 @@
 #include <argus.h>
 #include <stdbool.h>
 #include <stdint.h>
+#include <task.h>
 #include "../defs.h"
 #include "../protocol/protocol-s.h"
 
@@ -35,6 +36,9 @@ typedef enum
 } capture_mode_t;
 
 //! @brief      A struct indicates common capture status
+//! @details
+//!              This class will be used as singleton instance of capturing
+//!             condition.
 typedef struct capture_common_ty__
 {
     //! @brief      Sensor properties
@@ -61,14 +65,27 @@ typedef struct capture_common_ty__
     //! @}
 
     //! @brief      Process handle
-    TaskHandle_t CaptureProcess;
-    bool         bPaused;
+    TaskHandle_t   CaptureProcess;
+    capture_mode_t CurrentMode;
+    bool           bPaused;
 
     //! @brief      Data buffer for general usage
-    char Buffer[CAPTURER_BUFFER_SIZE];
 } capture_t;
 
-void Capture_Point_Begin( void* ARG );
+//! @brief      Singleton instance of capturing status.
+extern capture_t gCapture;
+
+//! @brief      Buffer.
+//! @note
+//!              This is detached from capture_t descriptor to reduce .data
+//!             section usage
+extern char Capture_Buffer[CAPTURER_BUFFER_SIZE];
+
+//! @brief      Check if capturing process is in progress
+static inline bool Capture_IsRunning()
+{
+    return gCapture.CaptureProcess != NULL;
+}
 
 //! @}
 //! @}

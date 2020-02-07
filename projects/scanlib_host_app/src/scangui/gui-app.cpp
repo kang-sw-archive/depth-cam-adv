@@ -193,7 +193,7 @@ ScannerMainForm::ScannerMainForm( FScannerProtocolHandler* Scanner, std::string 
                           " <><margin=[2.5, 0] gap = 5 b3 weight=30>   "
                           " <><margin=[2.5, 0] gap = 5 b4 weight=30>   "
                           "<>>" );
-        char constexpr* conftxt[]     = { "Offset Angle", "FOV", "Resolution", "Measure Delay \n[usec]", "Motor Speed \n[Move/Meas]" };
+        char constexpr* conftxt[]     = { "Offset Angle", "FOV", "Resolution", "Measure Delay \n[usec]", "Motor Speed \n[Max/Accel]" };
         char constexpr* conftooltip[] = {
             //
             // Offset angle tooltip
@@ -210,9 +210,8 @@ ScannerMainForm::ScannerMainForm( FScannerProtocolHandler* Scanner, std::string 
             "Sensor delay on every measurement. [microseconds]",
             //
             // Motor Speed
-            "The left side is used when to move the motor in large steps. Other side is used to move X-axis motor on measurement. \n"
-            "Movement clock speed is recommended to be slow to reduce the impact that came from fast movement. \n"
-            "Measure clock speed has a trade-off, the faster clock speed can speed up measurement, \nbut gives bad effect to image quality due to vibration from drastic movement.",
+            "The left column shows the maximum step speed of the motor in Hz. \n"
+            "The item on the right shows the step acceleration of the motor in Hz/s.",
         };
         for ( size_t idx = 0; idx < countof( conftxt ); idx++ ) {
             auto& i = mConfText[idx];
@@ -740,7 +739,7 @@ void ScannerMainForm::StartCapture()
         int slow = mConfMotorSpd[0].to_int();
         int fast = mConfMotorSpd[1].to_int();
         mScan->SetMotorDriveClockSpeed( fast );
-        mScan->SetMotorSlowMovementClockSpeed( slow );
+        mScan->SetMotorAcceleration( slow );
         mScan->BeginCapture( &c );
     }
 }

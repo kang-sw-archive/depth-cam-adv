@@ -416,14 +416,14 @@ void FScannerProtocolHandler::RequestMotorMovement( int xstep, int ystep ) noexc
 void FScannerProtocolHandler::SetMotorDriveClockSpeed( int Hz ) noexcept
 {
     char buf[256];
-    sprintf( buf, "capture config motor-clk %d", Hz );
+    sprintf( buf, "capture config motor-max-clk %d", Hz );
     SendString( buf );
 }
 
-void FScannerProtocolHandler::SetMotorSlowMovementClockSpeed( int Hz ) noexcept
+void FScannerProtocolHandler::SetMotorAcceleration( int Hz ) noexcept
 {
     char buf[256];
-    sprintf( buf, "capture config motor-clk-on-large-move %d", Hz );
+    sprintf( buf, "capture config motor-accel %d", Hz );
     SendString( buf );
 }
 

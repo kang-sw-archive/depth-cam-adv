@@ -161,7 +161,7 @@ public:
 
     //! Set motor large movement clock speed.
     //! This is to reduce physical impact on large movement
-    void SetMotorSlowMovementClockSpeed( int Hz ) noexcept;
+    void SetMotorAcceleration( int Hz ) noexcept;
 
     //! Relocate motor to origin point
 
