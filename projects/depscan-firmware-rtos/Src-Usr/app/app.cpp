@@ -91,12 +91,17 @@ extern "C" int API_Msg( char const* txt )
 // - Initializes hi-precision hardware timer
 extern "C" void StartDefaultTask( void* nouse_ )
 {
+    void InitCapture();
+
     InitHW();
     Internal_InitRW();
+    InitCapture();
 
     // this function never returns.
     AppProc_HostIO( NULL );
 
     // control never reaches here.
     uassert( false );
+    for ( ;; )
+        (void)0;
 }

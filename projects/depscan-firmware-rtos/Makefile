@@ -26,7 +26,7 @@ TARGET = depscan-firmware-rtos
 # debug build?
 DEBUG = 1
 # optimization
-OPT = -Og
+OPT = -Os
 
 
 #######################################
@@ -146,7 +146,8 @@ AS_DEFS =
 # C defines
 C_DEFS =  \
 -DUSE_HAL_DRIVER \
--DSTM32F401xC
+-DSTM32F401xC \
+-Duassert(x)=  # If required, disable assertion to reduce binary size.
 
 
 # AS includes
