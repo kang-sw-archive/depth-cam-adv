@@ -50,10 +50,11 @@ struct motor__
     // for hw layer use ...
     int hwid_;
     void ( *DIR )( motor_hnd_t, bool is_fwd );
-    void ( *START )( motor_hnd_t ); // Since this callback is invoked very first
-                                    // of movement progress, it should be
-                                    // implemented that triggers timer IRQ as
-                                    // soon as possible, with shortest ARR
+    void ( *START )( motor_hnd_t ); // Since this callback is invoked in very
+                                    // first step of movement progress, it
+                                    // should be implemented in a way that
+                                    // triggers timer IRQ as soon as possible,
+                                    // by setting shortest ARR
 
     float velocity() const { return phy_velocity; }
     float speed() const
