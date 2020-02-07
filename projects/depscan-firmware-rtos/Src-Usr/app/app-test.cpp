@@ -34,7 +34,13 @@ static void Test_Motor( int argc, char* argv[] );
 extern "C" bool AppHandler_TestCommand( int argc, char* argv[] )
 {
     if ( argc == 0 ) {
-        API_Msg( "error: this command requires additional argument. \n" );
+        API_Msg(
+          "error: this command requires additional argument. \n"
+          "Available commands: \n"
+          "     dist-sensor\n"
+          "     s2pi\n"
+          "     motor [args]\n"
+          "     timer [num-try] [interval]\n" );
         return true;
     }
 
@@ -54,13 +60,7 @@ extern "C" bool AppHandler_TestCommand( int argc, char* argv[] )
         Test_Motor( argc, argv );
         break;
     default:
-        API_Msg(
-          "error: Given test argument is not valid. \n"
-          "Available commands: \n"
-          "     dist-sensor\n"
-          "     s2pi\n"
-          "     motor [args]\n"
-          "     timer [num-try] [interval]\n" );
+        API_Msg( "error: Given test argument is not valid. \n" );
         return false;
     }
     return true;
