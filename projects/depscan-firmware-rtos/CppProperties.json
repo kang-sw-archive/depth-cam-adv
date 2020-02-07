@@ -21,7 +21,8 @@
         "USE_HAL_DRIVER",
         "STM32F401xC"
       ],
-      "intelliSenseMode": "linux-gcc-arm"
+      "intelliSenseMode": "linux-gcc-arm",
+      "compilerSwitches": "-std=c++17"
     }
   ]
 }
