@@ -21,7 +21,7 @@ capture_t& cc = gCapture;
 /////////////////////////////////////////////////////////////////////////////
 // Initialize capturer
 // Assignment of some export variables ...
-void InitCapture()
+extern "C" void InitCapture()
 {
 
 }
