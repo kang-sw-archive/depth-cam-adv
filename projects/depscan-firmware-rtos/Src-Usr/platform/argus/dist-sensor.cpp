@@ -60,27 +60,25 @@ bool DistSens_Configure( dist_sens_t h, dist_sens_config_t const* opt )
         return false;
     }
 
-    if (
-      Argus_SetConfigurationFrameTime( h->hnd_, opt->Delay_us ) != STATUS_OK ) {
-        API_Msg( "error: Sensor frame time setting failed.\n" );
-        return false;
-    }
-    h->conf_.Delay_us = opt->Delay_us;
+    if ( opt == nullptr )
+        opt = &h->conf_;
 
-    if (
-      Argus_SetConfigurationMeasurementMode(
-        h->hnd_, opt->bCloseDistanceMode ? ARGUS_MODE_B : ARGUS_MODE_A )
-      != STATUS_OK ) {
-        API_Msg(
-          "error: Sensor mode setting "
-          "failed.\n" );
-        return false;
-    }
-    h->conf_.bCloseDistanceMode = opt->bCloseDistanceMode;
+    status_t res_f = Argus_SetConfigurationFrameTime( h->hnd_, opt->Delay_us ),
+             res_m = Argus_SetConfigurationMeasurementMode(
+               h->hnd_, opt->bCloseDistanceMode ? ARGUS_MODE_B : ARGUS_MODE_A );
 
-    return true;
+    if ( res_f == STATUS_OK )
+        h->conf_.Delay_us = opt->Delay_us;
+    else
+        API_Msg( "Failed to configure frame time\n" );
+
+    if ( res_m == STATUS_OK )
+        h->conf_.bCloseDistanceMode = opt->bCloseDistanceMode;
+    else
+        API_Msg( "Failed to configure distance mode\n" );
+
+    return res_f == STATUS_OK && res_m == STATUS_OK;
 }
-
 void DistSens_GetConfigure( dist_sens_t h, dist_sens_config_t* out )
 {
     *out = h->conf_;
