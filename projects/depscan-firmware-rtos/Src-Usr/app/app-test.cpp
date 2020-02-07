@@ -28,7 +28,7 @@ static void Test_DistSensor( int argc, char* argv[] );
 static void Test_Motor( int argc, char* argv[] );
 
 /////////////////////////////////////////////////////////////////////////////
-#define CSTRHASH( str ) upp::hash::fnv1a_32_const( str )
+#define SCASE( str ) upp::hash::fnv1a_32_const( str )
 #define STRHASH( str )  upp::hash::fnv1a_32( str )
 
 extern "C" bool AppHandler_TestCommand( int argc, char* argv[] )
@@ -47,16 +47,16 @@ extern "C" bool AppHandler_TestCommand( int argc, char* argv[] )
     API_Msgf( "info: Test sequence for ::%s:: \n", argv[0] );
 
     switch ( STRHASH( argv[0] ) ) {
-    case CSTRHASH( "s2pi" ):
+    case SCASE( "s2pi" ):
         Test_S2PI();
         break;
-    case CSTRHASH( "timer" ):
+    case SCASE( "timer" ):
         Test_Timer( argc, argv );
         break;
-    case CSTRHASH( "dist-sensor" ):
+    case SCASE( "dist-sensor" ):
         Test_DistSensor( argc, argv );
         break;
-    case CSTRHASH( "motor" ):
+    case SCASE( "motor" ):
         Test_Motor( argc, argv );
         break;
     default:
