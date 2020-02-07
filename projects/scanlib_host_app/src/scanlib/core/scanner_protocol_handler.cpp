@@ -93,8 +93,8 @@ void FScannerProtocolHandler::procedureThread( PortOpenFunctionType             
             print( "Connection successful\n" );
             bIsConnected = true;
             mPrevCaptureParam.reset();
-            SendString( "report" );
-            SendString( "stop" );
+            SendString( "capture report" );
+            SendString( "capture stop" );
             break;
         }
 
@@ -152,19 +152,19 @@ void FScannerProtocolHandler::configureCapture( CaptureParam const& arg, bool co
         auto xd       = static_cast<int>( xv / StepX );
         auto yd       = static_cast<int>( yv / StepY );
 
-        sprintf( buf, "config offset %d %d", xd, yd );
+        sprintf( buf, "capture config offset %d %d", xd, yd );
         SendString( buf );
     }
 
     if ( arg.bPrescisionMode ) {
-        sprintf( buf, "config precision %d", arg.bPrescisionMode.value() );
+        sprintf( buf, "capture config precision %d", arg.bPrescisionMode.value() );
         SendString( buf );
     }
 
     // Set frame time
     if ( auto PrevCaptureDelay = mPrevCaptureParam.has_value() ? mPrevCaptureParam->CaptureDelayUs : -1;
          arg.CaptureDelayUs > 0 && arg.CaptureDelayUs != PrevCaptureDelay ) {
-        sprintf( buf, "config delay %d", arg.CaptureDelayUs );
+        sprintf( buf, "capture config delay %d", arg.CaptureDelayUs );
         SendString( buf );
     }
 
@@ -201,15 +201,15 @@ void FScannerProtocolHandler::configureCapture( CaptureParam const& arg, bool co
             ResolutionY      = res;
             SPPY             = spxl;
         }
-        sprintf( buf, "config resolution %d %d", ResolutionX, ResolutionY );
+        sprintf( buf, "capture config resolution %d %d", ResolutionX, ResolutionY );
         SendString( buf );
-        sprintf( buf, "config step-per-pixel %d %d", SPPX, SPPY );
+        sprintf( buf, "capture config step-per-pixel %d %d", SPPX, SPPY );
         SendString( buf );
     }
 
     // Reinitialize device
     if ( bShouldReinit ) {
-        SendString( "init-sensor" );
+        SendString( "capture init-sensor" );
     }
 
     // Update previous capture params
@@ -283,7 +283,7 @@ bool FScannerProtocolHandler::BeginCapture( CaptureParam const* params, size_t T
 
     // Request capture
     bRequestingCapture = true;
-    SendString( "start" );
+    SendString( "capture scan start" );
 
     return true;
 }
@@ -292,7 +292,7 @@ bool FScannerProtocolHandler::requestReport( bool bSync, size_t TimeoutMs )
 {
     // Request status update
     mReportWait.arg.store( false );
-    SendString( "report" );
+    SendString( "capture report" );
 
     // Wait until device return status if needed.
     if ( bSync ) {
@@ -307,7 +307,7 @@ bool FScannerProtocolHandler::requestReport( bool bSync, size_t TimeoutMs )
 void FScannerProtocolHandler::SetDegreesPerStep( float x, float y ) noexcept
 {
     char buf[256];
-    sprintf( buf, "config angle-per-step %d %d", *(int*)&x, *(int*)&y );
+    sprintf( buf, "capture config angle-per-step %d %d", *(int*)&x, *(int*)&y );
     SendString( buf );
 }
 
@@ -381,7 +381,7 @@ void FScannerProtocolHandler::OnBinaryData( char const* data, size_t len )
             GetScanningImage( desc );
             OnReceiveLine( desc );
         }
-        SendString( "report" );
+        SendString( "capture report" );
     } break;
 
     case ECommand::RSP_PIXEL_DATA:
@@ -408,7 +408,7 @@ void FScannerProtocolHandler::RequestMotorMovement( int xstep, int ystep ) noexc
 {
     char buf[256];
 
-    sprintf( buf, "motor-move %d %d", xstep, ystep );
+    sprintf( buf, "capture motor-move %d %d", xstep, ystep );
     SendString( buf );
     SendString( "report" );
 }
@@ -416,14 +416,14 @@ void FScannerProtocolHandler::RequestMotorMovement( int xstep, int ystep ) noexc
 void FScannerProtocolHandler::SetMotorDriveClockSpeed( int Hz ) noexcept
 {
     char buf[256];
-    sprintf( buf, "config motor-clk %d", Hz );
+    sprintf( buf, "capture config motor-clk %d", Hz );
     SendString( buf );
 }
 
 void FScannerProtocolHandler::SetMotorSlowMovementClockSpeed( int Hz ) noexcept
 {
     char buf[256];
-    sprintf( buf, "config motor-clk-on-large-move %d", Hz );
+    sprintf( buf, "capture config motor-clk-on-large-move %d", Hz );
     SendString( buf );
 }
 
