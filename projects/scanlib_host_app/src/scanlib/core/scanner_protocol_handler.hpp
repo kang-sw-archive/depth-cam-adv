@@ -135,7 +135,7 @@ public:
     bool BeginCapture( CaptureParam const* params = nullptr, size_t TimeoutMs = 1000 );
 
     //! Try resume operation
-    void TryPauseOrResume() { SendString( "capture start" ); }
+    void TryPauseOrResume() { SendString( "capture scan-start" ); }
 
     //! Check if paused
     bool IsPaused() const noexcept { return IsDeviceRunning() && mStat.load().bIsPaused; }

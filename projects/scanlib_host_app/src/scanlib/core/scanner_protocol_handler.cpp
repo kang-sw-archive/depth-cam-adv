@@ -283,7 +283,7 @@ bool FScannerProtocolHandler::BeginCapture( CaptureParam const* params, size_t T
 
     // Request capture
     bRequestingCapture = true;
-    SendString( "capture scan start" );
+    SendString( "capture scan-start" );
 
     return true;
 }
