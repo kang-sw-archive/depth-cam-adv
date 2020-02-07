@@ -5,10 +5,6 @@
 static s2pi_irq_callback_t g_cbIrq;
 static void*               g_cbIrqObj;
 
-static TaskHandle_t s_irq_task;
-static StackType_t  s_irq_task_stack[128];
-static StaticTask_t s_irq_task_tcb;
-
 void EXTI1_IRQHandler( void )
 {
     if ( __HAL_GPIO_EXTI_GET_IT( GPIO_PIN_1 ) != RESET && g_cbIrq ) {

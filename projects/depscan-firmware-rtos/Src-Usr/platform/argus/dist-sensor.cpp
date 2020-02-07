@@ -79,6 +79,7 @@ bool DistSens_Configure( dist_sens_t h, dist_sens_config_t const* opt )
 
     return res_f == STATUS_OK && res_m == STATUS_OK;
 }
+
 void DistSens_GetConfigure( dist_sens_t h, dist_sens_config_t* out )
 {
     *out = h->conf_;
