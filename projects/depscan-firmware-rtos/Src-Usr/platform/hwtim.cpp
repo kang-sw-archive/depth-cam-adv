@@ -110,6 +110,9 @@ API_SetTimerFromISR( usec_t delay, void* obj, void ( *cb )( void* ) )
 extern "C" void API_AbortTimer( timer_handle_t h )
 {
     taskENTER_CRITICAL();
+    hwtim_t::handle_type t;
+    t.id_   = h.data_[0];
+    t.time_ = h.data_[1];
     s_tim.remove( { h.data_[0], h.data_[1] } );
     taskEXIT_CRITICAL();
 }

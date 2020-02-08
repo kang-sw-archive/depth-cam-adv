@@ -147,7 +147,7 @@ AS_DEFS =
 C_DEFS =  \
 -DUSE_HAL_DRIVER \
 -DSTM32F401xC \
--Duassert(x)="if(!(x)){for(;;){}}"# If required, disable assertion to reduce binary size.
+-Duassert(x)="if(!(x)){asm volatile (\"cpsid i\" : : : \"memory\"); for(;;){}}"# If required, disable assertion to reduce binary size.
 
 # AS includes
 AS_INCLUDES =  \

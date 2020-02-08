@@ -32,7 +32,7 @@ typedef struct dist_sens__* dist_sens_t;
 //! @brief      Sensor configuration descriptor
 typedef struct dist_sens_config__
 {
-    uint16_t Delay_us;           //!< Delays per capture
+    uint32_t Delay_us;           //!< Delays per capture
     bool     bCloseDistanceMode; //!< Distance mode. True if close distance &
                                  //!< accuracy mode
 } dist_sens_config_t;

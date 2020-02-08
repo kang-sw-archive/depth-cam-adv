@@ -28,8 +28,12 @@
           "text": "-file-exec-and-symbols E:/__LocalWorkspace/Edu-Projects/depth-cam-adv/projects/depscan-firmware-rtos/build/depscan-firmware-rtos.elf",
           "description": "load file",
           "ignoreFailures": false
+        },
+        {
+          "text": "monitor reset halt",
+          "ignoreFailures": true
         }
-      ], 
+      ],
       "showDisplayString": true,
       "miDebuggerServerAddress": "localhost:3333",
       "filterStderr": true,

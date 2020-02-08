@@ -28,8 +28,8 @@ static void Test_DistSensor( int argc, char* argv[] );
 static void Test_Motor( int argc, char* argv[] );
 
 /////////////////////////////////////////////////////////////////////////////
-#define SCASE( str ) upp::hash::fnv1a_32_const( str )
-#define STRHASH( str )  upp::hash::fnv1a_32( str )
+#define SCASE( str )   upp::hash::fnv1a_32_const( str )
+#define STRHASH( str ) upp::hash::fnv1a_32( str )
 
 extern "C" bool AppHandler_TestCommand( int argc, char* argv[] )
 {
@@ -185,16 +185,21 @@ void Test_Timer( int argc, char* argv[] )
 
 void Test_DistSensor( int argc, char* argv[] )
 {
+    auto retry = 5;
+    auto delay = 1000;
+    if ( argc >= 3 )
+        retry = std::max( retry, (int)strtol( argv[2], NULL, 10 ) );
+    if ( argc >= 2 )
+        delay = std::max( retry, (int)strtol( argv[1], NULL, 10 ) );
+
     dist_sens_config_t conf;
     DistSens_GetConfigure( ghDistSens, &conf );
+    conf.Delay_us = delay;
+    conf.bCloseDistanceMode = true;
     if ( DistSens_Configure( ghDistSens, &conf ) == false ) {
         API_Msg( "error: failed to initialize distance sensor.\n" );
         return;
     }
-
-    auto retry = 5;
-    if ( argc >= 1 )
-        retry = std::max( retry, atoi( argv[1] ) );
 
     API_Msgf( "info: retry count is set to %d\n", retry );
 

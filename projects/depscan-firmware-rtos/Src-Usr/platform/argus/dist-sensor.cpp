@@ -30,6 +30,8 @@ static struct dist_sens__
     void*                cb_obj_ = NULL;
     dist_sens_async_cb_t cb_     = NULL;
 
+    timer_handle_t watchdog_hnd_ = {};
+
     argus_results_t result_;
 
 } si;
@@ -143,6 +145,7 @@ bool DistSens_MeasureAsync(
 
         // Callback is always invoked regardless the measurement was
         // successful or not.
+        API_AbortTimer( si.watchdog_hnd_ );
         si.capturing_ = false;
         if ( si.cb_ )
             si.cb_( ghDistSens, si.cb_obj_, result );
@@ -156,8 +159,19 @@ bool DistSens_MeasureAsync(
         if ( result == STATUS_ARGUS_POWERLIMIT )
             continue;
 
-        if ( result == STATUS_OK )
+        if ( result == STATUS_OK ) {
+            if ( si.capturing_ ) { 
+                // For a case if the callback is already called ...
+                si.watchdog_hnd_
+                  = API_SetTimer( si.conf_.Delay_us * 4, NULL, []( auto ) {
+                        API_Msg(
+                          "warning: Oops, seems capture request is lost! \n" );
+                        si.capturing_    = false;
+                        si.init_correct_ = false;
+                    } );
+            }
             return true;
+        }
 
         // If failed ...
         switch ( result ) {
@@ -233,11 +247,6 @@ static bool RefreshArgusSens()
         return false;
     }
 
-    // argus_calibration_t calib;
-    // Argus_GetDefaultCalibration(
-    // &calib );
-    // Argus_GetConfigurationFrameTime();
-    // Argus_GetConfigurationMeasurementMode();
     s.init_correct_ = true;
     return true;
 }
