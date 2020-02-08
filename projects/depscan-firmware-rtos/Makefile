@@ -146,9 +146,8 @@ AS_DEFS =
 # C defines
 C_DEFS =  \
 -DUSE_HAL_DRIVER \
--DSTM32F401xC
-#-Duassert(x)=  # If required, disable assertion to reduce binary size.
-#-Duassert(x)=  # If required, disable assertion to reduce binary size.#-Duassert(x)=  # If required, disable assertion to reduce binary size.
+-DSTM32F401xC \
+-Duassert(x)="if(!(x)){for(;;){}}"# If required, disable assertion to reduce binary size.
 
 # AS includes
 AS_INCLUDES =  \
