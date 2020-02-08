@@ -87,7 +87,7 @@ public:
         ACTIVATE_OK              = 0,
         ACTIVATE_INVALID_COM     = -1,
         ACTIVATE_ALREADY_RUNNING = -2,
-    } Activate( PortOpenFunctionType ComOpener, FCommunicationProcedureInitStruct const& params ) noexcept;
+    } Activate( PortOpenFunctionType ComOpener, FCommunicationProcedureInitStruct const& params, bool bAsync = true ) noexcept;
 
     //! Check if connection is alive
     bool IsConnected() const noexcept;

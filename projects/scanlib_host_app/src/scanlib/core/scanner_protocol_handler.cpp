@@ -25,7 +25,8 @@ FScannerProtocolHandler::~FScannerProtocolHandler() { Shutdown(); }
 
 FScannerProtocolHandler::ActivateResult
 FScannerProtocolHandler::Activate( PortOpenFunctionType                     ComOpener,
-                                   FCommunicationProcedureInitStruct const& params ) noexcept
+                                   FCommunicationProcedureInitStruct const& params,
+                                   bool                                     bAsync ) noexcept
 {
     if ( IsActive() )
         return ACTIVATE_ALREADY_RUNNING;
@@ -38,7 +39,7 @@ FScannerProtocolHandler::Activate( PortOpenFunctionType                     ComO
 
     // Wait until connection done.
     print( "Requesting Activation. Is Active? %d, Is Connected? %d ... \n", IsActive(), IsConnected() );
-    bool const bShouldWaitOpenningResult = params.ConnectionRetryCount != -1;
+    bool const bShouldWaitOpenningResult = bAsync == false && params.ConnectionRetryCount != -1;
     while ( IsActive() && ( bShouldWaitOpenningResult && IsConnected() == false ) )
         this_thread::sleep_for( 1ms );
 
