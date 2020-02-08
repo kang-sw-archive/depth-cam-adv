@@ -32,54 +32,6 @@ void operator delete( void* p )
 }
 
 /////////////////////////////////////////////////////////////////////////////
-// Globals
-extern "C" void API_Putf( char const* fmt, ... )
-{
-    va_list vp;
-    va_list vp2;
-    va_start( vp, fmt );
-    size_t allocsz = vsnprintf( NULL, 0, fmt, vp ) + 1;
-    va_end( vp );
-
-    va_copy( vp2, vp );
-    char* buf = (char*)alloca( allocsz );
-    vsprintf( buf, fmt, vp2 );
-    va_end( vp2 );
-
-    API_SendHostString( buf, allocsz );
-}
-
-void API_Msgf( char const* fmt, ... )
-{
-    va_list vp;
-    va_list vp2;
-    va_start( vp, fmt );
-    size_t allocsz = vsnprintf( NULL, 0, fmt, vp ) + 1;
-    va_end( vp );
-
-    va_copy( vp2, vp );
-    char* buf = (char*)alloca( allocsz );
-    vsprintf( buf, fmt, vp2 );
-    va_end( vp2 );
-
-    API_Msg( buf );
-}
-
-extern "C" int API_Msg( char const* txt )
-{
-    auto t = API_GetTime_us();
-    char buf[17];
-    sprintf(
-      buf,
-      "[%6u.%06u] ",
-      ( uint32_t )( t / 1000000u ),
-      ( uint32_t )( t % 1000000u ) );
-    API_SendHostString( buf, sizeof( buf ) );
-    API_SendHostString( txt, strlen( txt ) + 1 );
-    return 0;
-}
-
-/////////////////////////////////////////////////////////////////////////////
 // Statics
 
 /////////////////////////////////////////////////////////////////////////////

@@ -4,7 +4,10 @@
 //! @copyright  Copyright (c) 2019. Seungwoo Kang. All rights reserved.
 //!
 //! @details
+#include <FreeRTOS.h>
+
 #include <stdlib.h>
+#include <task.h>
 #include <uEmbedded/ring_buffer.h>
 #include <uEmbedded/transceiver.h>
 #include <uEmbedded/uassert.h>
@@ -61,6 +64,8 @@ transceiver_result_t cdc_close( void* desc )
     td->rdqueue_.buff = nullptr;
     return TRANSCEIVER_OK;
 }
+
+extern TaskHandle_t s_hTask;
 
 // Handler performs
 extern "C" void CdcReceiveHandler( char* Buf, size_t len )

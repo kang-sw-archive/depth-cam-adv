@@ -1,6 +1,7 @@
 #include <FreeRTOS.h>
 
 #include <alloca.h>
+#include <main.h>
 #include <semphr.h>
 #include <stdarg.h>
 #include <stdio.h>
@@ -28,21 +29,25 @@ static void binaryCmdHandler( char* data, size_t len );
 static int stringToTokens( char* str, char* argv[], size_t argv_len );
 
 // Flush buffered data to host
-static char          s_hostTrBuf[HOST_TRANSFER_BUFFER_SIZE];
-static size_t        s_hostTrBufHead = 0;
-static volatile int  s_writingTask   = 0; 
-static void          apndToHostBuf( void const* d, size_t len );
-static void          flushTransmitData();
+static char         s_hostTrBuf[HOST_TRANSFER_BUFFER_SIZE];
+static size_t       s_hostTrBufHead = 0;
+static volatile int s_writingTask   = 0;
+static void         apndToHostBuf( void const* d, size_t len );
+static void         flushTransmitData();
+TaskHandle_t        s_hTask;
 
 // Read host connection for requested byte length.
 // @returns false when failed to receive data, with given timeout.
 static bool readHostConn( void* dst, size_t len );
+
+#define IS_IRQ() ( __get_PRIMASK() != 0 || __get_IPSR() != 0 )
 
 /////////////////////////////////////////////////////////////////////////////
 // Primary Procedure
 extern "C" _Noreturn void AppProc_HostIO( void* nouse_ )
 {
     packetinfo_t packet;
+    s_hTask = xTaskGetCurrentTaskHandle();
 
     for ( ;; ) {
         // Check if read data has valid protocol.
@@ -158,7 +163,7 @@ void API_RemoveExport( uint32_t id, void const* ptr )
 }
 }
 
-static void ProcessGet( char const* name )
+static void GetHandler( char const* name )
 {
     // Find ref
     auto id       = upp::hash::fnv1a_32( name );
@@ -182,6 +187,39 @@ static void ProcessGet( char const* name )
     size_t      len[] = { sizeof d, at->len_ };
 
     API_SendHostBinaries( dat, len, 2 );
+}
+
+static void vprint__( char const* fmt, va_list vp );
+
+extern "C" void API_Putf( char const* fmt, ... )
+{
+    va_list vp;
+    va_start( vp, fmt );
+    vprint__( fmt, vp );
+    va_end( vp );
+}
+
+void API_Msgf( char const* fmt, ... )
+{
+    API_Msg( "" );
+    va_list vp;
+    va_start( vp, fmt );
+    vprint__( fmt, vp );
+    va_end( vp );
+}
+
+extern "C" int API_Msg( char const* txt )
+{
+    auto t = API_GetTime_us();
+    char buf[17];
+    sprintf(
+      buf,
+      "[%6u.%06u] ",
+      ( uint32_t )( t / 1000000u ),
+      ( uint32_t )( t % 1000000u ) );
+    API_SendHostString( buf, sizeof( buf ) );
+    API_SendHostString( txt, strlen( txt ) + 1 );
+    return 0;
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -253,7 +291,7 @@ void stringCmdHandler( char* str, size_t len )
             API_Msgf( "error: command 'get' requires argument.\n" );
             break;
         }
-        ProcessGet( argv[1] );
+        GetHandler( argv[1] );
     } break;
     default:
         break;
@@ -329,7 +367,27 @@ void apndToHostBuf( void const* d, size_t len )
     ++s_writingTask;
     s_hostTrBufHead += len;
     memcpy( s_hostTrBuf + s_hostTrBufHead - len, d, len );
+    --s_writingTask; 
+}
+
+static void vprint__( char const* fmt, va_list vp )
+{
+    va_list vp2;
+    va_copy( vp2, vp );
+    size_t allocsz = vsnprintf( NULL, 0, fmt, vp ) + 1;
+
+    if ( s_hostTrBufHead + allocsz + PACKET_SIZE > sizeof( s_hostTrBuf ) )
+        return;
+
+    packetinfo_t info = PACKET_MAKE( true, allocsz );
+    API_SendHostRaw( &info, sizeof( info ) );
+
+    ++s_writingTask;
+    char* buf = s_hostTrBuf + s_hostTrBufHead;
+    s_hostTrBufHead += allocsz;
+    vsprintf( buf, fmt, vp2 );
     --s_writingTask;
+    va_end( vp2 );
 }
 
 void flushTransmitData()

@@ -40,7 +40,7 @@ FScannerProtocolHandler::Activate( PortOpenFunctionType                     ComO
     print( "Requesting Activation. Is Active? %d, Is Connected? %d ... \n", IsActive(), IsConnected() );
     bool const bShouldWaitOpenningResult = params.ConnectionRetryCount != -1;
     while ( IsActive() && ( bShouldWaitOpenningResult && IsConnected() == false ) )
-        this_thread::yield();
+        this_thread::sleep_for(10ms);
 
     // If procedure stopped the execution, it means all retries to open COM port
     // was exhausted.
