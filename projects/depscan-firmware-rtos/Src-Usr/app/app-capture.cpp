@@ -1,3 +1,14 @@
+//! @file       app-capture.cpp
+//! @brief      Primary capture sessions
+//!
+//! @author     Seungwoo Kang (ki6080@gmail.com)
+//! @copyright  Copyright (c) 2019. Seungwoo Kang. All rights reserved.
+//!
+//! @details
+//!             File detailed description
+//! @todo       Implement line scanning session
+//! @todo       Implement point capture session
+//!             Especially, binary command handler for large amount of requests
 #include <FreeRTOS.h>
 
 #include <optional>
@@ -23,7 +34,7 @@ capture_t& cc = gCapture;
 // Assignment of some export variables ...
 extern "C" void InitCapture()
 {
-
+    //! @todo Export variables for monitoring from host
 }
 
 /////////////////////////////////////////////////////////////////////////////
