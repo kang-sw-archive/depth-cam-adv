@@ -33,6 +33,12 @@ bool ICommunicationHandlerBase::SendString( char const* str )
     return true;
 }
 
+void ICommunicationHandlerBase::ClearConnection() noexcept
+{
+    lock_guard lck { m_shutdown_lock };
+    m_strmbuf = nullptr;
+}
+
 void ICommunicationHandlerBase::OnBinaryData( char const* data, size_t len )
 {
     printf( "Received %zu bytes of data. \n", len );
@@ -40,6 +46,7 @@ void ICommunicationHandlerBase::OnBinaryData( char const* data, size_t len )
 
 ICommunicationHandlerBase::EPacketProcessResult ICommunicationHandlerBase::ProcessSinglePacket( size_t TimeoutMs )
 {
+    lock_guard   lck { m_shutdown_lock };
     auto         WaitBeginTime = chrono::system_clock::now();
     milliseconds WaitDuration  = {};
     auto const   buff          = m_buff.get();

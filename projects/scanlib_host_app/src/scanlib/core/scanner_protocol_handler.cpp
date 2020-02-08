@@ -40,7 +40,7 @@ FScannerProtocolHandler::Activate( PortOpenFunctionType                     ComO
     print( "Requesting Activation. Is Active? %d, Is Connected? %d ... \n", IsActive(), IsConnected() );
     bool const bShouldWaitOpenningResult = params.ConnectionRetryCount != -1;
     while ( IsActive() && ( bShouldWaitOpenningResult && IsConnected() == false ) )
-        this_thread::sleep_for(10ms);
+        this_thread::sleep_for( 1ms );
 
     // If procedure stopped the execution, it means all retries to open COM port
     // was exhausted.
@@ -58,6 +58,8 @@ FScannerProtocolHandler::Activate( PortOpenFunctionType                     ComO
 
 void FScannerProtocolHandler::Shutdown() noexcept
 {
+    ClearConnection();
+
     if ( IsActive() == false ) {
         assert( IsConnected() == false );
         return;
@@ -81,7 +83,7 @@ void FScannerProtocolHandler::procedureThread( PortOpenFunctionType             
             if ( Retry == 0 || bShutdown )
                 goto RETRY_EXHAUSTED;
 
-            auto ptr = ComOpener();
+            auto ptr = ComOpener( *this );
             if ( ptr == nullptr ) {
                 print( "Connection failed. Retrying ... %lu\n", Retry );
                 this_thread::sleep_for( chrono::milliseconds( params.ConnectionRetryIntervalMs ) );
@@ -113,6 +115,7 @@ void FScannerProtocolHandler::procedureThread( PortOpenFunctionType             
                 // If timeout occurs when already waiting for ping result, this
                 // timeout will be treated as error.
                 if ( bWaitPing ) {
+                    print( "Timeout occrued. disconnecting ... \n" );
                     break;
                 }
                 bWaitPing = true;

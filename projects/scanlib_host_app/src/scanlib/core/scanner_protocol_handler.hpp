@@ -68,7 +68,8 @@ public:
     bool                                         bSuppressDeviceLog = false;
 
 public:
-    using PortOpenFunctionType = std::function<std::unique_ptr<std::streambuf>( void )>;
+    using PortOpenFunctionType = std::function<std::unique_ptr<std::streambuf>( FScannerProtocolHandler& )>;
+    using super = ICommunicationHandlerBase;
 
 public:
     //! Prevents hiding base class constructor.

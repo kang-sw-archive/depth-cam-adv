@@ -54,7 +54,8 @@ void API_SystemCreateScannerControl( FScannerProtocolHandler& S )
     //! Initialize based on com port
     S.Shutdown();
 
-    auto ComOpener = []() -> unique_ptr<comstreambuf_t> {
+    auto ComOpener = []( FScannerProtocolHandler& s ) -> unique_ptr<comstreambuf_t> {
+        s.ClearConnection();
         auto         ret = make_unique<comstreambuf_t>( FLAGS_com.c_str() );
         COMMTIMEOUTS to  = { MAXDWORD, 1, 1, 1, 1 };
         ret->set_timeout( &to );
@@ -65,10 +66,11 @@ void API_SystemCreateScannerControl( FScannerProtocolHandler& S )
     };
 
     FCommunicationProcedureInitStruct init = {};
-    init.ConnectionRetryCount              = (size_t)10;
+    init.ConnectionRetryCount              = 50;
     init.ConnectionRetryIntervalMs         = 500;
     init.TimeoutMs                         = 1000;
-    auto retval                            = S.Activate( ComOpener, init );
+
+    S.Activate( ComOpener, init );
 }
 
 struct serialportinfo {

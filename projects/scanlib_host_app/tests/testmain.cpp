@@ -13,7 +13,7 @@ int main( void )
 {
     FScannerProtocolHandler S;
     S.Logger       = []( const char* str ) { printf( str ); };
-    auto ComOpener = []() -> unique_ptr<comstreambuf_t> {
+    auto ComOpener = []( FScannerProtocolHandler& ) -> unique_ptr<comstreambuf_t> {
         auto         ret = make_unique<comstreambuf_t>( "COM3" );
         COMMTIMEOUTS to  = { MAXDWORD, 1, 1, 1, 1 };
         ret->set_timeout( &to );

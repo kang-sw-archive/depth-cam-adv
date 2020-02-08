@@ -36,6 +36,9 @@ public:
     //! @returns false if stream is not readied yet.
     bool SendString( char const* str );
 
+    //! Shutdown stream
+    void ClearConnection() noexcept;
+
 protected:
     //! \brief      Called for incoming string */
     virtual void OnString( char const* str ) { printf( str ); }
@@ -64,4 +67,5 @@ private:
     std::mutex                      m_oslck;
     std::unique_ptr<char[]>         m_buff;
     std::unique_ptr<std::streambuf> m_strmbuf;
+    std::mutex                      m_shutdown_lock;
 };

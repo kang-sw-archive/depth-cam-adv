@@ -16,6 +16,7 @@ void InitConsoleApp()
             std::this_thread::sleep_for( 500ms );
             continue;
         }
+        std::this_thread::sleep_for( 500ms );
 
         while ( scan.IsConnected() ) {
             fgets( buf, sizeof( buf ), stdin );
@@ -23,5 +24,7 @@ void InitConsoleApp()
             scan.SendString( buf );
             printf( ">> " );
         }
+
+        printf( "Connection lost. Retrying ... \n" );
     }
 }
