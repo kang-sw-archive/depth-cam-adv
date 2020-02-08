@@ -1,11 +1,17 @@
-//! @file       name.x
+//! @file       app-test.cpp
 //! @brief      File brief description
 //!
 //! @author     Seungwoo Kang (ki6080@gmail.com)
 //! @copyright  Copyright (c) 2019. Seungwoo Kang. All rights reserved.
 //!
 //! @details
-//!             File detailed description
+//!             Interactive test logics for overall functionalities.
+//! @bug        Invalid measurement operation
+//!              There's an issue with triggering async measurement operation.
+//!             Regardless of its delay time, the asynchronous callback function
+//!             which passed into Argus_TriggerMeasurment is always triggered
+//!             right after the function call, and the measurement result is
+//!             always 0.
 #include <FreeRTOS.h>
 
 #include <stdbool.h>
@@ -194,7 +200,7 @@ void Test_DistSensor( int argc, char* argv[] )
 
     dist_sens_config_t conf;
     DistSens_GetConfigure( ghDistSens, &conf );
-    conf.Delay_us = delay;
+    conf.Delay_us           = delay;
     conf.bCloseDistanceMode = true;
     if ( DistSens_Configure( ghDistSens, &conf ) == false ) {
         API_Msg( "error: failed to initialize distance sensor.\n" );
