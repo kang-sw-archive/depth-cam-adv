@@ -132,20 +132,28 @@ bool DistSens_MeasureAsync(
         if ( result == STATUS_OK ) {
             result = Argus_EvaluateData(
               si.hnd_, &si.result_, (ads_value_buf_t*)raw );
-            si.valid_data = true;
+
+            // Both of evaluation and data status should be OK
+            if ( result == STATUS_OK )
+                result = si.result_.Status;
 
             if ( result != STATUS_OK ) {
                 API_Msgf(
                   "error: failed to evaluate data for code %d\n", result );
+                si.init_correct_ = false;
+            }
+            else {
+                si.valid_data = true;
             }
         }
         else {
             API_Msgf( "error: failed to measure data for code %d\n", result );
         }
+        
+        // Deactivate watchdog timer.
+        API_AbortTimer( si.watchdog_hnd_ ); 
 
-        // Callback is always invoked regardless the measurement was
-        // successful or not.
-        API_AbortTimer( si.watchdog_hnd_ );
+        // Callback is always invoked regardless of the measurement result
         si.capturing_ = false;
         if ( si.cb_ )
             si.cb_( ghDistSens, si.cb_obj_, result );
@@ -160,16 +168,14 @@ bool DistSens_MeasureAsync(
             continue;
 
         if ( result == STATUS_OK ) {
-            if ( si.capturing_ ) {
-                // For a case if the callback is already called ...
-                si.watchdog_hnd_
-                  = API_SetTimer( si.conf_.Delay_us * 4, NULL, []( auto ) {
-                        API_Msg(
-                          "warning: Oops, seems capture request is lost! \n" );
-                        si.capturing_    = false;
-                        si.init_correct_ = false;
-                    } );
-            }
+            // To prevent waiting forever, a watchdog timer will trigger to
+            // reset sensor's status when the sensor doesn't respond.
+            si.watchdog_hnd_ = API_SetTimer(
+              si.conf_.Delay_us * 4, NULL, []( auto ) {
+                  API_Msg( "warning: Oops, seems capture request is lost! \n" );
+                  si.capturing_    = false;
+                  si.init_correct_ = false;
+              } );
             return true;
         }
 
@@ -247,6 +253,10 @@ static bool RefreshArgusSens()
 
         // Stores result to evaluate configuration result.
         res = Argus_SetCalibration( s.hnd_, &calib );
+
+        Argus_SetConfigurationFrameTime( s.hnd_, s.conf_.Delay_us );
+        Argus_SetConfigurationMeasurementMode(
+          s.hnd_, s.conf_.bCloseDistanceMode ? ARGUS_MODE_B : ARGUS_MODE_A );
     }
 
     if ( res != STATUS_OK ) {

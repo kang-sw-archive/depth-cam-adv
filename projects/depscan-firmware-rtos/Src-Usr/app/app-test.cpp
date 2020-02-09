@@ -207,7 +207,7 @@ void Test_DistSensor( int argc, char* argv[] )
         return;
     }
 
-    API_Msgf( "info: retry count is set to %d\n", retry );
+    API_Msg( "info: configuration successful. \n" );
 
     dist_sens_async_cb_t const cb = []( dist_sens_t h, void*, int result ) {
         if ( result != DIST_SENS_OK ) {
