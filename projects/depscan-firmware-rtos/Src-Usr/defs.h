@@ -8,7 +8,7 @@
 //! @defgroup Depscan_Defs_Constants
 //! @{
 
-#define USB_READ_BUF_SIZE          1024
+#define USB_READ_BUF_SIZE 1024
 // #define USB_WRITE_BUF_SIZE         1024
 #define HOST_TRANSFER_BUFFER_SIZE  0x800
 #define NUM_MAX_HWTIMER_NODE       20
@@ -28,6 +28,16 @@ typedef struct
 {
     uint64_t data_[2];
 } timer_handle_t;
+
+//! @}
+//! @addtogroup Depscan_Debug
+//! @{
+
+#define debug_trace( fmt, ... )                                                \
+    {                                                                          \
+        void API_Msgf( const char*, ... );                                     \
+        API_Msgf( fmt, __VA_ARGS__ );                                          \
+    }
 
 //! @}
 //! @}

@@ -8,11 +8,11 @@ set TP=%TMP%\gdb-ff-%RANDOM%.txt
 
 nul>%TP%
 echo target remote :3333	>>%TP%
+echo file %FILE%			>>%TP%
 echo define setup		>>%TP%
 echo make all -j8			>>%TP%
 echo file %FILE%			>>%TP%
 echo monitor reset halt	>>%TP%
-echo load >>%TP% 
 echo end					>>%TP%
 echo define rst>>%TP%
 echo monitor reset halt>>%TP%
