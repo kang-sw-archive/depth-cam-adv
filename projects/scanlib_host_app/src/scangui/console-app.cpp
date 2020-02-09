@@ -18,9 +18,14 @@ void InitConsoleApp()
         }
         std::this_thread::sleep_for( 500ms );
 
-        while ( scan.IsConnected() ) {
+        for ( ;; ) {
             fgets( buf, sizeof( buf ), stdin );
             buf[strlen( buf ) - 1] = '\0';
+
+            // Evaluate connection lazily to handle disconnection during input.
+            if ( scan.IsConnected() == false )
+                break;
+
             scan.SendString( buf );
             printf( ">> " );
         }
