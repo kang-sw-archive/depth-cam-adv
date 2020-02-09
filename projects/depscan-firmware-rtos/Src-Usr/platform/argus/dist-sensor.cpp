@@ -155,12 +155,12 @@ bool DistSens_MeasureAsync(
     for ( size_t i = 0; i < Retry; ) {
         status_t result = Argus_TriggerMeasurement( si.hnd_, cb_a );
 
-        // Powerlimit does not consumes retry.
+        // Power-limit does not consumes retry.
         if ( result == STATUS_ARGUS_POWERLIMIT )
             continue;
 
         if ( result == STATUS_OK ) {
-            if ( si.capturing_ ) { 
+            if ( si.capturing_ ) {
                 // For a case if the callback is already called ...
                 si.watchdog_hnd_
                   = API_SetTimer( si.conf_.Delay_us * 4, NULL, []( auto ) {
@@ -238,12 +238,20 @@ static bool RefreshArgusSens()
         s.hnd_ = Argus_CreateHandle();
 
     auto res = Argus_Init( s.hnd_, S2PI_SLAVE_ARGUS );
+    if ( res == STATUS_OK ) {
+        // Configure calibration options of sensor only when initialization
+        // process is finished without error. Sensor will be configured with
+        // default calibrations
+        argus_calibration_t calib;
+        Argus_GetDefaultCalibration( &calib );
+
+        // Stores result to evaluate configuration result.
+        res = Argus_SetCalibration( s.hnd_, &calib );
+    }
+
     if ( res != STATUS_OK ) {
         API_Msgf(
-          "error: Failed to initialize "
-          "ARGUS library. exit "
-          "code: %d \n",
-          res );
+          "error: Failed to initialize ARGUS library. exit code: %d \n", res );
         return false;
     }
 
