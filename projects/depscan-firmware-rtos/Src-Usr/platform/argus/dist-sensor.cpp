@@ -126,8 +126,8 @@ bool DistSens_MeasureAsync(
         API_Msg( "error: measurement already triggered.\n" );
         return false;
     }
-    si.capturing_ = true;
-    si.valid_data = false;
+    si.capturing_ = true;  // Prevent other task requesting capture
+    si.valid_data = false; // Invalidate previous measurement
     si.cb_        = cb;
     si.cb_obj_    = cb_obj;
 
@@ -143,22 +143,22 @@ bool DistSens_MeasureAsync(
                 result = si.result_.Status;
 
             if ( result < STATUS_OK )
-            { // If evaluation result is negative value, it represents there
-              // is an error.
+            { // When the result is negative, it indicates an error.
                 API_Msgf(
                   "error: failed to evaluate data for code %d\n", result );
                 si.init_correct_ = false;
             }
-            if ( result > STATUS_OK )
-            { //
-            }
             else
-            {
+            { // Where the result is a positive value, the data is present even
+              // its validity is not guaranteed. Handling non-zero result is
+              // mandated to the callback.
                 si.valid_data = true;
             }
         }
         else
         {
+            // Invalidate sensor status
+            si.init_correct_ = false;
             API_Msgf( "error: failed to measure data for code %d\n", result );
         }
 
@@ -176,9 +176,12 @@ bool DistSens_MeasureAsync(
     {
         status_t result = Argus_TriggerMeasurement( si.hnd_, cb_a );
 
-        // Power-limit does not consumes retry.
+        // Power-limit does not consume retry.
         if ( result == STATUS_ARGUS_POWERLIMIT )
+        {
+            taskYIELD();
             continue;
+        }
 
         if ( result == STATUS_OK )
         {
@@ -254,6 +257,11 @@ static bool RefreshArgusSens()
     if ( s.init_correct_ )
         return true;
 
+    // Use 'capturing' flag as semaphore to prevent other process accessing
+    // handle
+    uassert( si.capturing_ == false );
+    si.capturing_ = true;
+
     // Allocate memory if not exists
     if ( s.hnd_ == NULL )
         s.hnd_ = Argus_CreateHandle();
@@ -275,6 +283,7 @@ static bool RefreshArgusSens()
           s.hnd_, s.conf_.bCloseDistanceMode ? ARGUS_MODE_B : ARGUS_MODE_A );
     }
 
+    si.capturing_ = false;
     if ( res != STATUS_OK )
     {
         API_Msgf(
