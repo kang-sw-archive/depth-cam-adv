@@ -79,9 +79,6 @@ motor_hnd_t gMotY = &my;
 //! @returns    Desired clock speed in Hz. 0 to stop.
 static int update_motor( motor_hnd_t );
 
-//! @brief      Start pwm generation.
-static void trig_pwm( motor_hnd_t );
-
 /////////////////////////////////////////////////////////////////////////////
 // Defs
 //
@@ -167,9 +164,9 @@ static void START_FNC( motor_hnd_t m )
     auto hwid = m->hwid_;
     uassert( abs( hwid ) <= 1 );
 
-    auto tim      = htim_xy[hwid];
-    auto ch       = ccr_ch_xy[hwid];
-    auto init_spd = int( 1e6f / m->phy_mins ) - 1;
+    auto tim = htim_xy[hwid];
+    auto ch  = ccr_ch_xy[hwid];
+    // auto init_spd = int( 1e6f / m->phy_mins ) - 1;
 
     __HAL_TIM_SetCounter( tim, 0 );
     __HAL_TIM_SetAutoreload( tim, __HAL_TIM_GET_COMPARE( tim, ch ) );
@@ -308,6 +305,7 @@ Motor_MoveBy( motor_hnd_t m, int steps, motor_cb_t cb, void* obj )
     // Trigger movement
     m->DIR( m, steps > 0 );
     m->START( m );
+    return MOTOR_OK;
 }
 
 motor_status_t

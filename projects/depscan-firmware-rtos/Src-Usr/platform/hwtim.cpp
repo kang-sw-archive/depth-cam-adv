@@ -114,7 +114,7 @@ extern "C" void API_AbortTimer( timer_handle_t h )
     hwtim_t::handle_type t;
     t.id_   = h.data_[0];
     t.time_ = h.data_[1];
-    s_tim.remove( { h.data_[0], h.data_[1] } );
+    s_tim.remove( t );
     taskEXIT_CRITICAL();
 }
 
