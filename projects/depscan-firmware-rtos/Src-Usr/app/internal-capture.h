@@ -52,7 +52,7 @@ typedef struct capture_common_ty__
     capture_point_t Scan_Resolution;
     capture_point_t Scan_StepPerPxl;
     capture_point_t Scan_CaptureOfst;
-    capture_point_t Scan_Pos;
+    capture_point_t Scan_Pos; //< This is for legacy protocol compatibility
     //! @}
 
     //! @brief      Point properties
@@ -65,9 +65,10 @@ typedef struct capture_common_ty__
     //! @}
 
     //! @brief      Process handle
-    TaskHandle_t   CaptureProcess;
+    TaskHandle_t   CaptureTask;
     capture_mode_t CurrentMode;
     bool           bPaused;
+    bool           bPendingStop;
 
     //! @brief      Data buffer for general usage
 } capture_t;
@@ -84,7 +85,7 @@ extern char Capture_Buffer[CAPTURER_BUFFER_SIZE];
 //! @brief      Check if capturing process is in progress
 static inline bool Capture_IsRunning()
 {
-    return gCapture.CaptureProcess != NULL;
+    return gCapture.CaptureTask != NULL;
 }
 
 //! @}

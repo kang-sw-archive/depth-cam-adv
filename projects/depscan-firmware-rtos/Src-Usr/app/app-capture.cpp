@@ -11,9 +11,11 @@
 //!             Especially, binary command handler for large amount of requests
 #include <FreeRTOS.h>
 
+#include <array>
 #include <optional>
 #include <string.h>
 #include <uEmbedded-pp/utility.hxx>
+#include <uEmbedded/uassert.h>
 #include "../protocol/protocol-s.h"
 #include "app.h"
 #include "dist-sensor.h"
@@ -42,6 +44,8 @@ extern "C" void InitCapture()
 #define SCASE( str )   upp::hash::fnv1a_32_const( str )
 #define STRHASH( str ) upp::hash::fnv1a_32( str )
 static void HandleConfig( int argc, char* argv[] );
+static void Task_Scan( void* nouse_ );
+static void Task_Point( void* nouse_ );
 
 extern "C" bool AppHandler_CaptureCommand( int argc, char* argv[] )
 {
@@ -70,13 +74,12 @@ extern "C" bool AppHandler_CaptureCommand( int argc, char* argv[] )
         DistSens_GetConfigure( ghDistSens, &opt );
 
         FDeviceStat r;
-        r.bIsIdle              = cc.CaptureProcess != NULL;
         r.bIsPaused            = cc.bPaused;
-        r.bIsIdle              = cc.CaptureProcess == NULL;
+        r.bIsIdle              = cc.CaptureTask == NULL;
         r.bIsPrecisionMode     = opt.bCloseDistanceMode;
         r.bIsSensorInitialized = ghDistSens != NULL;
-        r.CurMotorStepX        = cc.Scan_Pos.x;
-        r.CurMotorStepY        = cc.Scan_Pos.y;
+        r.CurMotorStepX        = Motor_Pos( gMotX );
+        r.CurMotorStepY        = Motor_Pos( gMotY );
         r.DegreePerStepX       = cc.AnglePerStep.x;
         r.DegreePerStepY       = cc.AnglePerStep.y;
         r.DelayPerCapture      = opt.Delay_us;
@@ -99,6 +102,33 @@ extern "C" bool AppHandler_CaptureCommand( int argc, char* argv[] )
     case SCASE( "config" ):
     {
         HandleConfig( argc - 1, argv + 1 );
+    }
+    break;
+
+    case SCASE( "scan-start" ):
+    {
+        if ( cc.CaptureTask != NULL )
+        {
+            API_Msg( "error: capturing process is already in progress!\n" );
+            return true;
+        }
+
+        auto res = xTaskCreate(
+          Task_Scan,
+          "Scan",
+          CAPTURE_TASK_STACK_DEPTH,
+          NULL,
+          TaskPriorityNormal,
+          &cc.CaptureTask );
+
+        if ( res == pdFALSE || cc.CaptureTask == NULL )
+        {
+            API_Msg( "error: failed to initialize capturing process\n" );
+        }
+        else
+        {
+            API_Msg( "info: scanning process is initialized.\n" );
+        }
     }
     break;
 
@@ -221,7 +251,7 @@ void HandleConfig( int argc, char* argv[] )
 
     case SCASE( "delay" ):
     {
-        if ( xv > 0 == false )
+        if ( ( xv > 0 ) == false )
         {
             API_Msg(
               "error: invalid argument for delay. value must be positive "
@@ -315,4 +345,166 @@ void HandleConfig( int argc, char* argv[] )
         API_Msgf( "warning: unknown configuration property [%s]\n", argv[0] );
         break;
     }
+}
+
+/////////////////////////////////////////////////////////////////////////////
+// Macros for internal usage
+static void wait_motor()
+{
+    while ( Motor_Stat( gMotX ) != MOTOR_STATE_IDLE
+            || Motor_Stat( gMotY ) != MOTOR_STATE_IDLE )
+    {
+        taskYIELD();
+    }
+}
+
+/////////////////////////////////////////////////////////////////////////////
+// Scanning process that performs pixel-by-pixel capture
+static void Task_Scan( void* nouse_ )
+{
+    // Clear all status variables
+    auto&      pos        = cc.Scan_Pos;
+    auto const resolution = cc.Scan_Resolution;
+    auto const ofst       = cc.Scan_CaptureOfst;
+    auto const steps      = cc.Scan_StepPerPxl;
+    pos.x = 0, pos.y = 0;
+    FLineDesc     desc;
+    constexpr int NumMaxBufferedPxl
+      = sizeof( Capture_Buffer ) / sizeof( FPxlData );
+    auto& pixels = reinterpret_cast<std::array<FPxlData, NumMaxBufferedPxl>&>(
+      Capture_Buffer );
+
+    desc.LineIdx = 0;
+    desc.OfstX   = 0;
+    desc.NumPxls = 0;
+
+    enum dir_t
+    {
+        DIR_FWD = 1,
+        DIR_BWD = -1
+    };
+    dir_t dir = DIR_FWD;
+
+    // Relocate motor to its origin position in sync
+    wait_motor();
+    Motor_MoveTo( gMotX, cc.Scan_CaptureOfst.x, NULL, NULL );
+    Motor_MoveTo( gMotY, cc.Scan_CaptureOfst.y, NULL, NULL );
+    wait_motor();
+
+    for ( ; pos.y < resolution.y; )
+    {
+        // 0. Check for escape condition
+        if ( cc.bPendingStop )
+        {
+            break;
+        }
+        while ( cc.bPaused )
+        {
+            vTaskDelay( pdMS_TO_TICKS( 10 ) );
+        }
+
+        // 1. Captures distance
+        int      result, retry = 5;
+        FPxlData data;
+        while ( result = DistSens_MeasureSync( ghDistSens, 5 ), result < 0 )
+        {
+            if ( retry == 0 )
+            {
+                API_Msg(
+                  "error: all measurement retries exhausted. aborting... \n" );
+                goto SCAN_ABORT;
+            }
+            API_Msgf(
+              "warning: measurement failed. Retry after 100ms ... retries left "
+              "%d\n",
+              retry );
+            vTaskDelay( pdMS_TO_TICKS( 100 ) );
+        }
+
+        if ( result != DIST_SENS_OK )
+        {
+            API_Msgf(
+              "warning: measurement returned error code %d. Consider this data "
+              "is not general. \n",
+              result );
+        }
+
+        // In this statement, data acquisition must succeed.
+        {
+            bool bMeasureRes;
+            bMeasureRes = DistSens_GetDistanceFxp( ghDistSens, &data.Distance )
+                          && DistSens_GetAmpFxp( ghDistSens, &data.AMP );
+
+            uassert( bMeasureRes );
+        }
+
+        // 2.a. Fill buffer
+        {
+            // If progress direction is in reverse, fill buffer from the
+            // backside to keep pixel order.
+            int bufidx
+              = dir > 0 ? desc.NumPxls : NumMaxBufferedPxl - desc.NumPxls - 1;
+
+            pixels[bufidx] = data;
+            desc.NumPxls++;
+        }
+
+        // 2.b. If valid, queue motor movement
+
+        // asynchronously Progress one pixel
+        bool const bIsLineEnd
+          = pos.x + dir == -1 || pos.x + dir == resolution.x;
+        bool const bShouldFlush
+          = bIsLineEnd || desc.NumPxls == NumMaxBufferedPxl;
+
+        // Queue motor movement firstly
+        if ( bIsLineEnd )
+        {
+            // Instead of calculating new pos.y value here, this sequence delays
+            // calculation to identify correct desc.LineIdxk
+            Motor_MoveTo( gMotY, ofst.y + steps.y * ( pos.y + 1 ), NULL, NULL );
+        }
+        else
+        {
+            // Same method with above. This is for handling a flush request
+            Motor_MoveTo(
+              gMotX, ofst.x + steps.x * ( pos.x + dir ), NULL, NULL );
+        }
+
+        // 3. Check transmit qualification
+        if ( bShouldFlush )
+        {
+            bool const bIsFwd = dir == DIR_FWD;
+            desc.LineIdx      = pos.y;
+            desc.OfstX        = pos.x - bIsFwd * ( desc.NumPxls - 1 );
+            auto data = bIsFwd ? pixels.begin() : pixels.end() - desc.NumPxls;
+            auto cmd  = ECommand::RSP_LINE_DATA;
+
+            void const*  td[] = { &cmd, &desc, data };
+            size_t const ts[] = {
+              sizeof( cmd ),
+              sizeof( desc ),
+              desc.NumPxls * sizeof( FPxlData ) };
+
+            API_SendHostBinaries( td, ts, 3 );
+            desc.NumPxls = 0;
+        }
+
+        // 3.a. Manipulate capture state
+        if ( bIsLineEnd )
+        {
+            dir = (dir_t)-dir;
+            pos.y++;
+        }
+        else
+        {
+            pos.x += dir;
+        }
+
+        // 4. Wait until motor movement done.
+        wait_motor();
+    }
+
+SCAN_ABORT:;
+    vTaskDelete( NULL );
 }
