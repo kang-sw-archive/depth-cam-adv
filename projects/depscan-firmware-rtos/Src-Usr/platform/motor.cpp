@@ -210,7 +210,7 @@ static void irq__( motor_hnd_t m, TIM_HandleTypeDef* htim, int ch, int clk )
     auto ARR = clk / next_frq - 1;
     __HAL_TIM_SET_AUTORELOAD( htim, ARR );
 
-#if 1
+#if 0
     if ( ( m->pending_movement & 0x2f ) == 0 )
     {
         API_Msgf(
