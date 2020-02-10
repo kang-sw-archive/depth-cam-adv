@@ -52,12 +52,14 @@ bool DistSens_IsAvailable( dist_sens_t h )
 
 bool DistSens_Configure( dist_sens_t h, dist_sens_config_t const* opt )
 {
-    if ( h->capturing_ ) {
+    if ( h->capturing_ )
+    {
         API_Msg( "error: Cannot configure sensor during capture \n" );
         return false;
     }
 
-    if ( RefreshArgusSens() == false ) {
+    if ( RefreshArgusSens() == false )
+    {
         API_Msg( "error: Configuration failed.\n" );
         return false;
     }
@@ -114,11 +116,13 @@ bool DistSens_MeasureAsync(
   void*                cb_obj,
   dist_sens_async_cb_t cb )
 {
-    if ( !si.init_correct_ ) {
+    if ( !si.init_correct_ )
+    {
         API_Msg( "error: sensor is not initialized correctly.\n" );
         return false;
     }
-    if ( si.capturing_ ) {
+    if ( si.capturing_ )
+    {
         API_Msg( "error: measurement already triggered.\n" );
         return false;
     }
@@ -129,7 +133,8 @@ bool DistSens_MeasureAsync(
 
     // Trigger measurement
     const argus_callback_t cb_a = []( status_t result, void* raw ) -> status_t {
-        if ( result == STATUS_OK ) {
+        if ( result == STATUS_OK )
+        {
             result = Argus_EvaluateData(
               si.hnd_, &si.result_, (ads_value_buf_t*)raw );
 
@@ -137,21 +142,28 @@ bool DistSens_MeasureAsync(
             if ( result == STATUS_OK )
                 result = si.result_.Status;
 
-            if ( result != STATUS_OK ) {
+            if ( result < STATUS_OK )
+            { // If evaluation result is negative value, it represents there
+              // is an error.
                 API_Msgf(
                   "error: failed to evaluate data for code %d\n", result );
                 si.init_correct_ = false;
             }
-            else {
+            if ( result > STATUS_OK )
+            { //
+            }
+            else
+            {
                 si.valid_data = true;
             }
         }
-        else {
+        else
+        {
             API_Msgf( "error: failed to measure data for code %d\n", result );
         }
-        
+
         // Deactivate watchdog timer.
-        API_AbortTimer( si.watchdog_hnd_ ); 
+        API_AbortTimer( si.watchdog_hnd_ );
 
         // Callback is always invoked regardless of the measurement result
         si.capturing_ = false;
@@ -160,14 +172,16 @@ bool DistSens_MeasureAsync(
         return result;
     };
 
-    for ( size_t i = 0; i < Retry; ) {
+    for ( size_t i = 0; i < Retry; )
+    {
         status_t result = Argus_TriggerMeasurement( si.hnd_, cb_a );
 
         // Power-limit does not consumes retry.
         if ( result == STATUS_ARGUS_POWERLIMIT )
             continue;
 
-        if ( result == STATUS_OK ) {
+        if ( result == STATUS_OK )
+        {
             // To prevent waiting forever, a watchdog timer will trigger to
             // reset sensor's status when the sensor doesn't respond.
             si.watchdog_hnd_ = API_SetTimer(
@@ -180,7 +194,8 @@ bool DistSens_MeasureAsync(
         }
 
         // If failed ...
-        switch ( result ) {
+        switch ( result )
+        {
         case STATUS_BUSY:
             // Argus_Abort( si.hnd_ );
             break;
@@ -244,7 +259,8 @@ static bool RefreshArgusSens()
         s.hnd_ = Argus_CreateHandle();
 
     auto res = Argus_Init( s.hnd_, S2PI_SLAVE_ARGUS );
-    if ( res == STATUS_OK ) {
+    if ( res == STATUS_OK )
+    {
         // Configure calibration options of sensor only when initialization
         // process is finished without error. Sensor will be configured with
         // default calibrations
@@ -259,7 +275,8 @@ static bool RefreshArgusSens()
           s.hnd_, s.conf_.bCloseDistanceMode ? ARGUS_MODE_B : ARGUS_MODE_A );
     }
 
-    if ( res != STATUS_OK ) {
+    if ( res != STATUS_OK )
+    {
         API_Msgf(
           "error: Failed to initialize ARGUS library. exit code: %d \n", res );
         return false;

@@ -86,8 +86,10 @@ void Timer_SetCallback( timer_cb_t f )
 
 void Timer_Stop( void* param )
 {
-    for ( auto& h : s_h ) {
-        if ( h.second == param ) {
+    for ( auto& h : s_h )
+    {
+        if ( h.second == param )
+        {
             API_AbortTimer( h.first );
             h.second = NULL;
             break;
@@ -101,8 +103,10 @@ void Timer_SetInterval( uint32_t dt_microseconds, void* param )
     Timer_Stop( param );
 
     // Check if timer's running
-    for ( auto& h : s_h ) {
-        if ( API_CheckTimer( h.first, NULL ) == false ) {
+    for ( auto& h : s_h )
+    {
+        if ( API_CheckTimer( h.first, NULL ) == false )
+        {
             h.first  = API_SetTimer( dt_microseconds, param, s_cb );
             h.second = param;
             break;

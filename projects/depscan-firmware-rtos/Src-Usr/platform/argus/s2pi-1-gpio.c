@@ -61,7 +61,8 @@ status_t S2PI_CaptureGpioControl( void )
     g_isGpioMode = true;
     size_t i;
 
-    for ( i = 0; i < countof( pins ); i++ ) {
+    for ( i = 0; i < countof( pins ); i++ )
+    {
         pins[i].bWrite = false;
 
         GPIO_InitTypeDef init;
@@ -114,7 +115,8 @@ S2PI_WriteGpioPin( s2pi_slave_t nouse_, s2pi_pin_t pin, uint32_t value )
 {
     pinstruct_t* p = pins + pin;
 
-    if ( p->bWrite == false ) {
+    if ( p->bWrite == false )
+    {
         GPIO_InitTypeDef init;
         init.Mode  = GPIO_MODE_OUTPUT_PP;
         init.Pin   = p->pin;
@@ -134,7 +136,8 @@ S2PI_ReadGpioPin( s2pi_slave_t nouse_, s2pi_pin_t pin, uint32_t* value )
 {
     pinstruct_t* p = pins + pin;
 
-    if ( p->bWrite == true ) {
+    if ( p->bWrite == true )
+    {
         GPIO_InitTypeDef init;
         init.Mode  = GPIO_MODE_INPUT;
         init.Pin   = p->pin;

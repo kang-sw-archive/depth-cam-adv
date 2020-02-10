@@ -119,7 +119,8 @@ extern "C" void InitMotors()
 {
     //! @todo       Implement this!
     auto motors = { &mx, &my };
-    for ( size_t i = 0; i < motors.size(); i++ ) {
+    for ( size_t i = 0; i < motors.size(); i++ )
+    {
         auto m   = motors.begin()[i];
         m->hwid_ = i;
         m->START = START_FNC;
@@ -129,7 +130,8 @@ extern "C" void InitMotors()
     // Timer clocks should be equal with TIM_CLK_X, TIM_CLK_Y
     // Enable update interrupt
     // Set CC mode as PWM
-    for ( size_t i = 0; i < countof( htim_xy ); i++ ) {
+    for ( size_t i = 0; i < countof( htim_xy ); i++ )
+    {
         auto tim = htim_xy[i];
         auto prs = SystemCoreClock / clk_xy[i] - 1;
         auto m   = motors.begin()[i];
@@ -197,7 +199,8 @@ static void irq__( motor_hnd_t m, TIM_HandleTypeDef* htim, int ch, int clk )
     __HAL_TIM_CLEAR_IT( htim, TIM_IT_UPDATE );
 
     auto next_frq = update_motor( m );
-    if ( next_frq <= 0 ) {
+    if ( next_frq <= 0 )
+    {
         HAL_TIM_PWM_Stop( htim, ch );
         return;
     }
@@ -211,7 +214,8 @@ static void irq__( motor_hnd_t m, TIM_HandleTypeDef* htim, int ch, int clk )
     __HAL_TIM_SET_AUTORELOAD( htim, ARR );
 
 #if 1
-    if ( ( m->pending_movement & 0x2f ) == 0 ) {
+    if ( ( m->pending_movement & 0x2f ) == 0 )
+    {
         API_Msgf(
           "ARR VALUE IS SET TO %d ... %d steps left \n"
           "velocity: %d\n"
@@ -284,7 +288,8 @@ Motor_MoveBy( motor_hnd_t m, int steps, motor_cb_t cb, void* obj )
         return MOTOR_BUSY;
 
     // If it's 0 cycle request, simply execute callback and return.
-    if ( steps == 0 ) {
+    if ( steps == 0 )
+    {
         if ( cb )
             cb( m, obj );
         return MOTOR_OK;
@@ -360,9 +365,11 @@ static void motor_tim_cb__( void* mt_ref )
 
 int update_motor( motor_hnd_t m )
 {
-    if ( m->pending_movement == 0 ) {
+    if ( m->pending_movement == 0 )
+    {
         m->phy_velocity = 0.f;
-        if ( m->cb ) { // Make it invoke outside of ISR
+        if ( m->cb )
+        { // Make it invoke outside of ISR
             API_SetTimerFromISR( 0, m, motor_tim_cb__ );
         }
         return 0;

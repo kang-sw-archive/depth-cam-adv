@@ -1,5 +1,5 @@
-#include <platform/argus_log.h>
 #include <main.h>
+#include <platform/argus_log.h>
 #include "../../app/app.h"
 #include "../s2pi.h"
 static s2pi_irq_callback_t g_cbIrq;
@@ -7,7 +7,8 @@ static void*               g_cbIrqObj;
 
 void EXTI1_IRQHandler( void )
 {
-    if ( __HAL_GPIO_EXTI_GET_IT( GPIO_PIN_1 ) != RESET && g_cbIrq ) {
+    if ( __HAL_GPIO_EXTI_GET_IT( GPIO_PIN_1 ) != RESET && g_cbIrq )
+    {
         //~ print( "IRQ function call. \n" );
         //~ g_cbIrq( g_cbIrqObj );
         API_SetTimerFromISR( 0, g_cbIrqObj, g_cbIrq );

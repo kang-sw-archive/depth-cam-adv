@@ -47,19 +47,25 @@ extern "C" bool AppHandler_CaptureCommand( int argc, char* argv[] )
 {
     // String command handler
 
-    if ( argc == 0 ) {
+    if ( argc == 0 )
+    {
         API_Msg( "error: this command requires additional argument.\n" );
         return true;
     }
 
-    switch ( upp::hash::fnv1a_32( argv[0] ) ) {
-    case SCASE( "init-sensor" ): {
-        if ( DistSens_Configure( ghDistSens, nullptr ) == false ) {
+    switch ( upp::hash::fnv1a_32( argv[0] ) )
+    {
+    case SCASE( "init-sensor" ):
+    {
+        if ( DistSens_Configure( ghDistSens, nullptr ) == false )
+        {
             API_Msg( "error: failed to initialize distance sensor \n" );
         }
-    } break;
+    }
+    break;
 
-    case SCASE( "report" ): {
+    case SCASE( "report" ):
+    {
         dist_sens_config_t opt;
         DistSens_GetConfigure( ghDistSens, &opt );
 
@@ -87,13 +93,17 @@ extern "C" bool AppHandler_CaptureCommand( int argc, char* argv[] )
         void* const  dat[] = { &cmd, &r };
         size_t const len[] = { sizeof( cmd ), sizeof( r ) };
         API_SendHostBinaries( dat, len, 2 );
-    } break;
+    }
+    break;
 
-    case SCASE( "config" ): {
+    case SCASE( "config" ):
+    {
         HandleConfig( argc - 1, argv + 1 );
-    } break;
+    }
+    break;
 
-    case SCASE( "help" ): {
+    case SCASE( "help" ):
+    {
         API_Msg(
           " usage: capture <command> [args...] \n"
           " command list: \n"
@@ -106,10 +116,13 @@ extern "C" bool AppHandler_CaptureCommand( int argc, char* argv[] )
           "   config [args]       Configure arguments; more: try type "
           "\"capture config\"\n"
           "   help                \n" );
-    } break;
-    default: {
+    }
+    break;
+    default:
+    {
         API_Msgf( "warning: unknown capture command [%s]\n", argv[0] );
-    } break;
+    }
+    break;
     }
 
     return true;
@@ -124,13 +137,15 @@ extern "C" bool AppHandler_CaptureBinary( char* data, size_t len )
 /////////////////////////////////////////////////////////////////////////////
 void HandleConfig( int argc, char* argv[] )
 {
-    if ( Capture_IsRunning() ) {
+    if ( Capture_IsRunning() )
+    {
         API_Msg(
           "error: configuration is not allowed during capture session.\n" );
         return;
     }
 
-    if ( argc == 0 ) {
+    if ( argc == 0 )
+    {
         API_Msg(
           "info: Config option is not specified.\n"
           "  usage: <operation> [value1 [value 2 [...]]]\n"
@@ -153,19 +168,23 @@ void HandleConfig( int argc, char* argv[] )
     char*              det;
     int                tmp;
 
-    if ( argc >= 2 && ( tmp = strtol( argv[1], &det, 10 ), argv[1] != det ) ) {
+    if ( argc >= 2 && ( tmp = strtol( argv[1], &det, 10 ), argv[1] != det ) )
+    {
         xv = tmp;
     }
-    if ( argc >= 3 && ( tmp = strtol( argv[2], &det, 10 ), argv[2] != det ) ) {
+    if ( argc >= 3 && ( tmp = strtol( argv[2], &det, 10 ), argv[2] != det ) )
+    {
         yv = tmp;
     }
 
-    if ( !xv && !yv ) {
+    if ( !xv && !yv )
+    {
         API_Msg( "error: invalid configuration arguments\n" );
         return;
     }
 
-    switch ( STRHASH( argv[0] ) ) {
+    switch ( STRHASH( argv[0] ) )
+    {
     case SCASE( "offset" ):
         if ( xv )
             cc.Scan_CaptureOfst.x = *xv;
@@ -200,8 +219,10 @@ void HandleConfig( int argc, char* argv[] )
           cc.Scan_StepPerPxl.y );
         break;
 
-    case SCASE( "delay" ): {
-        if ( xv > 0 == false ) {
+    case SCASE( "delay" ):
+    {
+        if ( xv > 0 == false )
+        {
             API_Msg(
               "error: invalid argument for delay. value must be positive "
               "integer.\n" );
@@ -212,15 +233,19 @@ void HandleConfig( int argc, char* argv[] )
         DistSens_GetConfigure( ghDistSens, &conf );
         conf.Delay_us = *xv;
 
-        if ( DistSens_Configure( ghDistSens, &conf ) == false ) {
+        if ( DistSens_Configure( ghDistSens, &conf ) == false )
+        {
             API_Msg( "warning: failed to apply delay configuration\n" );
         }
-        else {
+        else
+        {
             API_Msgf( "info: delay is %u us\n", conf.Delay_us );
         }
-    } break;
+    }
+    break;
 
-    case SCASE( "angle-per-step" ): {
+    case SCASE( "angle-per-step" ):
+    {
         // Force convert to float
         union
         {
@@ -243,36 +268,45 @@ void HandleConfig( int argc, char* argv[] )
           "info: angle per step set ... %d, %d [udeg]\n",
           (int)( cc.AnglePerStep.x * 1e6f ),
           (int)( cc.AnglePerStep.y * 1e6f ) );
-    } break;
+    }
+    break;
 
-    case SCASE( "precision" ): {
+    case SCASE( "precision" ):
+    {
         dist_sens_config_t conf;
         DistSens_GetConfigure( ghDistSens, &conf );
         conf.bCloseDistanceMode = xv != 0;
-        if ( DistSens_Configure( ghDistSens, &conf ) == false ) {
+        if ( DistSens_Configure( ghDistSens, &conf ) == false )
+        {
             API_Msg( "warning: sensor precision mode configuration failed.\n" );
         }
-        else {
+        else
+        {
             API_Msgf(
               "info: current configuration: %s\n",
               conf.bCloseDistanceMode ? "Near" : "Far" );
         }
-    } break;
+    }
+    break;
 
     case SCASE( "motor-max-clk" ):
-        if ( xv > 0 ) {
+        if ( xv > 0 )
+        {
             Motor_SetMaxSpeed( gMotX, *xv );
         }
-        if ( yv > 0 ) {
+        if ( yv > 0 )
+        {
             Motor_SetMaxSpeed( gMotY, *yv );
         }
         break;
 
     case SCASE( "motor-accel" ):
-        if ( xv > 0 ) {
+        if ( xv > 0 )
+        {
             Motor_SetAcceleration( gMotX, *xv );
         }
-        if ( yv > 0 ) {
+        if ( yv > 0 )
+        {
             Motor_SetAcceleration( gMotY, *yv );
         }
         break;

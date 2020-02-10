@@ -65,13 +65,15 @@ extern "C" void HW_TIMER_INIT()
 extern "C" void TIM2_IRQHandler( void )
 {
     // If it's update interrupt, accumulates 1000 second to total time
-    if ( __HAL_TIM_GET_FLAG( &htim, TIM_FLAG_UPDATE ) != RESET ) {
+    if ( __HAL_TIM_GET_FLAG( &htim, TIM_FLAG_UPDATE ) != RESET )
+    {
         __HAL_TIM_CLEAR_FLAG( &htim, TIM_FLAG_UPDATE );
         s_total_us += (int)1e9;
     }
 
     // If it's oc interrupt, process hwtimer event and switch to timer task
-    if ( __HAL_TIM_GET_FLAG( &htim, TIM_FLAG_CC1 ) != RESET ) {
+    if ( __HAL_TIM_GET_FLAG( &htim, TIM_FLAG_CC1 ) != RESET )
+    {
         __HAL_TIM_CLEAR_FLAG( &htim, TIM_FLAG_CC1 );
         BaseType_t bHigherTaskPriorityWoken = pdFALSE;
         vTaskNotifyGiveFromISR( sTimerTask, &bHigherTaskPriorityWoken );
@@ -119,7 +121,8 @@ extern "C" void API_AbortTimer( timer_handle_t h )
 
 _Noreturn void TimerUpdateTask( void* nouse__ )
 {
-    for ( ;; ) {
+    for ( ;; )
+    {
         ulTaskNotifyTake( pdTRUE, 100 /* For case if lost ... */ );
         __HAL_TIM_DISABLE_IT( &htim, TIM_FLAG_CC1 );
 
@@ -127,7 +130,8 @@ _Noreturn void TimerUpdateTask( void* nouse__ )
           []() { taskENTER_CRITICAL(); }, []() { taskEXIT_CRITICAL(); } );
         // auto next = s_tim.update();
 
-        if ( next != (usec_t)-1 ) {
+        if ( next != (usec_t)-1 )
+        {
             int delay = next - API_GetTime_us();
             int cnt   = htim.Instance->CNT;
             int arr   = htim.Instance->ARR;
@@ -145,7 +149,8 @@ _Noreturn void TimerUpdateTask( void* nouse__ )
 extern "C" bool API_CheckTimer( timer_handle_t h, usec_t* usLeft )
 {
     hwtim_t::desc_type d;
-    if ( s_tim.browse( { h.data_[0], h.data_[1] }, d ) == false ) {
+    if ( s_tim.browse( { h.data_[0], h.data_[1] }, d ) == false )
+    {
         return false;
     }
 
@@ -160,7 +165,8 @@ namespace std {
 void __throw_bad_function_call()
 {
     uassert( false );
-    for ( ;; ) {
+    for ( ;; )
+    {
     }
 }
 } // namespace std

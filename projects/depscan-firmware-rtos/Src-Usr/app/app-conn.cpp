@@ -49,7 +49,8 @@ extern "C" _Noreturn void AppProc_HostIO( void* nouse_ )
     packetinfo_t packet;
     s_hTask = xTaskGetCurrentTaskHandle();
 
-    for ( ;; ) {
+    for ( ;; )
+    {
         // Check if read data has valid protocol.
         if ( readHostConn( &packet, PACKET_SIZE ) == false )
             continue;
@@ -138,7 +139,8 @@ void API_ExportBin( uint32_t id, void const* mem, size_t len )
       = lowerbound( arr, &id, sizeof( ed ), s_xd.size_, export_data::compare );
     auto head = arr + idx;
 
-    if ( head->id_ != id ) {
+    if ( head->id_ != id )
+    {
         uassert( idx < NUM_MAX_EXPORT_BINARY );
         head = (ed*)array_insert( arr, NULL, idx, sizeof( ed ), &s_xd.size_ );
         head->id_ = id;
@@ -157,7 +159,8 @@ void API_RemoveExport( uint32_t id, void const* ptr )
 
     auto idx
       = lowerbound( arr, &id, sizeof( ed ), s_xd.size_, export_data::compare );
-    if ( arr[idx].id_ == id ) {
+    if ( arr[idx].id_ == id )
+    {
         //! @todo. Implement array_remove from uEmbedded ...
     }
 }
@@ -174,7 +177,8 @@ static void GetHandler( char const* name )
       = lowerbound( arr, &id, sizeof( ed ), s_xd.size_, export_data::compare );
     auto at = arr + idx;
 
-    if ( at->id_ != id ) {
+    if ( at->id_ != id )
+    {
         API_Msgf( "Given name %s is not exported data name\n", name );
         return;
     }
@@ -227,18 +231,21 @@ extern "C" int API_Msg( char const* txt )
 bool readHostConn( void* dst, size_t len )
 {
     size_t numRetries = 5;
-    for ( ; numRetries; ) {
+    for ( ; numRetries; )
+    {
         // Flush transmit data before try read
         flushTransmitData();
 
         auto result = td_read( gHostConnection, (char*)dst, len );
 
         // If there's nothing to read, sleep for 1 cycle
-        if ( result == 0 ) {
+        if ( result == 0 )
+        {
             vTaskDelay( 1 );
             continue;
         }
-        else if ( result < 0 ) {
+        else if ( result < 0 )
+        {
             vTaskDelay( pdMS_TO_TICKS( 10 ) );
             --numRetries;
         }
@@ -246,7 +253,8 @@ bool readHostConn( void* dst, size_t len )
         len -= result;
         dst = (char*)dst + result;
 
-        if ( len == 0 ) {
+        if ( len == 0 )
+        {
             return true;
         }
     }
@@ -270,29 +278,41 @@ void stringCmdHandler( char* str, size_t len )
 
 #define STRCASE( v ) upp::hash::fnv1a_32_const( v )
 
-    switch ( upp::hash::fnv1a_32( argv[0] ) ) {
-    case STRCASE( "env-report" ): {
-    } break;
+    switch ( upp::hash::fnv1a_32( argv[0] ) )
+    {
+    case STRCASE( "env-report" ):
+    {
+    }
+    break;
 
-    case STRCASE( "ping" ): {
+    case STRCASE( "ping" ):
+    {
         API_SendHostBinary( "ping", 4 );
-    } break;
+    }
+    break;
 
-    case STRCASE( "capture" ): {
+    case STRCASE( "capture" ):
+    {
         AppHandler_CaptureCommand( argc - 1, argv + 1 );
-    } break;
+    }
+    break;
 
-    case STRCASE( "test" ): {
+    case STRCASE( "test" ):
+    {
         AppHandler_TestCommand( argc - 1, argv + 1 );
-    } break;
+    }
+    break;
 
-    case STRCASE( "get" ): {
-        if ( argc == 1 ) {
+    case STRCASE( "get" ):
+    {
+        if ( argc == 1 )
+        {
             API_Msgf( "error: command 'get' requires argument.\n" );
             break;
         }
         GetHandler( argv[1] );
-    } break;
+    }
+    break;
     default:
         break;
     }
@@ -316,7 +336,8 @@ extern "C" __weak_symbol bool AppHandler_TestCommand( int argc, char* argv[] )
 
 void binaryCmdHandler( char* data, size_t len )
 {
-    if ( AppHandler_CaptureBinary( data, len ) ) {
+    if ( AppHandler_CaptureBinary( data, len ) )
+    {
         return;
     }
 
@@ -336,8 +357,10 @@ int stringToTokens( char* str, char* argv[], size_t argv_len )
     int   num_token = 0;
     char* head      = str;
 
-    for ( ; num_token < (int)argv_len; ) {
-        if ( *head != ' ' && *head != '\0' ) {
+    for ( ; num_token < (int)argv_len; )
+    {
+        if ( *head != ' ' && *head != '\0' )
+        {
             ++head;
             continue;
         }
@@ -346,7 +369,8 @@ int stringToTokens( char* str, char* argv[], size_t argv_len )
         if ( *head == 0 )
             break;
 
-        for ( *head = 0; *++head == ' '; ) {
+        for ( *head = 0; *++head == ' '; )
+        {
         }
 
         if ( *head == 0 )
@@ -360,14 +384,15 @@ int stringToTokens( char* str, char* argv[], size_t argv_len )
 
 void apndToHostBuf( void const* d, size_t len )
 {
-    if ( s_hostTrBufHead + len >= sizeof( s_hostTrBuf ) ) {
+    if ( s_hostTrBufHead + len >= sizeof( s_hostTrBuf ) )
+    {
         return;
     }
 
     ++s_writingTask;
     s_hostTrBufHead += len;
     memcpy( s_hostTrBuf + s_hostTrBufHead - len, d, len );
-    --s_writingTask; 
+    --s_writingTask;
 }
 
 static void vprint__( char const* fmt, va_list vp )

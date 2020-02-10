@@ -14,11 +14,11 @@
 
 #include <uEmbedded/uassert.h>
 
+#include <main.h>
 #include <platform/argus_irq.h>
 #include <stdbool.h>
 #include <stdlib.h>
 #include <uEmbedded/event-procedure.h>
-#include <main.h>
 
 #include "../../app/app.h"
 
@@ -97,7 +97,8 @@ static void timer_cb__spi( void* p )
 #if ASYNC_SPI
 static void transfer_done( DMA_HandleTypeDef* h )
 {
-    if ( g_rxtxRunning > 0 ) {
+    if ( g_rxtxRunning > 0 )
+    {
         g_rxtxRunning--;
         return;
     }
@@ -106,7 +107,8 @@ static void transfer_done( DMA_HandleTypeDef* h )
     HAL_GPIO_WritePin( s->chipSelectPort, s->chipSelectPin, !s->csActiveVal );
 
     // print("Receiving Bytes ...\n");
-    if ( s->callback ) {
+    if ( s->callback )
+    {
         // logputs("Calling callback\n");
         // s->callback( val, s->callbackParam );
         s->latestTransferStatus = STATUS_OK;
@@ -116,14 +118,16 @@ static void transfer_done( DMA_HandleTypeDef* h )
 
 static void transfer_error( DMA_HandleTypeDef* h )
 {
-    if ( g_rxtxRunning > 0 ) {
+    if ( g_rxtxRunning > 0 )
+    {
         g_rxtxRunning--;
         return;
     }
 
     struct slave_desc volatile* s = g_slaves + g_activeSlave;
     HAL_GPIO_WritePin( s->chipSelectPort, s->chipSelectPin, !s->csActiveVal );
-    if ( s->callback ) {
+    if ( s->callback )
+    {
         s->latestTransferStatus = ERROR_FAIL;
         API_SetTimerFromISR( 1, (void*)s, timer_cb__spi );
     }
@@ -154,7 +158,8 @@ void S2PI_Init()
 {
     size_t i;
 
-    for ( i = 0; i < S2PI_SLAVE_MAX; i++ ) {
+    for ( i = 0; i < S2PI_SLAVE_MAX; i++ )
+    {
         struct slave_desc volatile* s = g_slaves + i;
         HAL_GPIO_WritePin(
           s->chipSelectPort, s->chipSelectPin, !s->csActiveVal );
@@ -171,10 +176,12 @@ void S2PI_TransferFrameSync(
 {
     while ( S2PI_TransferFrame(
               slave, txData, rxData, frameSize, callback, callbackData )
-            != STATUS_OK ) {
+            != STATUS_OK )
+    {
         ;
     }
-    while ( S2PI_GetStatus() != STATUS_IDLE ) {
+    while ( S2PI_GetStatus() != STATUS_IDLE )
+    {
     }
 }
 
@@ -192,13 +199,16 @@ status_t S2PI_SetBaudRate( uint32_t baudRate_Bps )
 
 status_t S2PI_GetStatus( void )
 {
-    if ( g_rxtxRunning ) {
+    if ( g_rxtxRunning )
+    {
         return STATUS_BUSY;
     }
-    else if ( g_isGpioMode ) {
+    else if ( g_isGpioMode )
+    {
         return STATUS_S2PI_GPIO_MODE;
     }
-    else {
+    else
+    {
         return STATUS_IDLE;
     }
 }
@@ -235,7 +245,8 @@ status_t S2PI_TransferFrame(
     HAL_StatusTypeDef res;
     status_t          retval;
 
-    if ( rxData ) {
+    if ( rxData )
+    {
         g_rxtxRunning = 1;
 #if !ASYNC_SPI
         res = HAL_SPI_TransmitReceive(
@@ -245,7 +256,8 @@ status_t S2PI_TransferFrame(
           &hspi1, (uint8_t*)txData, rxData, frameSize );
 #endif
     }
-    else {
+    else
+    {
         g_rxtxRunning = 1;
 #if !ASYNC_SPI
         res = HAL_SPI_Transmit( &hspi1, (uint8_t*)txData, frameSize, 1000 );
@@ -254,17 +266,20 @@ status_t S2PI_TransferFrame(
 #endif
     }
 
-    if ( res == HAL_OK ) {
+    if ( res == HAL_OK )
+    {
         // print( "Sending %d bytes ... \n", frameSize );
         retval = STATUS_OK;
     }
-    else if ( res == HAL_BUSY ) {
+    else if ( res == HAL_BUSY )
+    {
         // print("Hal device is busy. \n" );
         retval = STATUS_BUSY;
         HAL_GPIO_WritePin(
           s->chipSelectPort, s->chipSelectPin, !s->csActiveVal );
     }
-    else {
+    else
+    {
         // print( "Transmit error. \n" );
         retval = ERROR_ABORTED;
         HAL_GPIO_WritePin(

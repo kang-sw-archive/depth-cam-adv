@@ -39,7 +39,8 @@ static void Test_Motor( int argc, char* argv[] );
 
 extern "C" bool AppHandler_TestCommand( int argc, char* argv[] )
 {
-    if ( argc == 0 ) {
+    if ( argc == 0 )
+    {
         API_Msg(
           "error: this command requires additional argument. \n"
           "Available commands: \n"
@@ -52,7 +53,8 @@ extern "C" bool AppHandler_TestCommand( int argc, char* argv[] )
 
     API_Msgf( "info: Test sequence for ::%s:: \n", argv[0] );
 
-    switch ( STRHASH( argv[0] ) ) {
+    switch ( STRHASH( argv[0] ) )
+    {
     case SCASE( "s2pi" ):
         Test_S2PI();
         break;
@@ -139,7 +141,8 @@ void Test_Timer( int argc, char* argv[] )
     if ( argc >= 3 )
         delay = std::max( 100, atoi( argv[2] ) );
 
-    if ( ti.cnt != ti.num ) {
+    if ( ti.cnt != ti.num )
+    {
         API_Msg( "Yet timer task is running ... \n" );
         return;
     }
@@ -168,22 +171,27 @@ void Test_Timer( int argc, char* argv[] )
     //! the order of nodes is not guaranteed. A careful examination of
     //! the free space list is required.
     int arr[num];
-    for ( size_t i = 0; i < num; i++ ) {
+    for ( size_t i = 0; i < num; i++ )
+    {
         arr[i] = i;
     }
 
     srand( (uint32_t)API_GetTime_us() );
-    for ( size_t i = 0; i < num * 4; i++ ) {
+    for ( size_t i = 0; i < num * 4; i++ )
+    {
         std::swap( arr[rand() % num], arr[rand() % num] );
     }
 
-    for ( int i = 0; i < num; i++ ) {
+    for ( int i = 0; i < num; i++ )
+    {
         auto correct_delay
           = delay * ( arr[i] + 1 ) - ( API_GetTime_us() - ti.init );
-        if ( i < num / 2 ) {
+        if ( i < num / 2 )
+        {
             API_SetTimerFromISR( correct_delay, &ti, timer_cb );
         }
-        else {
+        else
+        {
             API_SetTimer( correct_delay, &ti, timer_cb );
         }
     }
@@ -202,7 +210,8 @@ void Test_DistSensor( int argc, char* argv[] )
     DistSens_GetConfigure( ghDistSens, &conf );
     conf.Delay_us           = delay;
     conf.bCloseDistanceMode = true;
-    if ( DistSens_Configure( ghDistSens, &conf ) == false ) {
+    if ( DistSens_Configure( ghDistSens, &conf ) == false )
+    {
         API_Msg( "error: failed to initialize distance sensor.\n" );
         return;
     }
@@ -210,13 +219,15 @@ void Test_DistSensor( int argc, char* argv[] )
     API_Msg( "info: configuration successful. \n" );
 
     dist_sens_async_cb_t const cb = []( dist_sens_t h, void*, int result ) {
-        if ( result != DIST_SENS_OK ) {
+        if ( result != DIST_SENS_OK )
+        {
             API_Msgf( "info: failed to capture image with error %d\n", result );
             return;
         }
 
         q9_22_t val;
-        if ( DistSens_GetDistanceFxp( h, &val ) == false ) {
+        if ( DistSens_GetDistanceFxp( h, &val ) == false )
+        {
             API_Msg( "warning: failed to get measure result.\n" );
             return;
         }
@@ -227,7 +238,8 @@ void Test_DistSensor( int argc, char* argv[] )
           val & ( ( 1 << 22 ) - 1 ) );
     };
 
-    if ( DistSens_MeasureAsync( ghDistSens, retry, NULL, cb ) == false ) {
+    if ( DistSens_MeasureAsync( ghDistSens, retry, NULL, cb ) == false )
+    {
         API_Msg( "error: failed to start measurement. \n" );
         return;
     }
@@ -239,10 +251,12 @@ void Test_Motor( int argc, char* argv[] )
     auto const motors = { gMotX, gMotY };
 
     // Get index
-    if ( argc == 1 ) {
+    if ( argc == 1 )
+    {
         // Report motor status
         int id = 0;
-        for ( auto& m : motors ) {
+        for ( auto& m : motors )
+        {
             auto accel = Motor_GetAcceleration( m );
             auto maxs  = Motor_GetMaxSpeed( m );
             auto mins  = Motor_GetMinSpeed( m );
@@ -259,7 +273,8 @@ void Test_Motor( int argc, char* argv[] )
         }
         return;
     }
-    if ( argc < 3 ) {
+    if ( argc < 3 )
+    {
         API_Msg( "error: test motor <hw-idx> <delta-steps> " );
         return;
     }
@@ -267,14 +282,16 @@ void Test_Motor( int argc, char* argv[] )
     int hwid  = argv[1][0] == 'x' ? 0 : argv[1][0] == 'y' ? 1 : -1;
     int steps = atoi( argv[2] );
 
-    if ( hwid < 0 || hwid > 1 ) {
+    if ( hwid < 0 || hwid > 1 )
+    {
         API_Msg( "HWID must be x or y\n" );
         return;
     }
 
     auto m = motors.begin()[hwid];
 
-    if ( Motor_Stat( m ) != MOTOR_STATE_IDLE ) {
+    if ( Motor_Stat( m ) != MOTOR_STATE_IDLE )
+    {
         API_Msg( "error: motor is still running. \n" );
     }
 
@@ -286,7 +303,8 @@ void Test_Motor( int argc, char* argv[] )
     };
 
     auto result = Motor_MoveBy( m, steps, motor_cb, (void*)Motor_Pos( m ) );
-    if ( result != MOTOR_OK ) {
+    if ( result != MOTOR_OK )
+    {
         API_Msgf(
           "error: motor movement request has failed for code %d\n", result );
         return;
