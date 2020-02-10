@@ -104,7 +104,7 @@ int DistSens_MeasureSync( dist_sens_t h, uint32_t Retry )
     };
 
     if ( DistSens_MeasureAsync( h, Retry, (void*)&cb_param, cb ) == false )
-        return false;
+        return ERROR_FAIL;
 
     ulTaskNotifyTake( pdTRUE, (TickType_t)-1 );
     return cb_param.result;
