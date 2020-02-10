@@ -44,7 +44,6 @@ void operator delete( void* p )
 extern "C" void StartDefaultTask( void* nouse_ )
 {
     void InitCapture();
-
     InitHW();
     Internal_InitRW();
     InitCapture();
@@ -57,3 +56,14 @@ extern "C" void StartDefaultTask( void* nouse_ )
     for ( ;; )
         (void)0;
 }
+
+/**
+
+@mainpage Depscan firmware
+@section Introduction
+ This program is firmware that controls two axes of motors and high performance
+distance sensors.
+
+@section Interface
+ As soon as connect the device with PC, a virtual com port from STM will open.
+*/
