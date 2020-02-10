@@ -89,17 +89,17 @@ void DistSens_GetConfigure( dist_sens_t h, dist_sens_config_t* out )
     *out = h->conf_;
 }
 
-bool DistSens_MeasureSync( dist_sens_t h, uint32_t Retry )
+int DistSens_MeasureSync( dist_sens_t h, uint32_t Retry )
 {
     volatile struct cb_param_type
     {
         TaskHandle_t tid    = xTaskGetCurrentTaskHandle();
-        bool         result = false;
+        int          result = ERROR_FAIL;
     } cb_param;
 
     dist_sens_async_cb_t const cb = []( dist_sens_t, void* obj, int res ) {
         auto param    = (volatile cb_param_type*)obj;
-        param->result = res == STATUS_OK;
+        param->result = res;
         xTaskNotifyGive( param->tid );
     };
 

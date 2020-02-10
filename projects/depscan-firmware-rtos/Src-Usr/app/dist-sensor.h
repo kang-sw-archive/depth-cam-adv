@@ -74,8 +74,9 @@ bool DistSens_GetAmpFxp( dist_sens_t, ufxp_12_4_t* out );
 //!              Specify DIST_SENS_RETRY_MAX to retry until succeed. Actual
 //!             retry time is associated with Delay_us in @ref
 //!             dist_sens_config_t.
-//! @returns false when all retry exhausted.
-bool DistSens_MeasureSync( dist_sens_t, uint32_t Retry );
+//! @returns     error code that is same with the value passed through \ref
+//!             dist_sens_async_cb_t
+int DistSens_MeasureSync( dist_sens_t, uint32_t Retry );
 
 //! @brief      Trigger measurement asynchronously
 //! @param      Retry See \ref DistSens_MeasureSync
