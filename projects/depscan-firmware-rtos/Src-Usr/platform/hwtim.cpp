@@ -9,7 +9,6 @@
 //! @todo       Check for potential data corruption during overall timer usage
 #include <FreeRTOS.h>
 
-#include <cmsis_os2.h>
 #include <main.h>
 #include <task.h>
 #include <uEmbedded-pp/timer_logic.hxx>
@@ -54,7 +53,7 @@ extern "C" void HW_TIMER_INIT()
       "TIMER",
       sizeof( sTimerStack ) / sizeof( *sTimerStack ),
       NULL,
-      osPriorityRealtime4,
+      TaskPriorityRealtime,
       sTimerStack,
       &sTimerTaskStaticCb );
 
