@@ -37,10 +37,9 @@ typedef struct
     bool bIsPaused;
 } FDeviceStat;
 
-enum ECaptureModeBit
-{
+enum ECaptureModeBit {
     ECMB_DISTANCE_AUTO = 1,
-    ECMB_DISTANCE_FAR = 2,
+    ECMB_DISTANCE_FAR  = 2,
     ECMB_LOW_PRECISION = 4,
 };
 
@@ -66,22 +65,21 @@ typedef struct
 
 typedef struct
 {
-    int16_t  X;     //!< Offset steps from initial point
-    int16_t  Y;     //!< Offset steps from initial point
-    FPxlData V;     //!< Actual distance value
-    uint16_t pad__; //!< 4Byte align
+    int16_t  X;  //!< Offset steps from initial point
+    int16_t  Y;  //!< Offset steps from initial point
+    FPxlData V;  //!< Actual distance value
+    uint16_t ID; //!< Point data ID ... 4 BYTE ALIGN
 } FPointData;
 
 typedef struct
 {
-    int16_t X;
-    int16_t Y;
+    int16_t  X;
+    int16_t  Y;
+    uint16_t ID;
 } FPointReq;
 
 typedef struct
 {
-    uint32_t ID;        //!< Simple 32bit value to identify request
-    uint32_t IndexOfst; //!< Number of points sent from initial request
     uint32_t NumPoints; //!< Number of points in current transfer
 } FPointSetDesc;
 
