@@ -219,7 +219,7 @@ void Test_DistSensor( int argc, char* argv[] )
     API_Msg( "info: configuration successful. \n" );
 
     dist_sens_async_cb_t const cb = []( dist_sens_t h, void*, int result ) {
-        if ( result != DIST_SENS_OK )
+        if ( result < DIST_SENS_OK )
         {
             API_Msgf( "info: failed to capture image with error %d\n", result );
             return;
@@ -233,7 +233,8 @@ void Test_DistSensor( int argc, char* argv[] )
         }
         API_Msg( "info: succeeded to capture image\n" );
         API_Msgf(
-          "info: measured distance is %x.%x \n",
+          "info: (CODE: %d) measured distance is %x.%x \n",
+          result,
           val >> 22,
           val & ( ( 1 << 22 ) - 1 ) );
     };
