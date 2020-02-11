@@ -24,8 +24,11 @@
 
 /////////////////////////////////////////////////////////////////////////////
 // Globals
-capture_t gCapture = { .AnglePerStep = { .x = 1.8f / 32.f, .y = 1.8f / 32.f } };
-char      Capture_Buffer[CAPTURER_BUFFER_SIZE];
+capture_t gCapture = {
+  .AnglePerStep    = { .x = 1.8f / 32.f, .y = 1.8f / 32.f },
+  .Scan_Resolution = { .x = 10, .y = 10 },
+  .Scan_StepPerPxl = { .x = 1, .y = 1 } };
+char Capture_Buffer[CAPTURER_BUFFER_SIZE];
 
 /////////////////////////////////////////////////////////////////////////////
 // Aliasing for easy use
@@ -102,6 +105,26 @@ extern "C" bool AppHandler_CaptureCommand( int argc, char* argv[] )
     case SCASE( "config" ):
     {
         HandleConfig( argc - 1, argv + 1 );
+    }
+    break;
+
+    case SCASE( "motor-move" ):
+    {
+        char* det;
+        int   tmp;
+
+        if ( argc >= 2 )
+            if ( tmp = strtol( argv[1], &det, 10 ), argv[1] != det )
+            {
+                Motor_MoveBy( gMotX, tmp, NULL, NULL );
+                API_Msgf( "info: queue x motor movement %d \n", tmp );
+            }
+        if ( argc >= 3 )
+            if ( tmp = strtol( argv[2], &det, 10 ), argv[2] != det )
+            {
+                Motor_MoveBy( gMotY, tmp, NULL, NULL );
+                API_Msgf( "info: queue x motor movement %d \n", tmp );
+            }
     }
     break;
 
@@ -323,10 +346,12 @@ void HandleConfig( int argc, char* argv[] )
         if ( xv > 0 )
         {
             Motor_SetMaxSpeed( gMotX, *xv );
+            API_Msgf( "info: Motor speed X has set to %d\n", *xv );
         }
         if ( yv > 0 )
         {
             Motor_SetMaxSpeed( gMotY, *yv );
+            API_Msgf( "info: Motor speed Y has set to %d\n", *yv );
         }
         break;
 
@@ -334,10 +359,12 @@ void HandleConfig( int argc, char* argv[] )
         if ( xv > 0 )
         {
             Motor_SetAcceleration( gMotX, *xv );
+            API_Msgf( "info: Motor acceleration X has set to %d\n", *xv );
         }
         if ( yv > 0 )
         {
             Motor_SetAcceleration( gMotY, *yv );
+            API_Msgf( "info: Motor acceleration Y has set to %d\n", *yv );
         }
         break;
 
@@ -362,6 +389,7 @@ static void wait_motor()
 // Scanning process that performs pixel-by-pixel capture
 static void Task_Scan( void* nouse_ )
 {
+    usec_t BeginTime = API_GetTime_us();
     // Clear all status variables
     auto&      pos        = cc.Scan_Pos;
     auto const resolution = cc.Scan_Resolution;
@@ -408,7 +436,7 @@ static void Task_Scan( void* nouse_ )
         FPxlData data;
         while ( result = DistSens_MeasureSync( ghDistSens, 5 ), result < 0 )
         {
-            if ( retry == 0 )
+            if ( retry-- == 0 )
             {
                 API_Msg(
                   "error: all measurement retries exhausted. aborting... \n" );
@@ -419,6 +447,7 @@ static void Task_Scan( void* nouse_ )
               "%d\n",
               retry );
             vTaskDelay( pdMS_TO_TICKS( 100 ) );
+            DistSens_Configure( ghDistSens, NULL );
         }
 
         if ( result != DIST_SENS_OK )
@@ -450,7 +479,6 @@ static void Task_Scan( void* nouse_ )
         }
 
         // 2.b. If valid, queue motor movement
-
         // asynchronously Progress one pixel
         bool const bIsLineEnd
           = pos.x + dir == -1 || pos.x + dir == resolution.x;
@@ -505,6 +533,17 @@ static void Task_Scan( void* nouse_ )
         wait_motor();
     }
 
+    // Send 'job done' notifier
+    {
+        auto cmd = ECommand::RSP_DONE;
+        API_SendHostBinary( &cmd, sizeof( cmd ) );
+    }
+
+    API_Msgf(
+      "info: capture process done. elapsed: %d us\n",
+      API_GetTime_us() - BeginTime );
+
 SCAN_ABORT:;
+    cc.CaptureTask = NULL;
     vTaskDelete( NULL );
 }
