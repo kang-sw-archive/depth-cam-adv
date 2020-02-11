@@ -261,7 +261,7 @@ void Test_Motor( int argc, char* argv[] )
             auto accel = Motor_GetAcceleration( m );
             auto maxs  = Motor_GetMaxSpeed( m );
             auto mins  = Motor_GetMinSpeed( m );
-            auto pos   = Motor_Pos( m );
+            auto pos   = Motor_GetPos( m );
 
             API_Msgf( // clang-format off
               "info: --- MOTOR <%d> --- \n"
@@ -300,10 +300,10 @@ void Test_Motor( int argc, char* argv[] )
         API_Msgf(
           "info: motor movement done. %d ---> %d\n",
           (intptr_t)init_pos,
-          Motor_Pos( m ) );
+          Motor_GetPos( m ) );
     };
 
-    auto result = Motor_MoveBy( m, steps, motor_cb, (void*)Motor_Pos( m ) );
+    auto result = Motor_MoveBy( m, steps, motor_cb, (void*)Motor_GetPos( m ) );
     if ( result != MOTOR_OK )
     {
         API_Msgf(

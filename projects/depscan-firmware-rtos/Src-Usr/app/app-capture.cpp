@@ -78,8 +78,8 @@ extern "C" bool AppHandler_CaptureCommand( int argc, char* argv[] )
         r.bIsIdle              = cc.CaptureTask == NULL;
         r.bIsPrecisionMode     = opt.bCloseDistanceMode;
         r.bIsSensorInitialized = ghDistSens != NULL;
-        r.CurMotorStepX        = Motor_Pos( gMotX );
-        r.CurMotorStepY        = Motor_Pos( gMotY );
+        r.CurMotorStepX        = Motor_GetPos( gMotX );
+        r.CurMotorStepY        = Motor_GetPos( gMotY );
         r.DegreePerStepX       = cc.AnglePerStep.x;
         r.DegreePerStepY       = cc.AnglePerStep.y;
         r.DelayPerCapture      = opt.Delay_us;

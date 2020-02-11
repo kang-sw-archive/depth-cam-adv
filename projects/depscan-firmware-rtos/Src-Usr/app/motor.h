@@ -74,17 +74,17 @@ uint16_t Motor_GetAccelRange( motor_hnd_t );
 
 //! @brief      Get motor's position
 //! @returns    motor's current position from origin point. Units are steps.
-int Motor_Pos( motor_hnd_t );
+int Motor_GetPos( motor_hnd_t );
+
+//! @brief      Set motor position without movement
+motor_status_t Motor_SetPos( motor_hnd_t, int pos );
 
 //! @brief      Get motor's velocity.
 //! @returns    velocity. \n
 //!              Since the output value can be negative value, it'll return
 //!             zero if the motor is in error state. To get exact error status
 //!             of motor, @ref Motor_Stat function must be used.
-int Motor_Velocity( motor_hnd_t );
-
-//! @brief      Reset motor's origin to zero.
-motor_status_t Motor_ResetPos( motor_hnd_t );
+int Motor_Velocity( motor_hnd_t ); 
 
 //! @brief       Stop motor immediately. This does not assure exact motor
 //!             position preserve

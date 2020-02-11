@@ -316,9 +316,15 @@ Motor_MoveTo( motor_hnd_t m, int destination, motor_cb_t cb, void* obj )
 
 //! @brief      Get motor's position
 //! @returns    motor's current position from origin point. Units are steps.
-int Motor_Pos( motor_hnd_t m )
+int Motor_GetPos( motor_hnd_t m )
 {
     return m->position;
+}
+
+motor_status_t Motor_SetPos(motor_hnd_t m, int pos)
+{
+    m->position = pos;
+    return MOTOR_OK;
 }
 
 //! @brief      Get motor's velocity.
@@ -329,13 +335,6 @@ int Motor_Pos( motor_hnd_t m )
 int Motor_Velocity( motor_hnd_t m )
 {
     return m->velocity();
-}
-
-//! @brief      Reset motor's origin to zero.
-motor_status_t Motor_ResetPos( motor_hnd_t m )
-{
-    m->position = 0;
-    return MOTOR_OK;
 }
 
 //! @brief       Stop motor immediately. This does not assure exact motor
