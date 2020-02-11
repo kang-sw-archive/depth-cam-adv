@@ -431,7 +431,7 @@ void FScannerProtocolHandler::SetMotorAcceleration( int Hz ) noexcept
     SendString( buf );
 }
 
-void FScannerProtocolHandler::ResetMotorPosition() noexcept { SendString( "motor-reset" ); }
+void FScannerProtocolHandler::ResetMotorPosition() noexcept { SendString( "capture motor-reset" ); }
 
 void FScannerProtocolHandler::StopCapture() noexcept
 {
