@@ -94,8 +94,10 @@ typedef FPointSetDesc FPointReqSetDesc;
 
 #ifdef __cplusplus
 namespace ECommand {
+enum ECommand : SCANNER_COMMAND_TYPE// REQ = HOST -> DEVICE, RSP = DEVICE -> HOST
+#else
+enum ECommand
 #endif
-enum ECommand // REQ = HOST -> DEVICE, RSP = DEVICE -> HOST
 {
     REQ_POINT_SET,
 
