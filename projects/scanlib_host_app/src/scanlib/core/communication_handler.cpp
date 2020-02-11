@@ -37,6 +37,7 @@ void ICommunicationHandlerBase::ClearConnection() noexcept
 {
     lock_guard lck { m_shutdown_lock };
     m_strmbuf = nullptr;
+    m_os = nullptr;
 }
 
 void ICommunicationHandlerBase::OnBinaryData( char const* data, size_t len )
