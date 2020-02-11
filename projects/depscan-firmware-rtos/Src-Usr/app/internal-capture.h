@@ -59,9 +59,6 @@ typedef struct capture_common_ty__
     //! @{
     int      Point_NumMaxRequest;
     int      Point_NumPendingRequest;
-    uint32_t Point_RequestID;
-    uint32_t Point_BufHead;
-    uint32_t Point_BufEnd;
     //! @}
 
     //! @brief      Process handle
