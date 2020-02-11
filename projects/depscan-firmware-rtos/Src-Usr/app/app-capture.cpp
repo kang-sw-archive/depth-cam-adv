@@ -110,18 +110,21 @@ extern "C" bool AppHandler_CaptureCommand( int argc, char* argv[] )
 
     case SCASE( "motor-move" ):
     {
+        // This request does not affect to motor's internal position value
         char* det;
         int   tmp;
 
         if ( argc >= 2 )
             if ( tmp = strtol( argv[1], &det, 10 ), argv[1] != det )
             {
+                Motor_SetPos( gMotX, Motor_GetPos( gMotX ) - tmp );
                 Motor_MoveBy( gMotX, tmp, NULL, NULL );
                 API_Msgf( "info: queue x motor movement %d \n", tmp );
             }
         if ( argc >= 3 )
             if ( tmp = strtol( argv[2], &det, 10 ), argv[2] != det )
             {
+                Motor_SetPos( gMotY, Motor_GetPos( gMotY ) - tmp );
                 Motor_MoveBy( gMotY, tmp, NULL, NULL );
                 API_Msgf( "info: queue x motor movement %d \n", tmp );
             }
@@ -144,6 +147,9 @@ extern "C" bool AppHandler_CaptureCommand( int argc, char* argv[] )
           TaskPriorityNormal,
           &cc.CaptureTask );
 
+        cc.bPaused      = false;
+        cc.bPendingStop = false;
+
         if ( res == pdFALSE || cc.CaptureTask == NULL )
         {
             API_Msg( "error: failed to initialize capturing process\n" );
@@ -152,6 +158,19 @@ extern "C" bool AppHandler_CaptureCommand( int argc, char* argv[] )
         {
             API_Msg( "info: scanning process is initialized.\n" );
         }
+    }
+    break;
+
+    case SCASE( "stop" ):
+    {
+        if ( cc.CaptureTask == NULL )
+        {
+            API_Msg( "warning: process is already in idle state.\n" );
+            break;
+        }
+
+        API_Msg( "info: requesting stop ... \n" );
+        cc.bPendingStop = true;
     }
     break;
 
@@ -166,6 +185,7 @@ extern "C" bool AppHandler_CaptureCommand( int argc, char* argv[] )
           "   pause               Request pause current session \n"
           "   stop                Request stop for any session\n"
           "   motor-move [x [y]]  Request motor movement. Units are in step.\n"
+          "   motor-reset         Reset motor's current position \n"
           "   config [args]       Configure arguments; more: try type "
           "\"capture config\"\n"
           "   help                \n" );
@@ -452,10 +472,9 @@ static void Task_Scan( void* nouse_ )
 
         if ( result != DIST_SENS_OK )
         {
-            API_Msgf(
-              "warning: measurement returned error code %d. Consider this data "
-              "is not general. \n",
-              result );
+            // API_Msgf(
+            //   "warning: measurement returned error code %d. Consider this
+            //   data " "is not general. \n", result );
         }
 
         // In this statement, data acquisition must succeed.
@@ -544,6 +563,17 @@ static void Task_Scan( void* nouse_ )
       API_GetTime_us() - BeginTime );
 
 SCAN_ABORT:;
+    // Go back to initial position
+    Motor_MoveTo(gMotX, cc.Scan_CaptureOfst.x, NULL, NULL);
+    Motor_MoveTo(gMotY, cc.Scan_CaptureOfst.y, NULL, NULL);
+    wait_motor();
+
     cc.CaptureTask = NULL;
     vTaskDelete( NULL );
+}
+
+/////////////////////////////////////////////////////////////////////////////
+// Point capture process
+void Task_Point( void* nouse_ )
+{
 }
