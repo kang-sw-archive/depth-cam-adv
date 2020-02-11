@@ -436,7 +436,7 @@ void FScannerProtocolHandler::ResetMotorPosition() noexcept { SendString( "captu
 void FScannerProtocolHandler::StopCapture() noexcept
 {
     bRequestingCapture = false;
-    SendString( "stop" );
+    SendString( "capture stop" );
 }
 
 bool FScannerProtocolHandler::IsDeviceRunning() const noexcept { return !mStat.load().bIsIdle; }

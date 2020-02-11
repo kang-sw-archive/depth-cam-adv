@@ -193,7 +193,7 @@ ScannerMainForm::ScannerMainForm( FScannerProtocolHandler* Scanner, std::string 
                           " <><margin=[2.5, 0] gap = 5 b3 weight=30>   "
                           " <><margin=[2.5, 0] gap = 5 b4 weight=30>   "
                           "<>>" );
-        char constexpr* conftxt[]     = { "Offset Angle", "FOV", "Resolution", "Measure Delay \n[usec]", "Motor Speed \n[Max/Accel]" };
+        char constexpr* conftxt[]     = { "Offset Angle", "FOV", "Resolution", "Measure Delay \n[usec]", "Motor Speed \n[Accel/Max]" };
         char constexpr* conftooltip[] = {
             //
             // Offset angle tooltip
@@ -245,7 +245,7 @@ ScannerMainForm::ScannerMainForm( FScannerProtocolHandler* Scanner, std::string 
 
         mConfDelay.create( mConfigGroup );
         mConfigGroup["b3"] << mConfDelay;
-        mConfDelay.range( 1000, 1000000, 100 );
+        mConfDelay.range( 300, 1000000, 100 );
         mConfDelay.value( "2000" );
     }
 
