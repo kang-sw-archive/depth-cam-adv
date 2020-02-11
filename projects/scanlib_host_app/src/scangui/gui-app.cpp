@@ -225,9 +225,9 @@ ScannerMainForm::ScannerMainForm( FScannerProtocolHandler* Scanner, std::string 
         char constexpr* confgrp[]     = { "b0", "b1", "b2", "b4" };
         spinbox*        confwidgets[] = { mConfOfst, mConfAngle, mConfResolution, mConfMotorSpd };
         double const    RangeMin[]    = { -120, 0, 1, 0 };
-        double const    RangeMax[]    = { 120, 120, 100000, 100000 };
+        double const    RangeMax[]    = { 120, 120, 100000, std::numeric_limits<double>::max() };
         double const    RangeStep[]   = { 5, 5, 25, 1000 };
-        int const       RangeInit[]   = { 0, 5, 25, 1000 };
+        int const       RangeInit[]   = { 0, 5, 25, 15400 };
         for ( size_t i = 0; i < countof( confgrp ); i++ ) {
             for ( size_t k = 0; k < 2; k++ ) {
                 auto& widget = confwidgets[i][k];
