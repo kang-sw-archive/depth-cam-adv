@@ -14,6 +14,8 @@
 //!             at the interrupt called every motor clock cycle.
 //!              However, to reduce the overhead as much as possible in fast
 //!             motor cycles, the ISR needs to be as simple as possible.
+//! @bug        Motor position error consists.
+//!              Try single-trigger mode of timer!
 #include <FreeRTOS.h>
 
 #include <algorithm>
