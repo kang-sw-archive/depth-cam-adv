@@ -27,7 +27,7 @@
 capture_t gCapture = {
   .AnglePerStep    = { .x = 1.8f / 32.f, .y = 1.8f / 32.f },
   .Scan_Resolution = { .x = 10, .y = 10 },
-  .Scan_StepPerPxl = { .x = 1, .y = 1 } };
+  .Scan_StepPerPxl = { .x = 10, .y = 1 } };
 char Capture_Buffer[CAPTURER_BUFFER_SIZE];
 
 /////////////////////////////////////////////////////////////////////////////
@@ -564,8 +564,8 @@ static void Task_Scan( void* nouse_ )
 
 SCAN_ABORT:;
     // Go back to initial position
-    Motor_MoveTo(gMotX, cc.Scan_CaptureOfst.x, NULL, NULL);
-    Motor_MoveTo(gMotY, cc.Scan_CaptureOfst.y, NULL, NULL);
+    Motor_MoveTo( gMotX, cc.Scan_CaptureOfst.x, NULL, NULL );
+    Motor_MoveTo( gMotY, cc.Scan_CaptureOfst.y, NULL, NULL );
     wait_motor();
 
     cc.CaptureTask = NULL;

@@ -338,46 +338,11 @@ void FScannerProtocolHandler::OnBinaryData( char const* data, size_t len )
         mReportWait.cv.notify_all();
         if ( OnReport )
             OnReport( Stat );
-        // print( "--- Report received. ---\n" );
-        // print( "StepPerPxlX;       %d\n"
-        //       "StepPerPxlY;       %d\n"
-        //       "SizeX;             %d\n"
-        //       "SizeY;             %d\n"
-        //       "OfstX;             %d\n"
-        //       "OfstY;             %d\n"
-        //       "DelayPerCapture;   %d\n"
-        //       "DegreePerStepX;    %f\n"
-        //       "DegreePerStepY;    %f\n"
-        //       "CurMotorStepX;     %d\n"
-        //       "CurMotorStepY;     %d\n"
-        //       "bIsPrecisionMode;  %s\n"
-        //       "bIsIdle;           %s\n",
-        //       Stat.StepPerPxlX,
-        //       Stat.StepPerPxlY,
-        //       Stat.SizeX,
-        //       Stat.SizeY,
-        //       Stat.OfstX,
-        //       Stat.OfstY,
-        //       Stat.DelayPerCapture,
-        //       Stat.DegreePerStepX,
-        //       Stat.DegreePerStepY,
-        //       Stat.CurMotorStepX,
-        //       Stat.CurMotorStepY,
-        //       Stat.bIsPrecisionMode ? "true" : "false",
-        //       Stat.bIsIdle ? "true" : "false" );
     } break;
     case ECommand::RSP_LINE_DATA: {
         if ( bRequestingCapture == false )
             break;
         auto desc = *ptr_cast<const FLineDesc>( p )++;
-        // print( "+--- LINE DATA DESCRIPTION ---+\n"
-        //       "|  Line Number     : %6u   |\n"
-        //       "|  X Offset        : %6u   |\n"
-        //       "|  Pixel Count     : %6u   |\n"
-        //       "+-----------------------------+\n",
-        //       desc.LineIdx,
-        //       desc.OfstX,
-        //       desc.NumPxls );
         mStatCache = mStat.load();
         StoreLineData( mImage, mStatCache.SizeX, mStatCache.SizeY, desc, reinterpret_cast<FPxlData const*>( p ) );
         if ( OnReceiveLine ) {

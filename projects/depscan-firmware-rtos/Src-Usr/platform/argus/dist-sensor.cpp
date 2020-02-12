@@ -274,7 +274,7 @@ static bool RefreshArgusSens()
         // default calibrations
         argus_calibration_t calib;
         Argus_GetDefaultCalibration( &calib );
-
+        
         // Stores result to evaluate configuration result.
         res = Argus_SetCalibration( s.hnd_, &calib );
 
