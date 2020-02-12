@@ -560,7 +560,7 @@ static void Task_Scan( void* nouse_ )
 
     API_Msgf(
       "info: capture process done. elapsed: %d us\n",
-      API_GetTime_us() - BeginTime );
+      (int)( API_GetTime_us() - BeginTime ) );
 
 SCAN_ABORT:;
     // Go back to initial position
