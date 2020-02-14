@@ -212,6 +212,8 @@ static void irq__( motor_hnd_t m, TIM_HandleTypeDef* htim, int ch, int clk )
     auto ARR = clk / next_frq - 1;
     __HAL_TIM_SET_AUTORELOAD( htim, ARR );
 
+    // Activate next pulse for timer
+    __HAL_TIM_ENABLE( htim );
 #if 0
     if ( ( m->pending_movement & 0x2f ) == 0 )
     {
@@ -323,7 +325,7 @@ int Motor_GetPos( motor_hnd_t m )
     return m->position;
 }
 
-motor_status_t Motor_SetPos(motor_hnd_t m, int pos)
+motor_status_t Motor_SetPos( motor_hnd_t m, int pos )
 {
     m->position = pos;
     return MOTOR_OK;
@@ -376,11 +378,7 @@ int update_motor( motor_hnd_t m )
     auto  now        = API_GetTime_us();
     int   delta_us   = now - m->phy_prev_time;
     float delta      = (float)(delta_us)*1e-6f; // 1us
-    m->phy_prev_time = now;
-
-    //! @todo Error detection using delta_us
-    // Compare delta_us with phy_speed_cache value ... if delta_us is much
-    // larger than phy_speed_cache, it means there have been an error.
+    m->phy_prev_time = now; 
 
     // Determine direction and amount of acceleration
     bool const bFwd         = m->pending_movement > 0;
