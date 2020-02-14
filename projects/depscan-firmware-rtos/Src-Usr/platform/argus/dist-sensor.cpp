@@ -262,9 +262,11 @@ static bool RefreshArgusSens()
     uassert( si.capturing_ == false );
     si.capturing_ = true;
 
-    // Allocate memory if not exists
-    if ( s.hnd_ == NULL )
-        s.hnd_ = Argus_CreateHandle();
+    // Always destroy handle on reinitializtion
+    if ( s.hnd_ )
+        Argus_DestroyHandle( s.hnd_ );
+
+    s.hnd_ = Argus_CreateHandle();
 
     auto res = Argus_Init( s.hnd_, S2PI_SLAVE_ARGUS );
     if ( res == STATUS_OK )
@@ -274,7 +276,7 @@ static bool RefreshArgusSens()
         // default calibrations
         argus_calibration_t calib;
         Argus_GetDefaultCalibration( &calib );
-        
+
         // Stores result to evaluate configuration result.
         res = Argus_SetCalibration( s.hnd_, &calib );
 

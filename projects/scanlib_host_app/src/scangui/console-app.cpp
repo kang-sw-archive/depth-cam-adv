@@ -18,9 +18,15 @@ void InitConsoleApp()
         for ( size_t i = 0; i < args.Width * args.Height; i++ )
         {
             printf(
-              "%20.17f\n", 
+              "%20.17f\n",
               args.CData()[i].Distance / double( Q9_22_ONE_INT ) );
         }
+    };
+    scan.OnPointRecv = []( const FPointData& data ) {
+        printf(
+          ":: RECV POINT DATA [ %08x ] :: %20.17f\n",
+          data.ID,
+          data.V.Distance / double( Q9_22_ONE_INT ) );
     };
 
     for ( ;; )

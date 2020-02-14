@@ -37,7 +37,8 @@ typedef struct
     bool bIsPaused;
 } FDeviceStat;
 
-enum ECaptureModeBit {
+enum ECaptureModeBit
+{
     ECMB_DISTANCE_AUTO = 1,
     ECMB_DISTANCE_FAR  = 2,
     ECMB_LOW_PRECISION = 4,
@@ -65,17 +66,16 @@ typedef struct
 
 typedef struct
 {
-    int16_t  X;  //!< Offset steps from initial point
-    int16_t  Y;  //!< Offset steps from initial point
-    FPxlData V;  //!< Actual distance value
-    uint16_t ID; //!< Point data ID ... 4 BYTE ALIGN
+    FPxlData V;     //!< Actual distance value
+    uint16_t pad__; //!< Padding for 4 byte align
+    uint32_t ID;    //!< Point data ID ... 4 BYTE ALIGN
 } FPointData;
 
 typedef struct
 {
     int16_t  X;
     int16_t  Y;
-    uint16_t ID;
+    uint32_t ID;
 } FPointReq;
 
 typedef struct
@@ -93,8 +93,11 @@ typedef FPointSetDesc FPointReqSetDesc;
 
 #ifdef __cplusplus
 namespace ECommand {
+enum ECommand : SCANNER_COMMAND_TYPE // REQ = HOST -> DEVICE, RSP = DEVICE ->
+                                     // HOST
+#else
+enum ECommand
 #endif
-enum ECommand // REQ = HOST -> DEVICE, RSP = DEVICE -> HOST
 {
     REQ_POINT_SET,
 

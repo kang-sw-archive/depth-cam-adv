@@ -1,6 +1,4 @@
 #pragma once
-#include "../common/scanner_protocol.h"
-#include "communication_handler.hpp"
 #include <atomic>
 #include <condition_variable>
 #include <functional>
@@ -8,11 +6,14 @@
 #include <memory>
 #include <optional>
 #include <vector>
+#include "../common/scanner_protocol.h"
+#include "communication_handler.hpp"
 
 /**
  * @brief Defines procedure parameters
  **/
-struct FCommunicationProcedureInitStruct {
+struct FCommunicationProcedureInitStruct
+{
     size_t TimeoutMs                 = 1000;       //!< Timeout in milliseconds. -1 to no timeout
     size_t ReceiveBufferSize         = 4096;       //!< Buffer size used internally.
     size_t ConnectionRetryCount      = (size_t)-1; //!< Number of retries.
@@ -21,7 +22,8 @@ struct FCommunicationProcedureInitStruct {
 
 //! Scanned image buffer descriptor.
 //! Read-only.
-struct FScanImageDesc {
+struct FScanImageDesc
+{
     int   Width       = {}; //!< Image width in pixels
     int   Height      = {}; //!< Image height in pixels
     float AspectRatio = {}; //!< Aspect ratio from angles
@@ -59,17 +61,19 @@ private:
 //! - Connection check via ping
 //! - Abstract buffer management
 //! @todo. Save configuration as file
-class FScannerProtocolHandler : public ICommunicationHandlerBase {
+class FScannerProtocolHandler : public ICommunicationHandlerBase
+{
 public:
     std::function<void( FScanImageDesc const& )> OnFinishScan;
     std::function<void( FScanImageDesc const& )> OnReceiveLine;
     std::function<void( const FDeviceStat& )>    OnReport;
     std::function<void( char const* )>           Logger;
+    std::function<void( FPointData const& )>     OnPointRecv;
     bool                                         bSuppressDeviceLog = false;
 
 public:
     using PortOpenFunctionType = std::function<std::unique_ptr<std::streambuf>( FScannerProtocolHandler& )>;
-    using super = ICommunicationHandlerBase;
+    using super                = ICommunicationHandlerBase;
 
 public:
     //! Prevents hiding base class constructor.
@@ -83,7 +87,8 @@ public:
     //! This function returns control right away.
     //! @param COM: COM port name.
     //! @param params: Required parameters to initiate procedure
-    enum ActivateResult {
+    enum ActivateResult
+    {
         ACTIVATE_OK              = 0,
         ACTIVATE_INVALID_COM     = -1,
         ACTIVATE_ALREADY_RUNNING = -2,
@@ -110,9 +115,11 @@ public:
     bool GetScanningImage( FScanImageDesc& out ) const noexcept;
 
     //! Required Capture parameters for function BeginCapture();
-    struct CaptureParam {
+    struct CaptureParam
+    {
         template <typename ty_>
-        struct Point {
+        struct Point
+        {
             Point( ty_ xx = ty_ {}, ty_ yy = ty_ {} )
                 : x( xx )
                 , y( yy )
@@ -194,7 +201,8 @@ private:
 
 private:
     template <typename arg_>
-    struct LockArg {
+    struct LockArg
+    {
         std::condition_variable cv;
         std::mutex              mtx;
         arg_                    arg;

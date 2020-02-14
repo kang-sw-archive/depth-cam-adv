@@ -40,6 +40,12 @@ capture_t& cc = gCapture;
 extern "C" void InitCapture()
 {
     //! @todo Export variables for monitoring from host
+#define EXPORT( NAME, VAR )                                                    \
+    API_ExportBin( upp::hash::fnv1a_32_const( NAME ), &VAR, sizeof( VAR ) )
+
+    EXPORT( "point-queue-max", cc.Point_NumMaxRequest );
+    EXPORT( "point-queue-cur", cc.Point_NumPendingRequest );
+#undef EXPORT
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -49,6 +55,8 @@ extern "C" void InitCapture()
 static void HandleConfig( int argc, char* argv[] );
 static void Task_Scan( void* nouse_ );
 static void Task_Point( void* nouse_ );
+static void Task_Enqeuue( int argc, char* argv[] );
+static void InitCaptureTask( void ( *cb )( void* ) );
 
 extern "C" bool AppHandler_CaptureCommand( int argc, char* argv[] )
 {
@@ -133,31 +141,19 @@ extern "C" bool AppHandler_CaptureCommand( int argc, char* argv[] )
 
     case SCASE( "scan-start" ):
     {
-        if ( cc.CaptureTask != NULL )
-        {
-            API_Msg( "error: capturing process is already in progress!\n" );
-            return true;
-        }
+        InitCaptureTask( Task_Scan );
+    }
+    break;
 
-        auto res = xTaskCreate(
-          Task_Scan,
-          "Scan",
-          CAPTURE_TASK_STACK_DEPTH,
-          NULL,
-          TaskPriorityNormal,
-          &cc.CaptureTask );
+    case SCASE( "point-start" ):
+    {
+        InitCaptureTask( Task_Point );
+    }
+    break;
 
-        cc.bPaused      = false;
-        cc.bPendingStop = false;
-
-        if ( res == pdFALSE || cc.CaptureTask == NULL )
-        {
-            API_Msg( "error: failed to initialize capturing process\n" );
-        }
-        else
-        {
-            API_Msg( "info: scanning process is initialized.\n" );
-        }
+    case SCASE( "point-queue" ):
+    {
+        Task_Enqeuue( argc - 1, argv + 1 );
     }
     break;
 
@@ -174,17 +170,32 @@ extern "C" bool AppHandler_CaptureCommand( int argc, char* argv[] )
     }
     break;
 
+    case SCASE( "pause" ):
+    {
+        if ( cc.CaptureTask == NULL )
+        {
+            API_Msg( "warning: process is already in idle state.\n" );
+            break;
+        }
+
+        API_Msgf(
+          "info: requesting %s ... \n", cc.bPaused ? "resume" : "pause" );
+        cc.bPaused = !cc.bPaused;
+    }
+
     case SCASE( "help" ):
     {
         API_Msg(
           " usage: capture <command> [args...] \n"
           " command list: \n"
           "   report              Update report\n"
-          "   scan-start          Request start scan, or pause, or resume.\n"
-          "   point-start         Request point mode to start. \n"
-          "   pause               Request pause current session \n"
-          "   stop                Request stop for any session\n"
-          "   motor-move [x [y]]  Request motor movement. Units are in step.\n"
+          "   scan-start          Request to start scan.\n"
+          "   point-start         Request to point mode to start. \n"
+          "   point-queue         Request to enqueue new point capture \n"
+          "   pause               Request to pause current session \n"
+          "   stop                Request to stop for any session\n"
+          "   motor-move [x [y]]  Request to motor movement. Units are in "
+          "step.\n"
           "   motor-reset         Reset motor's current position \n"
           "   config [args]       Configure arguments; more: try type "
           "\"capture config\"\n"
@@ -198,12 +209,6 @@ extern "C" bool AppHandler_CaptureCommand( int argc, char* argv[] )
     break;
     }
 
-    return true;
-}
-
-extern "C" bool AppHandler_CaptureBinary( char* data, size_t len )
-{
-    // Binary command handler
     return true;
 }
 
@@ -394,8 +399,37 @@ void HandleConfig( int argc, char* argv[] )
     }
 }
 
+void InitCaptureTask( void ( *cb )( void* ) )
+{
+    if ( cc.CaptureTask != NULL )
+    {
+        API_Msg( "error: capturing process is already in progress!\n" );
+        return;
+    }
+
+    auto res = xTaskCreate(
+      cb,
+      "Scan",
+      CAPTURE_TASK_STACK_DEPTH,
+      NULL,
+      TaskPriorityNormal,
+      &cc.CaptureTask );
+
+    cc.bPaused      = false;
+    cc.bPendingStop = false;
+
+    if ( res == pdFALSE || cc.CaptureTask == NULL )
+    {
+        API_Msg( "error: failed to initialize capturing process\n" );
+    }
+    else
+    {
+        API_Msg( "info: scanning process is initialized.\n" );
+    }
+}
+
 /////////////////////////////////////////////////////////////////////////////
-// Macros for internal usage
+// Helpers for internal usage
 static void wait_motor()
 {
     while ( Motor_Stat( gMotX ) != MOTOR_STATE_IDLE
@@ -403,6 +437,35 @@ static void wait_motor()
     {
         taskYIELD();
     }
+}
+
+static std::optional<FPxlData> TryMeasureDistance( int NumRetry )
+{
+    for ( status_t result;
+          ( result = DistSens_MeasureSync( ghDistSens, 5 ) ) < 0; )
+    {
+        if ( NumRetry-- == 0 )
+        {
+            API_Msg(
+              "error: all measurement retries exhausted. aborting... \n" );
+            return {};
+        }
+        API_Msgf(
+          "warning: measurement failed. Retry after 100ms ... retries left "
+          "%d\n",
+          NumRetry );
+        vTaskDelay( pdMS_TO_TICKS( 100 ) );
+        DistSens_Configure( ghDistSens, NULL );
+    }
+
+    FPxlData data;
+    bool     bMeasureRes;
+    bMeasureRes = DistSens_GetDistanceFxp( ghDistSens, &data.Distance )
+                  && DistSens_GetAmpFxp( ghDistSens, &data.AMP );
+
+    // In this statement, data acquisition must succeed.
+    uassert( bMeasureRes );
+    return data;
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -439,6 +502,17 @@ static void Task_Scan( void* nouse_ )
     Motor_MoveTo( gMotY, cc.Scan_CaptureOfst.y, NULL, NULL );
     wait_motor();
 
+    // Discard first few samples
+    API_Msg( "info: discarding first few samples ... \n" );
+    for ( size_t i = 0; i < CAPTURE_NUM_INITIAL_DISCARDS; i++ )
+    {
+        if ( !TryMeasureDistance( CAPTURE_NUM_MEASUREMENT_RETRY ) )
+        {
+            API_Msg( "error: sensor is in incorrect state. aborting ...\n" );
+            goto ABORT;
+        }
+    }
+
     for ( ; pos.y < resolution.y; )
     {
         // 0. Check for escape condition
@@ -446,44 +520,22 @@ static void Task_Scan( void* nouse_ )
         {
             break;
         }
-        while ( cc.bPaused )
+        if ( cc.bPaused )
         {
             vTaskDelay( pdMS_TO_TICKS( 10 ) );
+            continue;
         }
 
         // 1. Captures distance
-        int      result, retry = 5;
         FPxlData data;
-        while ( result = DistSens_MeasureSync( ghDistSens, 5 ), result < 0 )
+        if ( auto result = TryMeasureDistance( CAPTURE_NUM_MEASUREMENT_RETRY );
+             !result )
         {
-            if ( retry-- == 0 )
-            {
-                API_Msg(
-                  "error: all measurement retries exhausted. aborting... \n" );
-                goto SCAN_ABORT;
-            }
-            API_Msgf(
-              "warning: measurement failed. Retry after 100ms ... retries left "
-              "%d\n",
-              retry );
-            vTaskDelay( pdMS_TO_TICKS( 100 ) );
-            DistSens_Configure( ghDistSens, NULL );
+            goto ABORT;
         }
-
-        if ( result != DIST_SENS_OK )
+        else
         {
-            // API_Msgf(
-            //   "warning: measurement returned error code %d. Consider this
-            //   data " "is not general. \n", result );
-        }
-
-        // In this statement, data acquisition must succeed.
-        {
-            bool bMeasureRes;
-            bMeasureRes = DistSens_GetDistanceFxp( ghDistSens, &data.Distance )
-                          && DistSens_GetAmpFxp( ghDistSens, &data.AMP );
-
-            uassert( bMeasureRes );
+            data = *result;
         }
 
         // 2.a. Fill buffer
@@ -562,7 +614,7 @@ static void Task_Scan( void* nouse_ )
       "info: capture process done. elapsed: %d us\n",
       (int)( API_GetTime_us() - BeginTime ) );
 
-SCAN_ABORT:;
+ABORT:;
     // Go back to initial position
     Motor_MoveTo( gMotX, cc.Scan_CaptureOfst.x, NULL, NULL );
     Motor_MoveTo( gMotY, cc.Scan_CaptureOfst.y, NULL, NULL );
@@ -574,6 +626,134 @@ SCAN_ABORT:;
 
 /////////////////////////////////////////////////////////////////////////////
 // Point capture process
+enum : size_t
+{
+    POINT_TOTAL_BUF_SZ     = sizeof( Capture_Buffer ),
+    POINT_NUM_RDQUEUE_ELEM = POINT_TOTAL_BUF_SZ / sizeof( FPointReq ),
+};
+
+static class PointCaptureStat
+{
+    static constexpr size_t AddVal[] = { 1, 1 - POINT_NUM_RDQUEUE_ELEM };
+
+public:
+    void Push( FPointReq data )
+    {
+        Requests[Head] = data;
+        Head += AddVal[Head == POINT_NUM_RDQUEUE_ELEM - 1];
+        uassert( Head != Tail ); // ASSERTION FOR DATA OVERFLOW
+    }
+
+    std::optional<FPointReq> Pop( void )
+    {
+        if ( Head == Tail )
+            return {};
+
+        auto ret = Requests[Tail];
+        Tail += AddVal[Tail == POINT_NUM_RDQUEUE_ELEM - 1];
+        return ret;
+    }
+
+private:
+    using rd_queue_t     = std::array<FPointReq, POINT_NUM_RDQUEUE_ELEM>;
+    rd_queue_t& Requests = reinterpret_cast<rd_queue_t&>( Capture_Buffer );
+    size_t      Head, Tail;
+
+} sPointCaptureStat;
+
 void Task_Point( void* nouse_ )
 {
+    // Aliasing
+    auto& s = sPointCaptureStat;
+
+    for ( size_t i = 0; i < CAPTURE_NUM_INITIAL_DISCARDS; i++ )
+    {
+        if ( !TryMeasureDistance( CAPTURE_NUM_MEASUREMENT_RETRY ) )
+        {
+            API_Msg( "error: sensor is in incorrect state. aborting ...\n" );
+            goto ABORT;
+        }
+    }
+
+    for ( ;; )
+    { // One loop per one request.
+        // Check for escape condition
+        if ( cc.bPendingStop )
+        {
+            break;
+        }
+        if ( cc.bPaused )
+        {
+            vTaskDelay( pdMS_TO_TICKS( 10 ) );
+            continue;
+        }
+
+        // If there's any point in queue, go and capture.
+        auto rq = s.Pop();
+
+        if ( !rq )
+        {
+            taskYIELD();
+            continue;
+        }
+
+        // Relocate motor firstly.
+        Motor_MoveTo( gMotX, rq->X, NULL, NULL );
+        Motor_MoveTo( gMotY, rq->Y, NULL, NULL );
+        wait_motor();
+
+        // Then start capturing
+        auto meas = TryMeasureDistance( CAPTURE_NUM_MEASUREMENT_RETRY );
+        if ( !meas )
+        {
+            API_Msg( "error: failed to trigger measurement. aborting...\n" );
+            break;
+        }
+
+        FPointData data;
+        data.ID = rq->ID;
+        data.V  = *meas;
+
+        auto Command = ECommand::RSP_POINT;
+
+        void const*  TrData[] = { &Command, &data };
+        size_t const TrSize[] = { sizeof Command, sizeof data };
+        API_SendHostBinaries( TrData, TrSize, 2 );
+    }
+
+ABORT:;
+    API_Msg( "info: shutting down the capturing progress ... \n" );
+    cc.CaptureTask = NULL;
+    vTaskDelete( nullptr );
+}
+
+void Task_Enqeuue( int argc, char* argv[] )
+{
+    if ( argc != 3 )
+    {
+        API_Msg(
+          "error: invalid number of arguments\n"
+          "   usage: capture point <id:int> <xstep:int> <ystep:int>\n" );
+        return;
+    }
+
+    int args[3];
+
+    // Parse commands
+    for ( size_t i = 0; i < 3; i++ )
+    {
+        char* validation;
+        args[i]                     = strtol( argv[i], &validation, 10 );
+        bool const bIsNumericString = argv[i] != validation;
+
+        if ( bIsNumericString == false )
+        {
+            API_Msgf(
+              "error: invalid non-numeric argument %s ... \n", argv[i] );
+            return;
+        }
+    }
+
+    FPointReq req { .X = args[1], .Y = args[2], .ID = args[0] };
+    sPointCaptureStat.Push( req );
 }

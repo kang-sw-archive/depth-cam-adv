@@ -10,12 +10,14 @@
 
 #define USB_READ_BUF_SIZE 1024
 // #define USB_WRITE_BUF_SIZE         1024
-#define HOST_TRANSFER_BUFFER_SIZE  0x800
-#define NUM_MAX_HWTIMER_NODE       20
-#define NUM_TIMER_TASK_STACK_WORDS 768
-#define NUM_MAX_EXPORT_BINARY      40
-#define CAPTURER_BUFFER_SIZE       2048
-#define CAPTURE_TASK_STACK_DEPTH   256
+#define HOST_TRANSFER_BUFFER_SIZE     0x800
+#define NUM_MAX_HWTIMER_NODE          20
+#define NUM_TIMER_TASK_STACK_WORDS    768
+#define NUM_MAX_EXPORT_BINARY         40
+#define CAPTURER_BUFFER_SIZE          2048
+#define CAPTURE_TASK_STACK_DEPTH      512
+#define CAPTURE_NUM_MEASUREMENT_RETRY 5
+#define CAPTURE_NUM_INITIAL_DISCARDS  4
 
 enum TaskPriority
 {
@@ -71,7 +73,7 @@ enum TaskPriority
     TaskPriorityRealtime7    = 48 + 7, ///< Priority: realtime + 7
     TaskPriorityISR          = 56,     ///< Reserved for ISR deferred thread.
     TaskPriorityError = -1, ///< System cannot determine priority or illegal
-                          ///< priority.
+                            ///< priority.
     TaskPriorityReserved = 0x7FFFFFFF ///< Prevents enum down-size compiler
 };
 
