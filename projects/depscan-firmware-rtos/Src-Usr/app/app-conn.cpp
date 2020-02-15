@@ -32,7 +32,6 @@ static int stringToTokens( char* str, char* argv[], size_t argv_len );
 static char         s_hostTrBuf[HOST_TRANSFER_BUFFER_SIZE];
 static size_t       s_hostTrBufHead = 0;
 static volatile int s_writingTask   = 0;
-static void         apndToHostBuf( void const* d, size_t len );
 static void         flushTransmitData();
 TaskHandle_t        s_hTask;
 
@@ -46,43 +45,63 @@ static bool readHostConn( void* dst, size_t len );
 // Primary Procedure
 extern "C" _Noreturn void AppProc_HostIO( void* nouse_ )
 {
-    packetinfo_t packet;
-    s_hTask = xTaskGetCurrentTaskHandle();
+    static char buf[HOST_RECEIVE_BUFFER_SIZE];
+    char*       head = buf;
 
     for ( ;; )
     {
-        // Check if read data has valid protocol.
-        if ( readHostConn( &packet, PACKET_SIZE ) == false )
+        // Read data byte by byte
+        if ( readHostConn( head, 1 ) == false )
             continue;
 
-        // Check packet validity
-        // If any data was delivered in bad condition, it'll consume all pending
-        // bytes.
-        if ( PACKET_IS_PACKET( packet ) == false )
-            continue;
+        char ch = *head++;
 
-        // Should be aware of maximum stack depth!
-        // Packet size must be less than 2kByte at once
-        // Allocate packet receive memory using VLA
-        auto len = PACKET_LENGTH( packet );
-        char buf[len + 1];
-        if ( readHostConn( buf, len ) == false )
+        // Handle string command
+        if ( ch == '\n' || ch == '\r' )
+        {
+            size_t len = head - buf - 1;
+            head[-1]   = '\0';
+            head       = buf;
+            if ( len )
+            {
+                stringCmdHandler( buf, len );
+            }
             continue;
-
-        // Call command procedure
-        ( PACKET_IS_STR( packet ) ? stringCmdHandler
-                                  : binaryCmdHandler )( buf, len );
+        }
     }
 }
 
 /////////////////////////////////////////////////////////////////////////////
 // Global function defs
 extern "C" {
+static void OpenChar()
+{
+    s_hostTrBuf[s_hostTrBufHead++] = PACKET_BIN_OPEN_CHAR;
+}
+
+static void CloseChar()
+{
+    s_hostTrBuf[s_hostTrBufHead++] = PACKET_BIN_CLOSE_CHAR;
+}
+
+static void AppendBinaryRaw( void const* data, size_t len )
+{
+    portENTER_CRITICAL();
+    auto at = s_hostTrBuf + s_hostTrBufHead;
+    s_hostTrBufHead += len * 2;
+    uassert( s_hostTrBufHead < sizeof( s_hostTrBuf ) );
+    auto wbyte = upp::binutil::btoa( at, len * 2, data, len );
+    uassert( wbyte == len );
+    portEXIT_CRITICAL();
+}
+
 void API_SendHostBinary( void const* data, size_t len )
 {
-    packetinfo_t packet = PACKET_MAKE( false, len );
-    apndToHostBuf( &packet, sizeof packet );
-    apndToHostBuf( data, len );
+    portENTER_CRITICAL();
+    OpenChar();
+    AppendBinaryRaw( data, len );
+    CloseChar();
+    portEXIT_CRITICAL();
 }
 
 void API_SendHostBinaries(
@@ -90,28 +109,21 @@ void API_SendHostBinaries(
   size_t const      len[],
   size_t            cnt )
 {
-    size_t sum = 0;
+    PACKET_SIZE_TYPE sum = 0;
     for ( size_t i = 0; i < cnt; i++ )
         sum += len[i];
 
     portENTER_CRITICAL();
-    packetinfo_t p = PACKET_MAKE( 0, sum );
-    API_SendHostRaw( &p, sizeof( p ) );
+    OpenChar();
     for ( size_t i = 0; i < cnt; i++ )
-        API_SendHostRaw( data[i], len[i] );
+        AppendBinaryRaw( data[i], len[i] );
+    CloseChar();
     portEXIT_CRITICAL();
 }
 
 void API_SendHostString( void const* data, size_t len )
 {
-    packetinfo_t packet = PACKET_MAKE( true, len );
-    apndToHostBuf( &packet, sizeof packet );
-    apndToHostBuf( data, len );
-}
-
-void API_SendHostRaw( void const* data, size_t len )
-{
-    apndToHostBuf( data, len );
+    API_SendHostRaw( data, len );
 }
 
 static struct export_data
@@ -205,10 +217,12 @@ extern "C" void API_Putf( char const* fmt, ... )
 
 void API_Msgf( char const* fmt, ... )
 {
-    API_Msg( "" );
     va_list vp;
     va_start( vp, fmt );
+    taskENTER_CRITICAL();
+    API_Msg( "" );
     vprint__( fmt, vp );
+    taskEXIT_CRITICAL();
     va_end( vp );
 }
 
@@ -221,8 +235,10 @@ extern "C" int API_Msg( char const* txt )
       "[%6u.%06u] ",
       ( uint32_t )( t / 1000000u ),
       ( uint32_t )( t % 1000000u ) );
+    taskENTER_CRITICAL();
     API_SendHostString( buf, sizeof( buf ) );
     API_SendHostString( txt, strlen( txt ) + 1 );
+    taskEXIT_CRITICAL();
     return 0;
 }
 
@@ -382,17 +398,14 @@ int stringToTokens( char* str, char* argv[], size_t argv_len )
     return num_token;
 }
 
-void apndToHostBuf( void const* d, size_t len )
+void API_SendHostRaw( void const* d, size_t len )
 {
-    if ( s_hostTrBufHead + len >= sizeof( s_hostTrBuf ) )
-    {
-        return;
-    }
+    uassert( s_hostTrBufHead + len < sizeof( s_hostTrBuf ) );
 
-    ++s_writingTask;
+    taskENTER_CRITICAL();
     s_hostTrBufHead += len;
     memcpy( s_hostTrBuf + s_hostTrBufHead - len, d, len );
-    --s_writingTask;
+    taskEXIT_CRITICAL();
 }
 
 static void vprint__( char const* fmt, va_list vp )
@@ -401,17 +414,13 @@ static void vprint__( char const* fmt, va_list vp )
     va_copy( vp2, vp );
     size_t allocsz = vsnprintf( NULL, 0, fmt, vp ) + 1;
 
-    if ( s_hostTrBufHead + allocsz + PACKET_SIZE > sizeof( s_hostTrBuf ) )
-        return;
+    uassert( s_hostTrBufHead + allocsz < sizeof( s_hostTrBuf ) );
 
-    packetinfo_t info = PACKET_MAKE( true, allocsz );
-    API_SendHostRaw( &info, sizeof( info ) );
-
-    ++s_writingTask;
+    taskENTER_CRITICAL();
     char* buf = s_hostTrBuf + s_hostTrBufHead;
     s_hostTrBufHead += allocsz;
     vsprintf( buf, fmt, vp2 );
-    --s_writingTask;
+    taskEXIT_CRITICAL();
     va_end( vp2 );
 }
 
@@ -419,10 +428,6 @@ void flushTransmitData()
 {
     if ( s_hostTrBufHead == 0 )
         return;
-
-    // Wait for all async write process done
-    while ( s_writingTask > 0 )
-        taskYIELD();
 
     taskENTER_CRITICAL();
     td_write( gHostConnection, s_hostTrBuf, s_hostTrBufHead );

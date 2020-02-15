@@ -1,27 +1,31 @@
 /*! \brief Parses protocol
     \file event_handler.hpp
-	\author Seungwoo Kang (ki6080@gmail.com)
-	\version 0.1
-	\date
-	
-	\copyright Copyright (c) 2019. Seungwoo Kang. All rights reserved.
-	\details */
+    \author Seungwoo Kang (ki6080@gmail.com)
+    \version 0.1
+    \date
+
+    \copyright Copyright (c) 2019. Seungwoo Kang. All rights reserved.
+    \details */
 #pragma once
-#include "../common/protocol.h"
 #include <chrono>
 #include <iostream>
 #include <memory>
 #include <mutex>
+#include "../common/protocol.h"
 
 /*! \brief          Handles protocol */
-class ICommunicationHandlerBase {
+class ICommunicationHandlerBase
+{
 public:
     //! Initialize stream with given stream buffer.
-    void InitializeStream( std::unique_ptr<std::streambuf> strm, size_t RecvBuffSize );
+    void InitializeStream(
+      std::unique_ptr<std::streambuf> strm,
+      size_t                          RecvBuffSize );
 
     //! Process single packet.
     //! @returns false if timeout occurred or disconnected.
-    enum EPacketProcessResult {
+    enum EPacketProcessResult
+    {
         PACKET_OK                   = 0,
         PACKET_ERROR_DISCONNECTED   = -1,
         PACKET_ERROR_TIMEOUT        = -2,
@@ -50,14 +54,23 @@ protected:
     //! \return     True if correctly handled. false to abort procedure. */
     virtual bool InvalidHeaderException( packetinfo_t const* packet )
     {
-        printf( "Invalid header received. \n"
-                "HEX: 0x%08x\n"
-                "DEC: 0x%u\n"
-                "IS_PACKET? %s || LENGTH %d || IS BIN? %s\n",
-                *packet, *packet,
-                PACKET_IS_PACKET( *packet ) ? "yes" : "no",
-                PACKET_LENGTH( *packet ),
-                PACKET_IS_STR( *packet ) ? "no" : "yes" );
+        if ( packet )
+        {
+            printf(
+              "Invalid header received. \n"
+              "HEX: 0x%08x\n"
+              "DEC: 0x%u\n"
+              "IS_PACKET? %s || LENGTH %d || IS BIN? %s\n",
+              *packet,
+              *packet,
+              PACKET_IS_PACKET( *packet ) ? "yes" : "no",
+              PACKET_LENGTH( *packet ),
+              PACKET_IS_STR( *packet ) ? "no" : "yes" );
+        }
+        else
+        {
+            printf( "error ... \n" );
+        }
         return false;
     };
 
@@ -68,4 +81,5 @@ private:
     std::unique_ptr<char[]>         m_buff;
     std::unique_ptr<std::streambuf> m_strmbuf;
     std::mutex                      m_shutdown_lock;
+    size_t                          m_buffSize;
 };

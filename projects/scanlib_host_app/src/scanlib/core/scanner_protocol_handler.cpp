@@ -21,7 +21,12 @@ tptr_*& ptr_cast( sptr_& src )
     return reinterpret_cast<tptr_*&>( src );
 }
 
-static void StoreLineData( vector<FPxlData>& arr, int xl, int yl, FLineDesc const& desc, FPxlData const* data );
+static void StoreLineData(
+  vector<FPxlData>& arr,
+  int               xl,
+  int               yl,
+  FLineDesc const&  desc,
+  FPxlData const*   data );
 static void GetImageInfo( FScanImageDesc* out, FDeviceStat const& stat );
 
 FScannerProtocolHandler::~FScannerProtocolHandler()
@@ -29,8 +34,10 @@ FScannerProtocolHandler::~FScannerProtocolHandler()
     Shutdown();
 }
 
-FScannerProtocolHandler::ActivateResult
-FScannerProtocolHandler::Activate( PortOpenFunctionType ComOpener, FCommunicationProcedureInitStruct const& params, bool bAsync ) noexcept
+FScannerProtocolHandler::ActivateResult FScannerProtocolHandler::Activate(
+  PortOpenFunctionType                     ComOpener,
+  FCommunicationProcedureInitStruct const& params,
+  bool                                     bAsync ) noexcept
 {
     if ( IsActive() )
         return ACTIVATE_ALREADY_RUNNING;
@@ -39,12 +46,22 @@ FScannerProtocolHandler::Activate( PortOpenFunctionType ComOpener, FCommunicatio
     bShutdown = false;
 
     // Create new thread to run procedure
-    mBackgroundProcess = async( launch::async, &FScannerProtocolHandler::procedureThread, this, move( ComOpener ), params );
+    mBackgroundProcess = async(
+      launch::async,
+      &FScannerProtocolHandler::procedureThread,
+      this,
+      move( ComOpener ),
+      params );
 
     // Wait until connection done.
-    print( "Requesting Activation. Is Active? %d, Is Connected? %d ... \n", IsActive(), IsConnected() );
-    bool const bShouldWaitOpenningResult = bAsync == false && params.ConnectionRetryCount != -1;
-    while ( IsActive() && ( bShouldWaitOpenningResult && IsConnected() == false ) )
+    print(
+      "Requesting Activation. Is Active? %d, Is Connected? %d ... \n",
+      IsActive(),
+      IsConnected() );
+    bool const bShouldWaitOpenningResult
+      = bAsync == false && params.ConnectionRetryCount != -1;
+    while ( IsActive()
+            && ( bShouldWaitOpenningResult && IsConnected() == false ) )
         this_thread::sleep_for( 1ms );
 
     // If procedure stopped the execution, it means all retries to open COM port
@@ -56,7 +73,10 @@ FScannerProtocolHandler::Activate( PortOpenFunctionType ComOpener, FCommunicatio
     if ( bShouldWaitOpenningResult )
         requestReport( true, 500 );
 
-    print( "Activation finished. Is Active? %d, Is Connected? %d ... \n", IsActive(), IsConnected() );
+    print(
+      "Activation finished. Is Active? %d, Is Connected? %d ... \n",
+      IsActive(),
+      IsConnected() );
     assert( !bShouldWaitOpenningResult || IsConnected() );
     return ACTIVATE_OK;
 }
@@ -78,7 +98,9 @@ void FScannerProtocolHandler::Shutdown() noexcept
     mBackgroundProcess.wait();
 }
 
-void FScannerProtocolHandler::procedureThread( PortOpenFunctionType ComOpener, FCommunicationProcedureInitStruct params ) noexcept
+void FScannerProtocolHandler::procedureThread(
+  PortOpenFunctionType              ComOpener,
+  FCommunicationProcedureInitStruct params ) noexcept
 {
     auto const ActualTimeout = params.TimeoutMs / 2;
 
@@ -94,7 +116,8 @@ void FScannerProtocolHandler::procedureThread( PortOpenFunctionType ComOpener, F
             if ( ptr == nullptr )
             {
                 print( "Connection failed. Retrying ... %lu\n", Retry );
-                this_thread::sleep_for( chrono::milliseconds( params.ConnectionRetryIntervalMs ) );
+                this_thread::sleep_for(
+                  chrono::milliseconds( params.ConnectionRetryIntervalMs ) );
                 continue;
             }
 
@@ -103,8 +126,6 @@ void FScannerProtocolHandler::procedureThread( PortOpenFunctionType ComOpener, F
             print( "Connection successful\n" );
             bIsConnected = true;
             mPrevCaptureParam.reset();
-            SendString( "capture report" );
-            SendString( "capture stop" );
             break;
         }
 
@@ -135,7 +156,8 @@ void FScannerProtocolHandler::procedureThread( PortOpenFunctionType ComOpener, F
                 continue;
             }
             default:
-                break;
+                print( "error: Unhandled data corruption! \n" );
+                continue;
             }
             break;
         }
@@ -153,12 +175,15 @@ static inline bool cmpflt( float a, float b, float tolerance = 1e-7f )
     return abs( a - b ) < tolerance;
 }
 
-void FScannerProtocolHandler::configureCapture( CaptureParam const& arg, bool const bForce )
+void FScannerProtocolHandler::configureCapture(
+  CaptureParam const& arg,
+  bool const          bForce )
 {
     print( "Configuring capture ... Forced: %d\n", bForce );
     //! Compares with previous value, then apply only dirty ones
-    auto        Stat          = mStat.load();
-    bool const  bForceApply   = bForce || mPrevCaptureParam.has_value() == false || Stat.bIsSensorInitialized == false;
+    auto       Stat        = mStat.load();
+    bool const bForceApply = bForce || mPrevCaptureParam.has_value() == false
+                             || Stat.bIsSensorInitialized == false;
     bool        bShouldReinit = bForceApply;
     float const StepX         = Stat.DegreePerStepX;
     float const StepY         = Stat.DegreePerStepY;
@@ -177,12 +202,15 @@ void FScannerProtocolHandler::configureCapture( CaptureParam const& arg, bool co
 
     if ( arg.bPrescisionMode )
     {
-        sprintf( buf, "capture config precision %d", arg.bPrescisionMode.value() );
+        sprintf(
+          buf, "capture config precision %d", arg.bPrescisionMode.value() );
         SendString( buf );
     }
 
     // Set frame time
-    if ( auto PrevCaptureDelay = mPrevCaptureParam.has_value() ? mPrevCaptureParam->CaptureDelayUs : -1;
+    if ( auto PrevCaptureDelay = mPrevCaptureParam.has_value()
+                                   ? mPrevCaptureParam->CaptureDelayUs
+                                   : -1;
          arg.CaptureDelayUs > 0 && arg.CaptureDelayUs != PrevCaptureDelay )
     {
         sprintf( buf, "capture config delay %d", arg.CaptureDelayUs );
@@ -193,18 +221,22 @@ void FScannerProtocolHandler::configureCapture( CaptureParam const& arg, bool co
     // -> Get Angle per pixel = AngleFOV / Resolution
     // -> Get steps per pixel = AnglesPerPixel / AnglesPerStep
     // -> Use image size itself.
-    auto CalcDeviceDimension = []( int Resolution, float FOV, float AnglePerStep ) -> auto
+    auto CalcDeviceDimension =
+      []( int Resolution, float FOV, float AnglePerStep ) -> auto
     {
-        float AngPerPxl     = FOV / Resolution;
-        int   StepPerPxl    = max( 1, static_cast<int>( AngPerPxl / AnglePerStep + 0.5f ) ); // Rounds
+        float AngPerPxl  = FOV / Resolution;
+        int   StepPerPxl = max(
+          1, static_cast<int>( AngPerPxl / AnglePerStep + 0.5f ) ); // Rounds
         float AnglePerPxl   = AnglePerStep * StepPerPxl;
         int   NewResolution = max( 1, static_cast<int>( FOV / AnglePerPxl ) );
 
         return make_pair( NewResolution, StepPerPxl );
     };
 
-#define has_or( a, b, opt ) \
-    ( ( a ).opt.has_value() ? ( a ).opt : ( b ).has_value() ? ( b )->opt : decltype( ( a ).opt ) {} )
+#define has_or( a, b, opt )                                                    \
+    ( ( a ).opt.has_value()                                                    \
+        ? ( a ).opt                                                            \
+        : ( b ).has_value() ? ( b )->opt : decltype( ( a ).opt ) {} )
 
     // Fill with current value when there's any unspecified options.
     auto Angle = has_or( arg, mPrevCaptureParam, DesiredAngle );
@@ -225,7 +257,8 @@ void FScannerProtocolHandler::configureCapture( CaptureParam const& arg, bool co
             ResolutionY      = res;
             SPPY             = spxl;
         }
-        sprintf( buf, "capture config resolution %d %d", ResolutionX, ResolutionY );
+        sprintf(
+          buf, "capture config resolution %d %d", ResolutionX, ResolutionY );
         SendString( buf );
         sprintf( buf, "capture config step-per-pixel %d %d", SPPX, SPPY );
         SendString( buf );
@@ -257,7 +290,8 @@ bool FScannerProtocolHandler::IsConnected() const noexcept
 
 bool FScannerProtocolHandler::IsActive() const noexcept
 {
-    return mBackgroundProcess.valid() && mBackgroundProcess.wait_for( 0ms ) != future_status::ready;
+    return mBackgroundProcess.valid()
+           && mBackgroundProcess.wait_for( 0ms ) != future_status::ready;
 }
 
 FDeviceStat FScannerProtocolHandler::GetDeviceStatus() const noexcept
@@ -265,7 +299,8 @@ FDeviceStat FScannerProtocolHandler::GetDeviceStatus() const noexcept
     return mStat.load();
 }
 
-bool FScannerProtocolHandler::GetCompleteImage( FScanImageDesc& out ) const noexcept
+bool FScannerProtocolHandler::GetCompleteImage(
+  FScanImageDesc& out ) const noexcept
 {
     if ( mCompleteImage.empty() )
         return false;
@@ -276,7 +311,8 @@ bool FScannerProtocolHandler::GetCompleteImage( FScanImageDesc& out ) const noex
     return true;
 }
 
-bool FScannerProtocolHandler::GetScanningImage( FScanImageDesc& out ) const noexcept
+bool FScannerProtocolHandler::GetScanningImage(
+  FScanImageDesc& out ) const noexcept
 {
     if ( mImage.empty() )
         return false;
@@ -291,10 +327,13 @@ static void GetImageInfo( FScanImageDesc* out, FDeviceStat const& stat )
 {
     out->Width       = stat.SizeX;
     out->Height      = stat.SizeY;
-    out->AspectRatio = (double)( stat.SizeX * stat.StepPerPxlX ) / ( stat.SizeY * stat.StepPerPxlY );
+    out->AspectRatio = (double)( stat.SizeX * stat.StepPerPxlX )
+                       / ( stat.SizeY * stat.StepPerPxlY );
 }
 
-bool FScannerProtocolHandler::BeginCapture( CaptureParam const* params, size_t TimeoutMs )
+bool FScannerProtocolHandler::BeginCapture(
+  CaptureParam const* params,
+  size_t              TimeoutMs )
 {
     // To check whether device is running ...
     if ( IsDeviceRunning() )
@@ -329,7 +368,10 @@ bool FScannerProtocolHandler::requestReport( bool bSync, size_t TimeoutMs )
     if ( bSync )
     {
         unique_lock<mutex> lck( mReportWait.mtx, try_to_lock );
-        return mReportWait.cv.wait_for( lck, chrono::milliseconds { TimeoutMs }, [this]() { return mReportWait.arg.load(); } );
+        return mReportWait.cv.wait_for(
+          lck, chrono::milliseconds { TimeoutMs }, [this]() {
+              return mReportWait.arg.load();
+          } );
     }
 
     return true;
@@ -375,7 +417,12 @@ void FScannerProtocolHandler::OnBinaryData( char const* data, size_t len )
             break;
         auto desc  = *ptr_cast<const FLineDesc>( p )++;
         mStatCache = mStat.load();
-        StoreLineData( mImage, mStatCache.SizeX, mStatCache.SizeY, desc, reinterpret_cast<FPxlData const*>( p ) );
+        StoreLineData(
+          mImage,
+          mStatCache.SizeX,
+          mStatCache.SizeY,
+          desc,
+          reinterpret_cast<FPxlData const*>( p ) );
         if ( OnReceiveLine )
         {
             FScanImageDesc desc;
@@ -413,7 +460,9 @@ void FScannerProtocolHandler::OnBinaryData( char const* data, size_t len )
     }
 }
 
-void FScannerProtocolHandler::RequestMotorMovement( int xstep, int ystep ) noexcept
+void FScannerProtocolHandler::RequestMotorMovement(
+  int xstep,
+  int ystep ) noexcept
 {
     char buf[256];
 
@@ -466,7 +515,12 @@ void FScannerProtocolHandler::print( char const* fmt, ... ) const noexcept
     va_end( v );
 }
 
-void StoreLineData( vector<FPxlData>& arr, int const xl, int const yl, FLineDesc const& desc, FPxlData const* data )
+void StoreLineData(
+  vector<FPxlData>& arr,
+  int const         xl,
+  int const         yl,
+  FLineDesc const&  desc,
+  FPxlData const*   data )
 {
     int const x = desc.OfstX;
     int const y = desc.LineIdx;
@@ -501,7 +555,11 @@ FScanImageDesc FScanImageDesc::Clone() const noexcept
     return ret;
 }
 
-FScanImageDesc::FScanImageDesc( size_t w, size_t h, float aspect, FPxlData* RawPtr ) noexcept
+FScanImageDesc::FScanImageDesc(
+  size_t    w,
+  size_t    h,
+  float     aspect,
+  FPxlData* RawPtr ) noexcept
     : Width( w )
     , Height( h )
     , mData( RawPtr )

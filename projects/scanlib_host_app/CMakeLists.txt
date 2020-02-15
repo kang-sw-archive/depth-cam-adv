@@ -18,6 +18,7 @@ if (WIN32)
 	file(GLOB_RECURSE PLATFORM 
 		"${SCANLIB_ARCH_DIR}/win32/*.cpp" 
 		"${SCANLIB_ARCH_DIR}/win32/*.c")
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /Zc:__cplusplus")
 elseif(UNIX)
 	file(GLOB_RECURSE PLATFORM 
 		"${SCANLIB_ARCH_DIR}/linux/*.cpp" 

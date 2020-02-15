@@ -1,5 +1,7 @@
 #include "communication_handler.hpp"
 #include <assert.h>
+#include <memory>
+#include <scanlib/common/utility.hxx>
 
 using namespace std;
 using namespace std::chrono;
@@ -9,10 +11,20 @@ bool ICommunicationHandlerBase::SendBinary( char const* bin, size_t len )
     if ( m_os == nullptr )
         return false;
 
+    throw bad_exception();
+
     lock_guard<mutex> lck( m_oslck );
-    packetinfo_t      header = PACKET_MAKE( false, len );
-    m_os->write( (char*)&header, sizeof( packetinfo_t ) );
-    m_os->write( bin, len );
+    m_os->put( PACKET_BIN_OPEN_CHAR );
+    m_os->write( (char const*)&PACKET_BINARY_ID, sizeof( PACKET_BINARY_ID ) );
+
+    char             size[4];
+    PACKET_SIZE_TYPE slen = len;
+    upp::binutil::btoa( size, sizeof( size ), &slen, sizeof( slen ) );
+    m_os->write( size, sizeof size );
+
+    auto write = make_unique<char[]>( len * 2 );
+    upp::binutil::btoa( write.get(), len * 2, bin, len );
+    m_os->write( write.get(), len * 2 );
     m_os->flush();
 
     return true;
@@ -24,10 +36,8 @@ bool ICommunicationHandlerBase::SendString( char const* str )
         return false;
 
     lock_guard<mutex> lck( m_oslck );
-    auto              len    = strlen( str ) + 1;
-    packetinfo_t      header = PACKET_MAKE( true, len );
-    m_os->write( (char*)&header, sizeof( packetinfo_t ) );
-    m_os->write( str, len );
+    m_os->write( str, strlen( str ) );
+    m_os->put( '\n' );
     m_os->flush();
 
     return true;
@@ -37,7 +47,7 @@ void ICommunicationHandlerBase::ClearConnection() noexcept
 {
     lock_guard lck { m_shutdown_lock };
     m_strmbuf = nullptr;
-    m_os = nullptr;
+    m_os      = nullptr;
 }
 
 void ICommunicationHandlerBase::OnBinaryData( char const* data, size_t len )
@@ -45,70 +55,100 @@ void ICommunicationHandlerBase::OnBinaryData( char const* data, size_t len )
     printf( "Received %zu bytes of data. \n", len );
 }
 
-ICommunicationHandlerBase::EPacketProcessResult ICommunicationHandlerBase::ProcessSinglePacket( size_t TimeoutMs )
+ICommunicationHandlerBase::EPacketProcessResult
+ICommunicationHandlerBase::ProcessSinglePacket( size_t TimeoutMs )
 {
-    lock_guard   lck { m_shutdown_lock };
-    auto         WaitBeginTime = chrono::system_clock::now();
-    milliseconds WaitDuration  = {};
-    auto const   buff          = m_buff.get();
-    auto const   strm          = m_strmbuf.get();
-    size_t       rd            = 0;
-    auto const   timeout       = milliseconds( TimeoutMs );
+    lock_guard lck { m_shutdown_lock };
+    using chrono::system_clock;
+    auto       WaitBeginTime = chrono::system_clock::now();
+    auto const buf           = m_buff.get();
+    auto const strm          = m_strmbuf.get();
+    size_t     rd            = 0;
+    auto const timeout       = milliseconds( TimeoutMs );
 
-    if ( !( buff && strm ) )
+    if ( !( buf && strm ) )
         return EPacketProcessResult::PACKET_ERROR_DISCONNECTED;
 
-    // Read header.
-    while ( ( rd += strm->sgetn( buff, sizeof( packetinfo_t ) - rd ) ) < sizeof( packetinfo_t ) ) {
-        WaitDuration = duration_cast<milliseconds>( system_clock::now() - WaitBeginTime );
-        if ( WaitDuration > timeout )
-            return EPacketProcessResult::PACKET_ERROR_TIMEOUT;
-        continue;
-    }
+    char*       head = buf;
+    char const* end  = buf + m_buffSize;
 
-    // Parse header
-    auto info = *(packetinfo_t const*)( buff );
+    auto const WaitDuration = [&WaitBeginTime]() {
+        return duration_cast<milliseconds>(
+                 system_clock::now() - WaitBeginTime )
+          .count();
+    };
 
-    // Verify header
-    if ( PACKET_IS_PACKET( info ) == false && InvalidHeaderException( &info ) == false ) {
-        return EPacketProcessResult::PACKET_ERROR_INVALID_HEADER;
-    }
-
-    // Receive data
+    for ( ;; )
     {
-        char*  head = buff;
-        size_t len  = PACKET_LENGTH( info );
-        while ( len ) {
-            size_t readcnt = strm->sgetn( head, len );
-
-            if ( readcnt ) // Reset wait begin time when any data is read.
-                WaitBeginTime = system_clock::now();
-            WaitDuration = duration_cast<milliseconds>( system_clock::now() - WaitBeginTime );
-            if ( WaitDuration > timeout )
+        if ( strm->sgetn( head, 1 ) == 0 )
+        {
+            if ( WaitDuration() > TimeoutMs )
+            {
+                // On timeout, flush current string
+                if ( buf != head )
+                {
+                    *head = 0;
+                    OnString( buf );
+                }
                 return EPacketProcessResult::PACKET_ERROR_TIMEOUT;
-
-            head += readcnt;
-            len -= readcnt;
+            }
+            continue;
         }
 
-        // Handle received data.
-        if ( PACKET_IS_STR( info ) ) {
-            // Append null character to prevent exception.
-            *head = '\0';
-            OnString( buff );
+        WaitBeginTime = system_clock::now();
+        char ch       = *head++;
+
+        if ( ch == '\0' || ch == '\n' || head == end )
+        {
+            *head = 0;
+            OnString( buf );
+            head = buf;
+            continue;
         }
-        else {
-            OnBinaryData( buff, PACKET_LENGTH( info ) );
+
+        // When binary data incoming...
+        if ( ch == PACKET_BIN_OPEN_CHAR )
+        {
+            head = buf;
+
+            for ( std::streamsize result;
+                  ( result = strm->sgetn( head, 1 ),
+                    *head != PACKET_BIN_CLOSE_CHAR );
+                  ++head )
+            {
+                if ( result )
+                {
+                    WaitBeginTime = system_clock::now();
+                    continue;
+                }
+
+                if ( WaitDuration() > TimeoutMs )
+                {
+                    return EPacketProcessResult::PACKET_ERROR_TIMEOUT;
+                }
+            }
+
+            auto Length = ( head - buf ) / 2;
+            if ( !upp::binutil::atob( buf, buf, Length ) )
+            {
+                return PACKET_ERROR_INVALID_HEADER;
+            }
+
+            OnBinaryData( buf, Length );
+            break;
         }
-    }
+    } // End of loop
 
     return EPacketProcessResult::PACKET_OK;
 }
 
-void ICommunicationHandlerBase::InitializeStream( unique_ptr<streambuf> strm, size_t recvSz )
+void ICommunicationHandlerBase::InitializeStream(
+  unique_ptr<streambuf> strm,
+  size_t                recvSz )
 {
     assert( strm && recvSz );
-    m_strmbuf = std::move( strm );
-    m_os      = make_unique<ostream>( m_strmbuf.get(), false );
-    m_buff    = make_unique<char[]>( recvSz );
+    m_strmbuf  = std::move( strm );
+    m_os       = make_unique<ostream>( m_strmbuf.get(), false );
+    m_buff     = make_unique<char[]>( recvSz );
+    m_buffSize = recvSz;
 }

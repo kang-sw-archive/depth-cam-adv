@@ -19,3 +19,8 @@ typedef uint32_t packetinfo_t;
     ( ( packetinfo_t )(                                                        \
       PACKET_ID | ( PACKET_STRBITMASK * ( IS_STR != 0 ) )                      \
       | ( PACKET_LENGTHMASK & ( DATALEN ) ) ) )
+
+#define PACKET_BIN_OPEN_CHAR ((char)0X10)
+#define PACKET_BIN_CLOSE_CHAR ((char)0X17)
+#define PACKET_BINARY_ID   (*(uint32_t const*)"$%%$")
+#define PACKET_SIZE_TYPE uint16_t

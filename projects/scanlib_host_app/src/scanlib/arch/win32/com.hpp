@@ -1,12 +1,4 @@
-/*! \brief
-    \file
-    \author Seungwoo Kang (ki6080@gmail.com)
-    \version 0.1
-    \date
-    
-    \copyright Copyright (c) 2019. Seungwoo Kang. All rights reserved.
-    \details 
-*/
+//! @todo Implement buffering
 #pragma once
 #include <iostream>
 
