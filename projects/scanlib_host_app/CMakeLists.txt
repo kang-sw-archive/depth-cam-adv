@@ -41,12 +41,29 @@ target_include_directories(scangui PUBLIC	gflags third/nana/include)
 target_link_libraries(scangui scanlib		gflags nana)
 
 # -- for Image segmentation app
+add_subdirectory(third/SLIC_CUDA)
+
+# CUDA settings
+find_package(CUDA REQUIRED)
+set(CUDA_COMPUTE_CAPABILITY "61")
+set(CUDA_GENERATE_CODE "arch=compute_${CUDA_COMPUTE_CAPABILITY},code=sm_${CUDA_COMPUTE_CAPABILITY}" CACHE STRING "Which GPU architectures to generate code for (each arch/code pair will be passed as --generate-code option to nvcc, separate multiple pairs by ;)")
+set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS} -arch compute_${CUDA_COMPUTE_CAPABILITY})
+
+# SLIC algorithm dir
+set(CUDA_SLIC_DIR third/SLIC_CUDA)
+set(CUDA_SLIC_SRC ${CUDA_SLIC_DIR}/src/SlicCudaDevice.cu
+                  ${CUDA_SLIC_DIR}/src/SlicCudaHost.cu)
+set(CUDA_SLIC_INCLUDE_DIR ${CUDA_SLIC_DIR}/include)
+
+# OpenCV Package
 find_package(OpenCV REQUIRED)
+
+# Configure build
 set(SCANLIB_IMSEG_DIR src/imseg)
 file(GLOB_RECURSE SRC_IMSEG "${SCANLIB_IMSEG_DIR}/*.cpp" "${SCANLIB_IMSEG_DIR}/*.c")
-add_executable(imseg ${SRC_IMSEG})
+cuda_add_executable(imseg ${SRC_IMSEG} ${CUDA_SLIC_SRC})
 add_dependencies(imseg scanlib	            gflags)
-target_include_directories(imseg PUBLIC		${OpenCV_INCLUDE_DIRS} gflags third/nana/include)
+target_include_directories(imseg PUBLIC		${OpenCV_INCLUDE_DIRS} gflags third/nana/include ${CUDA_SLIC_INCLUDE_DIR})
 target_link_libraries(imseg					${OpenCV_LIBS} scanlib gflags)
 
 # -- for test env

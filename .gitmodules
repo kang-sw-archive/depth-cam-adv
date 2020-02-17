@@ -43,3 +43,6 @@
 [submodule "projects/scanlib_host_app/third/nana"]
 	path = projects/scanlib_host_app/third/nana
 	url = git@github.com:kang-sw/nana.git
+[submodule "projects/scanlib_host_app/third/SLIC_CUDA"]
+	path = projects/scanlib_host_app/third/SLIC_CUDA
+	url = https://github.com/fderue/SLIC_CUDA.git
