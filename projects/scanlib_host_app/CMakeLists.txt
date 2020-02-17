@@ -40,6 +40,15 @@ add_dependencies(scangui scanlib			gflags nana)
 target_include_directories(scangui PUBLIC	gflags third/nana/include)
 target_link_libraries(scangui scanlib		gflags nana)
 
+# -- for Image segmentation app
+find_package(OpenCV REQUIRED)
+set(SCANLIB_IMSEG_DIR src/imseg)
+file(GLOB_RECURSE SRC_IMSEG "${SCANLIB_IMSEG_DIR}/*.cpp" "${SCANLIB_IMSEG_DIR}/*.c")
+add_executable(imseg ${SRC_IMSEG})
+add_dependencies(imseg scanlib	            gflags)
+target_include_directories(imseg PUBLIC		${OpenCV_INCLUDE_DIRS} gflags third/nana/include)
+target_link_libraries(imseg					${OpenCV_LIBS} scanlib gflags)
+
 # -- for test env
 # source
 aux_source_directory("tests" TESTSRC)
