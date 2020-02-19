@@ -100,7 +100,8 @@ extern "C" bool AppHandler_CaptureCommand( int argc, char* argv[] )
         r.SizeY                = cc.Scan_Resolution.y;
         r.StepPerPxlX          = cc.Scan_StepPerPxl.x;
         r.StepPerPxlY          = cc.Scan_StepPerPxl.y;
-        r.TimeAfterLaunch_us   = API_GetTime_us();
+        r.TimeAfterLaunch_us
+          = API_GetTime_us() - !r.bIsIdle * cc.TimeProcessBegin;
 
         SCANNER_COMMAND_TYPE cmd = ECommand::RSP_STAT_REPORT;
 
@@ -415,12 +416,14 @@ void InitCaptureTask( void ( *cb )( void* ) )
       TaskPriorityNormal,
       &cc.CaptureTask );
 
-    cc.bPaused      = false;
-    cc.bPendingStop = false;
+    cc.bPaused          = false;
+    cc.bPendingStop     = false;
+    cc.TimeProcessBegin = API_GetTime_us();
 
     if ( res == pdFALSE || cc.CaptureTask == NULL )
     {
-        API_Msg( "error: failed to initialize capturing process\n" );
+        cc.CaptureTask = NULL;
+        API_Msg( "fatal: failed to initialize capturing process\n" );
     }
     else
     {

@@ -11,13 +11,19 @@
       ]
     },
     {
-      "taskLabel": "openocd",
+      "taskLabel": "OpenOCD",
       "appliesTo": "*",
       "contextType": "custom",
-      "command": ".dbgpkg/.launch.bat"
+      "command": ".dbgpkg/.openocd.bat"
     },
     {
-      "taskLabel": "gdb-run",
+      "taskLabel": "Program MCU",
+      "appliesTo": "*",
+      "contextType": "custom",
+      "command": ".dbgpkg/.program.bat"
+    },
+    {
+      "taskLabel": "GDB",
       "appliesTo": "*",
       "contextType": "custom",
       "command": ".dbgpkg/.gdb.bat"

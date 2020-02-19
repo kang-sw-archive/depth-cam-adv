@@ -188,7 +188,7 @@ bool DistSens_MeasureAsync(
             // To prevent waiting forever, a watchdog timer will trigger to
             // reset sensor's status when the sensor doesn't respond.
             si.watchdog_hnd_ = API_SetTimer(
-              si.conf_.Delay_us * 4, NULL, []( auto ) {
+              si.conf_.Delay_us * 10, NULL, []( auto ) {
                   API_Msg( "warning: Oops, seems capture request is lost! \n" );
                   si.capturing_    = false;
                   si.init_correct_ = false;

@@ -1,0 +1,20 @@
+target remote :3333
+file ./build/depscan-firmware-rtos-g431kb.elf
+
+define setup
+shell cmd.exe /c make all -j8
+file ./build/depscan-firmware-rtos-g431kb.elf
+monitor reset halt
+end
+
+define rst
+monitor reset halt
+end
+
+define program
+setup
+monitor program ./build/depscan-firmware-rtos-g431kb.elf verify
+rst
+end
+
+b main

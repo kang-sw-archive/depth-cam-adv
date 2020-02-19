@@ -2,7 +2,7 @@
 /**
   ******************************************************************************
   * @file           : usbd_cdc_if.h
-  * @version        : v1.0_Cube
+  * @version        : v3.0_Cube
   * @brief          : Header for usbd_cdc_if.c file.
   ******************************************************************************
   * @attention
@@ -75,7 +75,6 @@
   */
 
 /* USER CODE BEGIN EXPORTED_MACRO */
-#define APP_RX_DATA_SIZE 256
 
 /* USER CODE END EXPORTED_MACRO */
 
@@ -92,7 +91,6 @@
 extern USBD_CDC_ItfTypeDef USBD_Interface_fops_FS;
 
 /* USER CODE BEGIN EXPORTED_VARIABLES */
-extern USBD_HandleTypeDef hUsbDeviceFS;
 
 /* USER CODE END EXPORTED_VARIABLES */
 

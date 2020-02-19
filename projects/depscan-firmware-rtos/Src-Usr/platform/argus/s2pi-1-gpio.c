@@ -42,6 +42,18 @@ typedef struct pinstruct pinstruct_t;
 extern __IO bool         g_isGpioMode;
 
 static pinstruct_t pins[5] = {
+#ifdef STM32G431xx
+  // CLK
+  { .port = GPIOA, .pin = GPIO_PIN_5, .bWrite = false },
+  // CS
+  { .port = ARGUS_CS_GPIO_Port, .pin = ARGUS_CS_Pin, .bWrite = false },
+  // MOSI
+  { .port = GPIOA, .pin = GPIO_PIN_7, .bWrite = false },
+  // MISO
+  { .port = GPIOA, .pin = GPIO_PIN_6, .bWrite = false },
+  // IRQ
+  { .port = ARGUS_IRQ_GPIO_Port, .pin = ARGUS_IRQ_Pin, .bWrite = false },
+#else
   // CLK
   { .port = GPIOA, .pin = GPIO_PIN_5, .bWrite = false },
   // CS
@@ -52,6 +64,7 @@ static pinstruct_t pins[5] = {
   { .port = GPIOA, .pin = GPIO_PIN_6, .bWrite = false },
   // IRQ
   { .port = GPIOC, .pin = GPIO_PIN_1, .bWrite = false },
+#endif
 };
 
 #define countof( v ) ( sizeof( v ) / sizeof( *v ) )
@@ -93,19 +106,19 @@ status_t S2PI_ReleaseGpioControl( void )
     HAL_GPIO_Init( GPIOA, &GPIO_InitStruct );
 
     /*Configure GPIO pins : PC0 */
-    GPIO_InitStruct.Pin   = GPIO_PIN_0;
+    GPIO_InitStruct.Pin   = ARGUS_CS_Pin;
     GPIO_InitStruct.Mode  = GPIO_MODE_OUTPUT_PP;
     GPIO_InitStruct.Pull  = GPIO_PULLUP;
     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-    HAL_GPIO_Init( GPIOC, &GPIO_InitStruct );
+    HAL_GPIO_Init( ARGUS_CS_GPIO_Port, &GPIO_InitStruct );
 
     /*Configure GPIO pin : PC1 */
-    GPIO_InitStruct.Pin  = GPIO_PIN_1;
+    GPIO_InitStruct.Pin  = ARGUS_IRQ_Pin;
     GPIO_InitStruct.Mode = GPIO_MODE_IT_FALLING;
     GPIO_InitStruct.Pull = GPIO_PULLUP;
-    HAL_GPIO_Init( GPIOC, &GPIO_InitStruct );
+    HAL_GPIO_Init( ARGUS_IRQ_GPIO_Port, &GPIO_InitStruct );
 
-    HAL_GPIO_WritePin( GPIOC, GPIO_PIN_1, GPIO_PIN_SET );
+    HAL_GPIO_WritePin( ARGUS_IRQ_GPIO_Port, GPIO_PIN_1, GPIO_PIN_SET );
     g_isGpioMode = false;
     return STATUS_OK;
 }

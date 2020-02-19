@@ -57,8 +57,8 @@ typedef struct capture_common_ty__
 
     //! @brief      Point properties
     //! @{
-    int      Point_NumMaxRequest;
-    int      Point_NumPendingRequest;
+    int Point_NumMaxRequest;
+    int Point_NumPendingRequest;
     //! @}
 
     //! @brief      Process handle
@@ -67,7 +67,7 @@ typedef struct capture_common_ty__
     bool           bPaused;
     bool           bPendingStop;
 
-    //! @brief      Data buffer for general usage
+    usec_t TimeProcessBegin;
 } capture_t;
 
 //! @brief      Singleton instance of capturing status.

@@ -170,6 +170,10 @@ static void START_FNC( motor_hnd_t m )
     auto ch  = ccr_ch_xy[hwid];
     // auto init_spd = int( 1e6f / m->phy_mins ) - 1;
 
+    auto delta = m->pending_movement > 0 ? -1 : +1;
+    m->pending_movement += delta;
+    m->position -= delta;
+
     __HAL_TIM_SetCounter( tim, 0 );
     __HAL_TIM_SetAutoreload( tim, __HAL_TIM_GET_COMPARE( tim, ch ) );
     __HAL_TIM_CLEAR_IT( tim, TIM_IT_UPDATE );
@@ -227,6 +231,11 @@ static void irq__( motor_hnd_t m, TIM_HandleTypeDef* htim, int ch, int clk )
           (int)( m->debug_last_accel * 1e6f ) );
     }
 #endif
+}
+
+extern "C" void TIM1_UP_TIM16_IRQHandler()
+{
+    irq__( gMotX, &HTIM_X, ccr_ch_xy[0], clk_xy[0] );
 }
 
 extern "C" void TIM1_UP_TIM10_IRQHandler()
@@ -378,7 +387,7 @@ int update_motor( motor_hnd_t m )
     auto  now        = API_GetTime_us();
     int   delta_us   = now - m->phy_prev_time;
     float delta      = (float)(delta_us)*1e-6f; // 1us
-    m->phy_prev_time = now; 
+    m->phy_prev_time = now;
 
     // Determine direction and amount of acceleration
     bool const bFwd         = m->pending_movement > 0;

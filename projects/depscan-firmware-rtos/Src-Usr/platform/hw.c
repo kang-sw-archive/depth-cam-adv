@@ -1,6 +1,6 @@
 #include "hw.h"
-#include <usb_device.h>
-#include <usbd_cdc_if.h>
+// #include <usb_device.h>
+// #include <usbd_cdc_if.h>
 #include "../app/hal.h"
 #include "../defs.h"
 /////////////////////////////////////////////////////////////////////////////
@@ -26,7 +26,7 @@ bool HW_CheckUsbConnection()
 
 void InitHW()
 {
-    MX_USB_DEVICE_Init();
+    // MX_USB_DEVICE_Init();
     HW_TIMER_INIT();
     void S2PI_Init();
     S2PI_Init();

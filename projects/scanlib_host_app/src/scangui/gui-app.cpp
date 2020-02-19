@@ -349,7 +349,7 @@ void ScannerMainForm::BindScanner( FScannerProtocolHandler* scanRef )
     mScan->OnReceiveLine = [this]( auto rep ) { this->OnUpdateImage( rep ); };
     mScan->OnFinishScan  = [this]( auto rep ) { this->OnScannerCaptureDone( rep ); };
     mScan->Logger        = [this]( auto str ) {
-        enum { LINE_CLEAR_THRESHOLD = 1000,
+        enum { LINE_CLEAR_THRESHOLD = 150,
                LINE_LEFT_DIVIDER    = 2 };
         if ( mReport.text_line_count() > LINE_CLEAR_THRESHOLD ) {
             auto   cpy      = mReport.text();
