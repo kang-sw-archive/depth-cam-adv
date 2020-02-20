@@ -2,7 +2,7 @@
 /**
   ******************************************************************************
   * @file           : usbd_conf.h
-  * @version        : v1.0_Cube
+  * @version        : v3.0_Cube
   * @brief          : Header for usbd_conf.c file.
   ******************************************************************************
   * @attention
@@ -31,9 +31,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "main.h"
-#include "stm32f4xx.h"
-#include "stm32f4xx_hal.h"
+#include "stm32g4xx.h"
+#include "stm32g4xx_hal.h"
 
 /* USER CODE BEGIN INCLUDE */
 
@@ -54,6 +53,9 @@
   * @{
   */
 
+/* Private variables ---------------------------------------------------------*/
+/* USER CODE BEGIN PV */
+/* USER CODE END PV */
 /**
   * @}
   */
@@ -72,14 +74,13 @@
 /*---------- -----------*/
 #define USBD_DEBUG_LEVEL     0U
 /*---------- -----------*/
-#define USBD_LPM_ENABLED     0U
+#define USBD_LPM_ENABLED     1U
 /*---------- -----------*/
 #define USBD_SELF_POWERED     1U
 
 /****************************************/
 /* #define for FS and HS identification */
 #define DEVICE_FS 		0
-#define DEVICE_HS 		1
 
 /**
   * @}
@@ -93,16 +94,16 @@
 /* Memory management macros */
 
 /** Alias for memory allocation. */
-#define USBD_malloc         malloc
+#define USBD_malloc         (uint32_t *)USBD_static_malloc
 
 /** Alias for memory release. */
-#define USBD_free           free
+#define USBD_free           USBD_static_free
 
 /** Alias for memory set. */
-#define USBD_memset         memset
+#define USBD_memset         /* Not used */
 
 /** Alias for memory copy. */
-#define USBD_memcpy         memcpy
+#define USBD_memcpy         /* Not used */
 
 /** Alias for delay. */
 #define USBD_Delay          HAL_Delay
@@ -152,6 +153,8 @@
   */
 
 /* Exported functions -------------------------------------------------------*/
+void *USBD_static_malloc(uint32_t size);
+void USBD_static_free(void *p);
 
 /**
   * @}

@@ -1,6 +1,6 @@
 {
   "configurations": [
-    { 
+    {
       "name": "Mingw32",
       "includePath": [
         "${workspaceRoot}/Inc",
@@ -15,11 +15,14 @@
         "${workspaceRoot}/Drivers/CMSIS/Device/ST/STM32F4xx/Include",
         "${workspaceRoot}/Drivers/CMSIS/Include",
         "${workspaceRoot}/Third/uEmbedded/src",
-        "${workspaceRoot}/Third/ADS0032v1.1/include"
+        "${workspaceRoot}/Third/ADS0032v1.1/include",
+        "${workspaceRoot}/Drivers/STM32G4xx_HAL_Driver/Inc",
+        "${workspaceRoot}/Drivers/STM32G4xx_HAL_Driver/Inc/Legacy",
+        "${workspaceRoot}/Drivers/CMSIS/Device/ST/STM32G4xx/Include"
       ],
       "defines": [
         "USE_HAL_DRIVER",
-        "STM32F401xC"
+        "STM32G431xx"
       ],
       "intelliSenseMode": "linux-gcc-arm",
       "compilerSwitches": "-std=c++17"

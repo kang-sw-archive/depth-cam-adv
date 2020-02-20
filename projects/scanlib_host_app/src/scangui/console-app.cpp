@@ -18,8 +18,7 @@ void InitConsoleApp()
         for ( size_t i = 0; i < args.Width * args.Height; i++ )
         {
             printf(
-              "%20.17f\n",
-              args.CData()[i].Distance / double( Q9_22_ONE_INT ) );
+              "%20.17f\n", args.CData()[i].Distance / double( Q9_22_ONE_INT ) );
         }
     };
     scan.OnPointRecv = []( const FPointData& data ) {
@@ -27,6 +26,54 @@ void InitConsoleApp()
           ":: RECV POINT DATA [ %08x ] :: %20.17f\n",
           data.ID,
           data.V.Distance / double( Q9_22_ONE_INT ) );
+    };
+    scan.OnReport = []( const FDeviceStat& Stat ) {
+        char buf[2048];
+        double progress = !Stat.bIsIdle * 100.0 * ( ( Stat.CurMotorStepY - Stat.OfstY ) / (double) ( Stat.SizeY * Stat.StepPerPxlY ) );
+
+        sprintf(
+          buf,
+          "\n"
+          "                 %8c %8c unit \n"
+          " StepPerPxl    [ %8d %8d step ]\n"
+          " AnglePerPxl   [ %8.4f %8.4f  deg ]\n"
+          " Resolution    [ %8d %8d  pxl ]\n"
+          " FOV           [ %8.4f %8.4f  deg ]\n"
+          " OfstInSteps   [ %8d %8d step ]\n"
+          " OfstInAngle   [ %8.4f %8.4f  deg ]\n"
+          " AnglePerStep  [ %8.6f %8.6f  deg ]\n"
+          " CurMotorPos   [ %8d %8d step ]\n"
+          "\n"
+          " MeasureDelay  [ %17d   us ]\n"
+          " DistanceMode  [ %17s      ]\n"
+          " %-13s [ %17.3f    s ]\n"
+          "\n"
+          "      :::      %04.1f%% done      ::: \n ",
+          'x',
+          'y',
+          Stat.StepPerPxlX,
+          Stat.StepPerPxlY,
+          Stat.StepPerPxlX * Stat.DegreePerStepX,
+          Stat.StepPerPxlY * Stat.DegreePerStepY,
+          Stat.SizeX,
+          Stat.SizeY,
+          Stat.SizeX * Stat.StepPerPxlX * Stat.DegreePerStepX,
+          Stat.SizeY * Stat.StepPerPxlY * Stat.DegreePerStepY,
+          Stat.OfstX,
+          Stat.OfstY,
+          Stat.OfstX * Stat.DegreePerStepX,
+          (int)Stat.OfstY * Stat.DegreePerStepY,
+          Stat.DegreePerStepX,
+          Stat.DegreePerStepY,
+          Stat.CurMotorStepX,
+          Stat.CurMotorStepY,
+          Stat.DelayPerCapture,
+          Stat.bIsPrecisionMode ? "Near" : "Far",
+          Stat.bIsIdle ? "TimeLaunch" : "TimeMeasure",
+          Stat.TimeAfterLaunch_us / 1e6,
+          progress );
+
+        printf( buf );
     };
 
     for ( ;; )
@@ -42,7 +89,6 @@ void InitConsoleApp()
         std::string inp;
         for ( ;; )
         {
-            scan.Report();
             std::getline( std::cin, inp );
 
             // Evaluate connection lazily to handle disconnection during input.

@@ -2,7 +2,10 @@
 
 make all -j8
 
-set FILE_RAW=%~dp0../build/depscan-firmware-rtos.elf
+set GDBNAME=%ARM_NONE_EABI_DIR%\arm-none-eabi-gdb.exe 
+rem set GDBNAME="C:\Windows\System32\wsl.exe" gdb-multiarch
+
+set FILE_RAW=%~dp0../build/depscan-firmware-rtos-g431kb.elf
 set FILE=%FILE_RAW:\=/%
 set TP=%TMP%\gdb-ff-%RANDOM%.txt
 
@@ -25,4 +28,4 @@ if "%ERRORLEVEL%" neq "0" (
 	start %openocd% -f .dbgpkg/openocd.cfg
 )
 
-start %ARM_NONE_EABI_DIR%\arm-none-eabi-gdb.exe -x %TP%
+start %GDBNAME% -x %TP%

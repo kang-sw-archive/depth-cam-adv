@@ -37,7 +37,7 @@ extern "C" usec_t     API_GetTime_us();
 /////////////////////////////////////////////////////////////////////////////
 // Macro
 #define GET_TICK() ( htim.Instance->CNT )
-
+#define TICK_TIME ((int)1e9)
 /////////////////////////////////////////////////////////////////////////////
 // Utility class - timer lock
 //
@@ -57,6 +57,9 @@ extern "C" void HW_TIMER_INIT()
       sTimerStack,
       &sTimerTaskStaticCb );
 
+    // Configure timer
+    __HAL_TIM_SET_PRESCALER( &htim, ( SystemCoreClock / 1000000 ) );
+    __HAL_TIM_SET_AUTORELOAD( &htim, TICK_TIME - 1 );
     HAL_TIM_Base_Start_IT( &htim );
     TIM_CCxChannelCmd( htim.Instance, TIM_CHANNEL_1, TIM_CCx_ENABLE );
 }
@@ -67,7 +70,7 @@ extern "C" void TIM2_IRQHandler( void )
     if ( __HAL_TIM_GET_FLAG( &htim, TIM_FLAG_UPDATE ) != RESET )
     {
         __HAL_TIM_CLEAR_FLAG( &htim, TIM_FLAG_UPDATE );
-        s_total_us += (int)1e9;
+        s_total_us += TICK_TIME;
     }
 
     // If it's oc interrupt, process hwtimer event and switch to timer task

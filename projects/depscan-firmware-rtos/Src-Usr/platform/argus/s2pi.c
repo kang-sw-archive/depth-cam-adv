@@ -53,13 +53,22 @@ __IO struct slave_desc g_slaves[S2PI_SLAVE_MAX] = {
     .callbackParam        = NULL,
     .chipSelectPin        = GPIO_PIN_2,
     .latestTransferStatus = STATUS_OK },
-  // SENSOR SPI
+// SENSOR SPI
+#ifdef STM32G431xx
+  { .chipSelectPort       = ARGUS_CS_GPIO_Port,
+    .csActiveVal          = 0,
+    .callback             = NULL,
+    .callbackParam        = NULL,
+    .chipSelectPin        = ARGUS_CS_Pin,
+    .latestTransferStatus = STATUS_OK },
+#else
   { .chipSelectPort       = GPIOC,
     .csActiveVal          = 0,
     .callback             = NULL,
     .callbackParam        = NULL,
     .chipSelectPin        = GPIO_PIN_0,
     .latestTransferStatus = STATUS_OK },
+#endif
 };
 
 // Indicates the slave which occupying the spi device.

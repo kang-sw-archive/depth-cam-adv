@@ -29,6 +29,7 @@ using namespace std::chrono_literals;
 // GLOBAL FLAGS
 DEFINE_int32( cam_index, 1, "Specify camera index to use" );
 DEFINE_int32( desired_pixel_cnt, int( 2e5 ), "Number of intended pixels" );
+DEFINE_double( slic_compactness, 100.f, "Number of intended pixels" );
 
 /////////////////////////////////////////////////////////////////////////////
 // Static method decls
@@ -72,7 +73,7 @@ int main( int argc, char* argv[] )
     // Create Superpixel object
     SlicCuda GpuSLIC;
     Video >> FrameData; // Dummy frame to load metadata
-    GpuSLIC.initialize( FrameData, 250, SlicCuda::SLIC_NSPX, 80.f );
+    GpuSLIC.initialize( FrameData, 250, SlicCuda::SLIC_NSPX, FLAGS_slic_compactness );
 
     // Open named window
     cv::namedWindow( "camera" );

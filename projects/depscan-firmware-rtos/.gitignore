@@ -4,3 +4,4 @@
 build/
 doxygen/
 /Debug/
+.gdb_history
