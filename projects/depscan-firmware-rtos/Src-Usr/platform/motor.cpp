@@ -380,7 +380,7 @@ int update_motor( motor_hnd_t m )
         m->phy_velocity = 0.f;
         if ( m->cb )
         { // Make it invoke outside of ISR
-            API_SetTimerFromISR( 0, m, motor_tim_cb__ );
+            API_SetTimerFromISR( 200, m, motor_tim_cb__ );
         }
         return 0;
     }
