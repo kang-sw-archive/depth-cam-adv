@@ -1,28 +1,30 @@
-Ôªø#ifdef _WIN32
-#    include "app.hpp"
+#ifdef _WIN32
+#    include "../utility.hpp"
 // #pragma comment( linker, "/SUBSYSTEM:WINDOWS /ENTRY:mainCRTStartup" )
 
 #    include <Windows.h>
 
 #    include <SetupAPI.h>
-#    include <gflags/gflags.h>
 #    include <initguid.h>
 #    include <scanlib/arch/win32/com.hpp>
 #    include <winusb.h>
 #    pragma comment( lib, "setupapi.lib" )
 
-DECLARE_string( com );
-
-bool API_MappToRGB( intptr_t context, std::function<void( void* )> draw_cb, void* buffer )
+bool API_MappToRGB(
+  intptr_t                     context,
+  std::function<void( void* )> draw_cb,
+  void*                        buffer )
 {
     using namespace std;
     // This implementation requires buffer.
-    if ( buffer == nullptr ) {
+    if ( buffer == nullptr )
+    {
         return false;
     }
 
     auto hDC = (HDC)context;
-    if ( hDC == NULL ) {
+    if ( hDC == NULL )
+    {
         return false;
     }
 
@@ -48,15 +50,18 @@ void API_SystemShowConsole( bool bShow )
 
 static void SearchCOM( TCHAR* pszComePort, TCHAR* vid, TCHAR* pid );
 
-void API_SystemCreateScannerControl( FScannerProtocolHandler& S )
+void API_SystemCreateScannerControl(
+  FScannerProtocolHandler& S,
+  char const*              COMSTR )
 {
     using namespace std;
     //! Initialize based on com port
     S.Shutdown();
 
-    auto ComOpener = []( FScannerProtocolHandler& s ) -> unique_ptr<comstreambuf_t> {
+    auto ComOpener
+      = [COMSTR]( FScannerProtocolHandler& s ) -> unique_ptr<comstreambuf_t> {
         s.ClearConnection();
-        auto         ret = make_unique<comstreambuf_t>( FLAGS_com.c_str() );
+        auto         ret = make_unique<comstreambuf_t>( COMSTR );
         COMMTIMEOUTS to  = { MAXDWORD, 1, 1, 1, 1 };
         ret->set_timeout( &to );
 
@@ -73,7 +78,8 @@ void API_SystemCreateScannerControl( FScannerProtocolHandler& S )
     S.Activate( ComOpener, init );
 }
 
-struct serialportinfo {
+struct serialportinfo
+{
     bool   isUSBdev;
     string devpath;
     string friendlyname;
@@ -83,67 +89,97 @@ struct serialportinfo {
 
 static int SearchCOM2()
 {
-    GUID*                            guidDev  = (GUID*)&GUID_DEVINTERFACE_SERENUM_BUS_ENUMERATOR;
-    HDEVINFO                         hDevInfo = INVALID_HANDLE_VALUE;
+    GUID*    guidDev  = (GUID*)&GUID_DEVINTERFACE_SERENUM_BUS_ENUMERATOR;
+    HDEVINFO hDevInfo = INVALID_HANDLE_VALUE;
     SP_DEVICE_INTERFACE_DETAIL_DATA* pDetData = NULL;
-    hDevInfo                                  = SetupDiGetClassDevs( guidDev, NULL, NULL,
-                                    DIGCF_PRESENT | DIGCF_DEVICEINTERFACE );
+    hDevInfo                                  = SetupDiGetClassDevs(
+      guidDev, NULL, NULL, DIGCF_PRESENT | DIGCF_DEVICEINTERFACE );
     string           errorstring;
     constexpr size_t DEVICE_INFO_SZ = 256;
 
-    if ( hDevInfo == INVALID_HANDLE_VALUE ) {
+    if ( hDevInfo == INVALID_HANDLE_VALUE )
+    {
         printf( TEXT( "SetupDiGetClassDevs return INVALID_HANDLE_VALUE" ) );
         return -1;
     }
 
     BOOL                     bOk = TRUE;
     SP_DEVICE_INTERFACE_DATA ifcData;
-    DWORD                    dwDetDataSize = sizeof( SP_DEVICE_INTERFACE_DETAIL_DATA ) + DEVICE_INFO_SZ;
-    pDetData                               = (SP_DEVICE_INTERFACE_DETAIL_DATA*)new char[dwDetDataSize];
-    if ( pDetData == NULL ) {
+    DWORD                    dwDetDataSize
+      = sizeof( SP_DEVICE_INTERFACE_DETAIL_DATA ) + DEVICE_INFO_SZ;
+    pDetData = (SP_DEVICE_INTERFACE_DETAIL_DATA*)new char[dwDetDataSize];
+    if ( pDetData == NULL )
+    {
         return -1;
     }
 
     ifcData.cbSize   = sizeof( SP_DEVICE_INTERFACE_DATA );
     pDetData->cbSize = sizeof( SP_DEVICE_INTERFACE_DETAIL_DATA );
-    for ( int cnt = 0; cnt < 256; cnt++ ) {
-        bOk = SetupDiEnumDeviceInterfaces( hDevInfo, NULL, guidDev, cnt,
-                                           &ifcData );
-        if ( bOk == TRUE ) {
+    for ( int cnt = 0; cnt < 256; cnt++ )
+    {
+        bOk = SetupDiEnumDeviceInterfaces(
+          hDevInfo, NULL, guidDev, cnt, &ifcData );
+        if ( bOk == TRUE )
+        {
             // Got a device.Get the details.
             SP_DEVINFO_DATA devdata = { sizeof( SP_DEVINFO_DATA ) };
             bOk                     = SetupDiGetDeviceInterfaceDetail(
-                hDevInfo, &ifcData, pDetData, dwDetDataSize, NULL, &devdata );
-            if ( bOk == TRUE ) {
+              hDevInfo, &ifcData, pDetData, dwDetDataSize, NULL, &devdata );
+            if ( bOk == TRUE )
+            {
                 string  strDevPath = pDetData->DevicePath;
                 wchar_t fname[256] = { 0 };
                 wchar_t desc[256]  = { 0 };
                 BOOL    bSuccess   = SetupDiGetDeviceRegistryProperty(
-                    hDevInfo, &devdata, SPDRP_FRIENDLYNAME, NULL, (PBYTE)fname,
-                    256, NULL );
-                bSuccess        = bSuccess && SetupDiGetDeviceRegistryProperty( hDevInfo, &devdata, SPDRP_DEVICEDESC, NULL, (PBYTE)desc, 256, NULL );
+                  hDevInfo,
+                  &devdata,
+                  SPDRP_FRIENDLYNAME,
+                  NULL,
+                  (PBYTE)fname,
+                  256,
+                  NULL );
+                bSuccess = bSuccess
+                           && SetupDiGetDeviceRegistryProperty(
+                             hDevInfo,
+                             &devdata,
+                             SPDRP_DEVICEDESC,
+                             NULL,
+                             (PBYTE)desc,
+                             256,
+                             NULL );
                 bool bUsbDevice = false;
-                if ( ( wcsstr( desc, L"COM" ) != NULL ) || ( wcsstr( fname, L"COM" ) != NULL ) ) {
+                if (
+                  ( wcsstr( desc, L"COM" ) != NULL )
+                  || ( wcsstr( fname, L"COM" ) != NULL ) )
+                {
                     bUsbDevice = true;
                 }
-                if ( bSuccess == TRUE ) {
+                if ( bSuccess == TRUE )
+                {
 #    ifdef _DEBUG
-                    wprintf( L"%S[%03d] %S (%S)\n", L"COM Port", cnt,
-                             (wchar_t*)fname, (wchar_t*)desc );
+                    wprintf(
+                      L"%S[%03d] %S (%S)\n",
+                      L"COM Port",
+                      cnt,
+                      (wchar_t*)fname,
+                      (wchar_t*)desc );
 #    endif // DEBUG
                     serialportinfo si;
                     si.isUSBdev = bUsbDevice;
                     si.devpath  = strDevPath.c_str();
                 }
             }
-            else {
+            else
+            {
                 errorstring = TEXT( "SetupDiGetDeviceInterfaceDetail failed." );
                 throw errorstring;
             }
         }
-        else {
+        else
+        {
             DWORD err = GetLastError();
-            if ( err != ERROR_NO_MORE_ITEMS ) {
+            if ( err != ERROR_NO_MORE_ITEMS )
+            {
                 errorstring = TEXT( "SetupDiEnumDeviceInterfaces failed." );
                 throw errorstring;
             }
@@ -156,7 +192,7 @@ static int SearchCOM2()
         SetupDiDestroyDeviceInfoList( hDevInfo );
 
     return 0;
-    // from https://rageworx.pe.kr/1589 [ÏûêÏú†Î°úÏö¥ Í∑∏ÎÇ†ÏùÑ ÏúÑÌï¥]
+    // from https://rageworx.pe.kr/1589 [¿⁄¿Ø∑ŒøÓ ±◊≥Ø¿ª ¿ß«ÿ]
 }
 
 static void SearchCOM( TCHAR* pszComePort, TCHAR* vid, TCHAR* pid )
@@ -171,7 +207,10 @@ static void SearchCOM( TCHAR* pszComePort, TCHAR* vid, TCHAR* pid )
     DEVPROPTYPE     ulPropertyType;
     DWORD           dwSize = 0;
     DWORD           Error  = 0;
-    enum { BUFF_LEN = 20 };
+    enum
+    {
+        BUFF_LEN = 20
+    };
 
     // create device hardware id
     strcpy_s( ExpectedDeviceId, "vid_" );
@@ -181,8 +220,8 @@ static void SearchCOM( TCHAR* pszComePort, TCHAR* vid, TCHAR* pid )
     DevIdLen = strlen( ExpectedDeviceId );
 
     // SetupDiGetClassDevs returns a handle to a device information set
-    DeviceInfoSet = SetupDiGetClassDevs( NULL, DevEnum, NULL,
-                                         DIGCF_ALLCLASSES | DIGCF_PRESENT );
+    DeviceInfoSet = SetupDiGetClassDevs(
+      NULL, DevEnum, NULL, DIGCF_ALLCLASSES | DIGCF_PRESENT );
 
     if ( DeviceInfoSet == INVALID_HANDLE_VALUE )
         return;
@@ -193,25 +232,35 @@ static void SearchCOM( TCHAR* pszComePort, TCHAR* vid, TCHAR* pid )
 
     // Receive information about an enumerated device
     while (
-        SetupDiEnumDeviceInfo( DeviceInfoSet, DeviceIndex, &DeviceInfoData ) ) {
+      SetupDiEnumDeviceInfo( DeviceInfoSet, DeviceIndex, &DeviceInfoData ) )
+    {
         DeviceIndex++;
 
         // Retrieves a specified Plug and Play device property
         if ( SetupDiGetDeviceRegistryProperty(
-                 DeviceInfoSet, &DeviceInfoData, SPDRP_HARDWAREID,
-                 &ulPropertyType, (BYTE*)szBuffer,
-                 sizeof( szBuffer ), // The size, in bytes
-                 &dwSize ) ) {
+               DeviceInfoSet,
+               &DeviceInfoData,
+               SPDRP_HARDWAREID,
+               &ulPropertyType,
+               (BYTE*)szBuffer,
+               sizeof( szBuffer ), // The size, in bytes
+               &dwSize ) )
+        {
             // Compare if VID&PID equals
             // To compare as case-insensitive
-            for ( char* head = (char*)szBuffer; *head; ++head ) {
+            for ( char* head = (char*)szBuffer; *head; ++head )
+            {
                 *head = tolower( *head );
             }
             // Compare ...
             bool bFound = false;
-            for ( size_t i = 0, length = strlen( (char*)szBuffer ) - DevIdLen; i < length; i++ ) {
+            for ( size_t i = 0, length = strlen( (char*)szBuffer ) - DevIdLen;
+                  i < length;
+                  i++ )
+            {
                 char* bf = (char*)szBuffer + i;
-                if ( strncmp( bf, ExpectedDeviceId, DevIdLen ) == 0 ) {
+                if ( strncmp( bf, ExpectedDeviceId, DevIdLen ) == 0 )
+                {
                     bFound = true;
                     break;
                 }
@@ -224,28 +273,42 @@ static void SearchCOM( TCHAR* pszComePort, TCHAR* vid, TCHAR* pid )
 
             // Get the key
             hDeviceRegistryKey = SetupDiOpenDevRegKey(
-                DeviceInfoSet, &DeviceInfoData, DICS_FLAG_GLOBAL, 0, DIREG_DEV,
-                KEY_READ );
-            if ( hDeviceRegistryKey == INVALID_HANDLE_VALUE ) {
+              DeviceInfoSet,
+              &DeviceInfoData,
+              DICS_FLAG_GLOBAL,
+              0,
+              DIREG_DEV,
+              KEY_READ );
+            if ( hDeviceRegistryKey == INVALID_HANDLE_VALUE )
+            {
                 Error = GetLastError();
 
                 break; // Not able to open registry
             }
-            else {
+            else
+            {
                 // Read in the name of the port
                 char  pszPortName[BUFF_LEN];
                 DWORD dwSize = sizeof( pszPortName );
                 DWORD dwType = 0;
 
-                if ( ( RegQueryValueEx( hDeviceRegistryKey, "PortName", NULL,
-                                        &dwType, (LPBYTE)pszPortName,
-                                        &dwSize )
-                       == ERROR_SUCCESS )
-                     && ( dwType == REG_SZ ) ) {
+                if (
+                  ( RegQueryValueEx(
+                      hDeviceRegistryKey,
+                      "PortName",
+                      NULL,
+                      &dwType,
+                      (LPBYTE)pszPortName,
+                      &dwSize )
+                    == ERROR_SUCCESS )
+                  && ( dwType == REG_SZ ) )
+                {
                     // Check if it really is a com port
-                    if ( strncmp( pszPortName, "COM", 3 ) == 0 ) {
+                    if ( strncmp( pszPortName, "COM", 3 ) == 0 )
+                    {
                         int nPortNr = atoi( pszPortName + 3 );
-                        if ( nPortNr != 0 ) {
+                        if ( nPortNr != 0 )
+                        {
                             strcpy_s( pszComePort, BUFF_LEN, pszPortName );
                         }
                     }
@@ -258,32 +321,38 @@ static void SearchCOM( TCHAR* pszComePort, TCHAR* vid, TCHAR* pid )
         }
     }
 
-    if ( DeviceInfoSet ) {
+    if ( DeviceInfoSet )
+    {
         SetupDiDestroyDeviceInfoList( DeviceInfoSet );
     }
 
     // from [https://aticleworld.com/get-com-port-of-usb-serial-device/]
 }
 
-void API_FindConnection( char* PortName ) { SearchCOM( PortName, SICO_VENDOR_ID, SICO_SCANNER_PRODUCT_ID ); }
+void API_FindConnection( char* PortName )
+{
+    SearchCOM( PortName, SICO_VENDOR_ID, SICO_SCANNER_PRODUCT_ID );
+}
 
 static int SearchCOM3()
 {
-    HDEVINFO hDevInfo = NULL; //ÌïòÎìúÏõ®Ïñ¥ Ï†ïÎ≥¥ Ìï∏Îì§
+    HDEVINFO hDevInfo = NULL; //«œµÂø˛æÓ ¡§∫∏ «⁄µÈ
     SP_DEVINFO_DATA
-    DeviceInfoData; //ÎîîÎ∞îÏù¥Ïä§ Ï†ïÎ≥¥ Íµ¨Ï°∞Ï≤¥? Ïïà ÎÇ≠ Ìï≥ Ïóè Í∏çÏùë ÏóèÎÇú
-    DWORD  i = 0;
-    string strBuffer;      //ÌïòÎìúÏõ®Ïñ¥ Î†àÏßÄÏä§Ìä∏Î¶¨ÏóêÏÑúÏùò Ïù¥Î¶ÑÏùÑ Î≥µÏÇ¨Ìï† Ïä§Ìä∏ÎßÅ
-    int    nFindStart = 0; //Í≤ÄÏÉâÌïú Î¨∏ÏûêÏó¥Ïùò ÏãúÏûëÏúÑÏπò
+    DeviceInfoData; //µπŸ¿ÃΩ∫ ¡§∫∏ ±∏¡∂√º? æ» ≥∂ ¡K ûj ±‡¿¿ ûj≥≠
+    DWORD i = 0;
+    string strBuffer; //«œµÂø˛æÓ ∑π¡ˆΩ∫∆Æ∏Æø°º≠¿« ¿Ã∏ß¿ª ∫πªÁ«“ Ω∫∆Æ∏µ
+    int nFindStart = 0; //∞Àªˆ«— πÆ¿⁄ø≠¿« Ω√¿€¿ßƒ°
 
     // Create a HDEVINFO with all present devices.
     hDevInfo = SetupDiGetClassDevs(
-        NULL,
-        0, // Enumerator
-        0,
-        DIGCF_PRESENT | DIGCF_ALLCLASSES ); //Ïó¨Í∏∞Î•º ÏàòÏ†ïÌï®ÏúºÎ°ú Í≤ÄÏÉâÌï† Ïû•Ïπò Î≥ÄÍ≤ΩÏù¥ Í∞ÄÎä•
+      NULL,
+      0, // Enumerator
+      0,
+      DIGCF_PRESENT | DIGCF_ALLCLASSES ); //ø©±‚∏¶ ºˆ¡§«‘¿∏∑Œ ∞Àªˆ«“ ¿Âƒ° ∫Ø∞Ê¿Ã
+                                          //∞°¥…
 
-    if ( hDevInfo == INVALID_HANDLE_VALUE ) {
+    if ( hDevInfo == INVALID_HANDLE_VALUE )
+    {
         // Insert error handling here.
         return -1;
     }
@@ -291,7 +360,8 @@ static int SearchCOM3()
     // Enumerate through all devices in Set.
 
     DeviceInfoData.cbSize = sizeof( SP_DEVINFO_DATA );
-    for ( i = 0; SetupDiEnumDeviceInfo( hDevInfo, i, &DeviceInfoData ); i++ ) {
+    for ( i = 0; SetupDiEnumDeviceInfo( hDevInfo, i, &DeviceInfoData ); i++ )
+    {
         DWORD  DataT;
         LPTSTR buffer     = NULL;
         DWORD  buffersize = 0;
@@ -311,9 +381,16 @@ static int SearchCOM3()
         /// for(i=SPDRP_DEVICEDESC;i<SPDRP_MAXIMUM_PROPERTY;i++)
         ///   {
         while ( !SetupDiGetDeviceRegistryProperty(
-            hDevInfo, &DeviceInfoData, SPDRP_FRIENDLYNAME, &DataT,
-            (PBYTE)buffer, buffersize, &buffersize ) ) {
-            if ( GetLastError() == ERROR_INSUFFICIENT_BUFFER ) {
+          hDevInfo,
+          &DeviceInfoData,
+          SPDRP_FRIENDLYNAME,
+          &DataT,
+          (PBYTE)buffer,
+          buffersize,
+          &buffersize ) )
+        {
+            if ( GetLastError() == ERROR_INSUFFICIENT_BUFFER )
+            {
                 // Change the buffer size.
                 if ( buffer )
                     LocalFree( buffer );
@@ -321,7 +398,8 @@ static int SearchCOM3()
                 // W2k MBCS systems per KB 888609.
                 buffer = (char*)LocalAlloc( LPTR, buffersize * 2 );
             }
-            else {
+            else
+            {
                 // Insert error handling here.
                 break;
             }
@@ -338,14 +416,15 @@ static int SearchCOM3()
             continue;
 
         DWORD nSize = 0;
-        SetupDiGetDeviceInstanceId( hDevInfo, &DeviceInfoData, buffer,
-                                    sizeof( buffer ), &nSize );
+        SetupDiGetDeviceInstanceId(
+          hDevInfo, &DeviceInfoData, buffer, sizeof( buffer ), &nSize );
         buffer[nSize] = '\0';
         printf( "%s ... %d\n", buffer, nSize );
         return false;
     }
 
-    if ( GetLastError() != NO_ERROR && GetLastError() != ERROR_NO_MORE_ITEMS ) {
+    if ( GetLastError() != NO_ERROR && GetLastError() != ERROR_NO_MORE_ITEMS )
+    {
         // Insert error handling here.
         return -1;
     }

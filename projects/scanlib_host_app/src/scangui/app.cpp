@@ -6,10 +6,10 @@
 //! @details
 //!
 #include "app.hpp"
-#include "console-app.hpp"
 #include <gflags/gflags.h>
 #include <memory>
 #include <thread>
+#include "console-app.hpp"
 
 using namespace std;
 
@@ -28,17 +28,21 @@ int main( int argc, char** argv )
     gflags::ParseCommandLineFlags( &argc, &argv, true );
 
     // If any argument is given, window will open as viewer mode.
-    if ( argc >= 2 ) {
+    if ( argc >= 2 )
+    {
         API_SystemShowConsole( false );
         return gui_view_app( argc, argv );
     }
-    else {
-        if ( FLAGS_no_gui ) {
+    else
+    {
+        if ( FLAGS_no_gui )
+        {
             //! @todo. Go to console mode ...
             API_SystemShowConsole( true );
             InitConsoleApp();
         }
-        else {
+        else
+        {
             API_SystemShowConsole( FLAGS_show_console );
             return gui_app( argc, argv );
         }
@@ -54,9 +58,10 @@ bool API_RefreshScannerControl( FScannerProtocolHandler& S )
     API_FindConnection( Port );
     FLAGS_com = Port;
 
-    if ( FLAGS_com.empty() ) {
+    if ( FLAGS_com.empty() )
+    {
         return false;
     }
-    API_SystemCreateScannerControl( S );
+    API_SystemCreateScannerControl( S, FLAGS_com.c_str() );
     return true;
 }
