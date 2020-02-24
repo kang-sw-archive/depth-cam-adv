@@ -1,0 +1,58 @@
+Source,E:\__LocalWorkspace\Edu-Projects\depth-cam-adv\schematics\MEASURE_IF\MEASURE_IF.sch
+Kicad Rev,Eeschema (5.1.5)-3
+Generated Date,23/02/2020 22:54:09
+
+Title,Depscan Interface Board
+Company,KOREATECH
+Revision,0.9.2
+Date Issue,2020-02-03
+Comment,@Author Seungwoo Kang
+Comment,Copyright 2020. Seungwoo Kang. All rights reserved
+
+Reference,Value,Library,Library Ref
+J7,USB_B_Micro,Connector,USB_B_Micro
+U3,USBLC6-2SC6,Power_Protection,USBLC6-2SC6
+R3,22k,Device,R_US
+U2,STM32G431KBTx,stm32custom,STM32G431KBTx
+A2,DRV8825_MOT1,Driver_Motor,Pololu_Breakout_DRV8825
+A1,DRV8825_MOT2,Driver_Motor,Pololu_Breakout_DRV8825
+U1,LD3985M33R_SOT23,Regulator_Linear,LD3985M33R_SOT23
+D2,BAT60JFILM,Device,D_Schottky_Small
+D1,BAT60JFILM,Device,D_Schottky_Small
+J5,MOT_TERM,Connector,Screw_Terminal_01x02
+J6,MOT_TERM,Connector,Screw_Terminal_01x02
+J9,MOT_TERM,Connector,Screw_Terminal_01x02
+J8,MOT_TERM,Connector,Screw_Terminal_01x02
+C5,1uF/25V/X5R,Device,CP1_Small
+C7,10nF/X7R,Device,CP1_Small
+C8,100nF,Device,C_Small
+C6,100nF,Device,C_Small
+C9,100nF,Device,C_Small
+C10,100nF,Device,C_Small
+C11,100nF,Device,C_Small
+FB2,Ferrite_Bead_2012,Device,Ferrite_Bead_Small
+FB1,Ferrite_Bead_2012,Device,Ferrite_Bead_Small
+C13,2.2uF,Device,CP1_Small
+C12,100nF,Device,C_Small
+C3,2.2uF/15V,Device,CP1_Small
+C4,2.2uF/15V,Device,CP1_Small
+J1,SWD_CONN,Connector,Conn_01x06_Male
+J3,ARGUS_SPI_FFC_CONN,Connector,Conn_01x10_Male
+J2,ARGUS_SPI_LEGACY_CONN,Connector_Generic,Conn_02x05_Counter_Clockwise
+C2,6.8pF,Device,C_Small
+JP2,CONF_FIX_JP,Device,Jumper_NC_Small
+JP3,CONF_FIX_JP,Device,Jumper_NC_Small
+R8,22k,Device,R_Small_US
+D5,LED_R,Device,LED
+D4,LED_Y,Device,LED
+R7,1k,Device,R_Small_US
+R6,300,Device,R_Small_US
+J4,VMOT_IN_5mm,Connector,Barrel_Jack
+C14,100uF/25V,Device,CP1_Small
+D3,LED_G,Device,LED
+R5,300,Device,R_Small_US
+SW1,SW_RESET,Switch,SW_Push
+R4,22k,Device,R_US
+JP1,BOOT0_JP,Device,Jumper_NC_Small
+Y1,24MHz,Device,Crystal_GND24_Small
+C1,6.8pF,Device,C_Small
