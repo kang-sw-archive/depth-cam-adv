@@ -1,9 +1,9 @@
 /*************************************************************************//**
  * @file
- * @brief    	This file is part of the Argus API.
+ * @brief    	This file is part of the AFBR-S50 API.
  * @details		This file provides an interface for the required S2PI module.
  * 
- * @copyright	Copyright c 2016-2018, Avago Technologies GmbH.
+ * @copyright	Copyright c 2016-2019, Avago Technologies GmbH.
  * 				All rights reserved.
  *****************************************************************************/
 
@@ -13,7 +13,9 @@
 /*!***************************************************************************
  * @defgroup	argus_s2pi S2PI: Serial Peripheral Interface
  * @ingroup		argus_platform
- * @brief		Argus S2PI: SPI incl. GPIO Hardware Layer Module
+ *
+ * @brief		S2PI: SPI incl. GPIO Hardware Layer Module
+ *
  * @details		The S2PI module consists of a standard SPI interface plus a
  *				single GPIO interrupt line. Furthermore, the SPI pins are
  *				accessible via GPIO control to allow a software emulation of
@@ -38,11 +40,15 @@
  *				**GPIO interface:**
  *
  *				The GPIO interface handles the measurement finished interrupt
- *				from the device. Therefore it simply invokes a callback whenever
- *				this interrupt the pending. The #S2PI_SetIrqCallback method is
- *				used to install the callback for a specified slave. Each slave
- *				will have its own interrupt line. An additional callback
- *				parameter can be set that would be passed to the callback function.
+ *				from the device. When the device invokes the interrupt, it pulls
+ *				the interrupt line to low. Thus the interrupt must trigger when
+ *				a transition from high to low occurs on the interrupt line.
+ *
+ *				The module simply invokes a callback when this interrupt the
+ *				pending. The #S2PI_SetIrqCallback method is	used to install the
+ *				callback for a specified slave. Each slave will have its own
+ *				interrupt line. An additional callback parameter can be set that
+ *				would be passed to the callback function.
  *
  *				In addition to the interrupt, all SPI pins need to be accessible
  *				as GPIO pins through the interface. One basic operation would
@@ -66,9 +72,11 @@
 /*!***************************************************************************
  * @brief 	S2PI layer callback function type for the SPI transfer completed event.
  *
- * @param	status : The \link #status_t status\endlink of the completed
+ * @param	status The \link #status_t status\endlink of the completed
  *                   transfer (#STATUS_OK on success).
- * @param	param : The provided (optional, can be null) callback parameter.
+ *
+ * @param	param The provided (optional, can be null) callback parameter.
+ *
  * @return 	Returns the \link #status_t status\endlink (#STATUS_OK on success).
  *****************************************************************************/
 typedef status_t (*s2pi_callback_t)(status_t status, void * param);
@@ -76,8 +84,7 @@ typedef status_t (*s2pi_callback_t)(status_t status, void * param);
 /*!***************************************************************************
  * @brief 	S2PI layer callback function type for the GPIO interrupt event.
  *
- * @param	param : The provided (optional, can be null) callback parameter.
- * @return 	-
+ * @param	param The provided (optional, can be null) callback parameter.
  *****************************************************************************/
 typedef void (*s2pi_irq_callback_t)(void * param);
 
@@ -86,7 +93,7 @@ typedef void (*s2pi_irq_callback_t)(void * param);
 typedef int32_t s2pi_slave_t;
 
 /*!	The enumeration of S2PI pins. */
-typedef enum S2PI_Pins
+typedef enum
 {
 	/*! The SPI clock pin. */
 	S2PI_CLK,
@@ -105,7 +112,8 @@ typedef enum S2PI_Pins
 
 } s2pi_pin_t;
 
-/*! Basic return \link #status_t status\endlink for the S2PI drivers. */
+/*! Basic return \link #status_t status\endlink for the S2PI drivers.
+ *  @ingroup status */
 enum StatusS2PI
 {
 	/*! SPI is disabled and pins are used in GPIO mode. */
@@ -133,21 +141,6 @@ enum StatusS2PI
 };
 
 /*!***************************************************************************
- * @brief	Gets the current SPI baud rate in bps.
- * @return 	Returns the current baud rate.
- *****************************************************************************/
-uint32_t S2PI_GetBaudRate(void);
-
-/*!***************************************************************************
- * @brief	Sets the SPI baud rate in bps.
- * @param	baudRate_Bps : The default SPI baud rate in bauds-per-second.
- * @return 	Returns the \link #status_t status\endlink (#STATUS_OK on success).
- * 			- #STATUS_OK on success
- * 			- #ERROR_S2PI_INVALID_BAUD_RATE on invalid baud rate value.
- *****************************************************************************/
-status_t S2PI_SetBaudRate(uint32_t baudRate_Bps);
-
-/*!***************************************************************************
  * @brief 	Returns the status of the SPI module.
  *
  * @return 	Returns the \link #status_t status\endlink:
@@ -170,14 +163,14 @@ status_t S2PI_GetStatus(void);
  * 			the transfer is ongoing. Use the slave parameter to determine
  * 			the corresponding slave via the given chip select line.
  *
- * @param	slave : The specified S2PI slave.
- * @param 	txData : The 8-bit values to write to the SPI bus MOSI line.
- * @param 	rxData : The 8-bit values received from the SPI bus MISO line
+ * @param	slave The specified S2PI slave.
+ * @param	txData The 8-bit values to write to the SPI bus MOSI line.
+ * @param	rxData The 8-bit values received from the SPI bus MISO line
  *                   (pass a null pointer if the data don't need to be read).
- * @param 	frameSize : The number of 8-bit values to be sent/received.
- * @param	callback : A callback function to be invoked when the transfer is
+ * @param	frameSize The number of 8-bit values to be sent/received.
+ * @param	callback A callback function to be invoked when the transfer is
  * 					   finished. Pass a null pointer if no callback is required.
- * @param	callbackData : A pointer to a state that will be passed to the
+ * @param	callbackData A pointer to a state that will be passed to the
  *                         callback. Pass a null pointer if not used.
  *
  * @return 	Returns the \link #status_t status\endlink:
@@ -207,11 +200,11 @@ status_t S2PI_Abort(void);
 /*!***************************************************************************
  * @brief 	Set a callback for the GPIO IRQ for a specified S2PI slave.
  *
- * @param	slave : The specified S2PI slave.
- * @param	callback : A callback function to be invoked when the specified
+ * @param	slave The specified S2PI slave.
+ * @param	callback A callback function to be invoked when the specified
  * 					   S2PI slave IRQ occurs. Pass a null pointer to disable
  * 					   the callback.
- * @param	callbackData : A pointer to a state that will be passed to the
+ * @param	callbackData A pointer to a state that will be passed to the
  *                         callback. Pass a null pointer if not used.
  *
  * @return 	Returns the \link #status_t status\endlink:
@@ -223,16 +216,38 @@ status_t S2PI_SetIrqCallback(s2pi_slave_t slave,
 							 void * callbackData);
 
 /*!***************************************************************************
+ * @brief	Reads the current status of the IRQ pin.
+ * @details In order to keep a low priority for GPIO IRQs, the state of the
+ * 			IRQ pin must be read in order to reliable check for chip timeouts.
+ *
+ * 			The execution of the interrupt service routine for the data-ready
+ * 			interrupt from the corresponding GPIO pin might be delayed due to
+ * 			priority issues. The delayed execution might disable the timeout
+ * 			for the eye-safety checker too late causing false error messages.
+ * 			In order to overcome the issue, the state of the IRQ GPIO input
+ * 			pin is read before raising a timeout error in order to check if
+ * 			the device has already finished but the IRQ is still pending to be
+ * 			executed!
+
+ * @param	slave The specified S2PI slave.
+ * @return 	Returns 1U if the IRQ pin is high (IRQ not pending) and 0U if the
+ * 			devices pulls the pin to low state (IRQ pending).
+ *****************************************************************************/
+uint32_t S2PI_ReadIrqPin(s2pi_slave_t slave);
+
+/*!***************************************************************************
  * @brief	Cycles the chip select line.
- * @details In order to cancel the integration on the ADS0032, a fast toggling
+ * @details In order to cancel the integration on the ASIC, a fast toggling
  * 			of the chip select pin of the corresponding SPI slave is required.
  * 			Therefore, this function toggles the CS from high to low and back.
  * 			The SPI instance for the specified S2PI slave must be idle,
  * 			otherwise the status #STATUS_BUSY is returned.
- * @param	slave : The specified S2PI slave.
+ * @param	slave The specified S2PI slave.
  * @return 	Returns the \link #status_t status\endlink (#STATUS_OK on success).
  *****************************************************************************/
 status_t S2PI_CycleCsPin(s2pi_slave_t slave);
+
+
 
 /*!*****************************************************************************
  * @brief	Captures the S2PI pins for GPIO usage.
@@ -257,9 +272,9 @@ status_t S2PI_ReleaseGpioControl(void);
  * @brief	Writes the output for a specified SPI pin in GPIO mode.
  * @details This function writes the value of an SPI pin if the SPI pins are
  * 			captured for GPIO operation via the #S2PI_CaptureGpioControl previously.
- * @param	slave : The specified S2PI slave.
- * @param	pin : The specified S2PI pin.
- * @param	value : The GPIO pin state to write (0 = low, 1 = high).
+ * @param	slave The specified S2PI slave.
+ * @param	pin The specified S2PI pin.
+ * @param	value The GPIO pin state to write (0 = low, 1 = high).
  * @return 	Returns the \link #status_t status\endlink (#STATUS_OK on success).
  *****************************************************************************/
 status_t S2PI_WriteGpioPin(s2pi_slave_t slave, s2pi_pin_t pin, uint32_t value);
@@ -268,9 +283,9 @@ status_t S2PI_WriteGpioPin(s2pi_slave_t slave, s2pi_pin_t pin, uint32_t value);
  * @brief	Reads the input from a specified SPI pin in GPIO mode.
  * @details This function reads the value of an SPI pin if the SPI pins are
  * 			captured for GPIO operation via the #S2PI_CaptureGpioControl previously.
- * @param	slave : The specified S2PI slave.
- * @param	pin : The specified S2PI pin.
- * @param	value : The GPIO pin state to read (0 = low, 1 = high).
+ * @param	slave The specified S2PI slave.
+ * @param	pin The specified S2PI pin.
+ * @param	value The GPIO pin state to read (0 = low, 1 = high).
  * @return 	Returns the \link #status_t status\endlink (#STATUS_OK on success).
  *****************************************************************************/
 status_t S2PI_ReadGpioPin(s2pi_slave_t slave, s2pi_pin_t pin, uint32_t * value);

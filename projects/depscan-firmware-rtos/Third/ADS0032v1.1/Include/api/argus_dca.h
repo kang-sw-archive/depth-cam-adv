@@ -1,20 +1,22 @@
 /*************************************************************************//**
  * @file
- * @brief    	This file is part of the Argus hardware API.
- * @details		Defines algorithms for dynamic configurations adaption feature.
+ * @brief    	This file is part of the AFBR-S50 API.
+ * @details		Defines the dynamic configuration adaption (DCA) setup parameters
+ * 				and data structure.
  * 
- * @copyright	Copyright (c) 2016-2018, Avago Technologies GmbH.
+ * @copyright	Copyright (c) 2016-2019, Avago Technologies GmbH.
  * 				All rights reserved.
  *****************************************************************************/
 
-#ifndef ARGUS_CFG_DCA_H
-#define ARGUS_CFG_DCA_H
+#ifndef ARGUS_DCA_H
+#define ARGUS_DCA_H
 
 /*!***************************************************************************
- * @defgroup 	argusdca Dynamic Configuration Adaption (DCA) API
- * @ingroup		arguscfg
- * @brief		This module contains algorithms to dynamically adopt the device
- * 				configuration to the ambient conditions.
+ * @defgroup 	argusdca Dynamic Configuration Adaption
+ * @ingroup		argusapi
+ *
+ * @brief		Dynamic Configuration Adaption (DCA) parameter definitions and API functions.
+ *
  * @details		The DCA contains an algorithms that detect ambient conditions
  * 				and adopt the device configuration to the changing parameters
  * 				dynamically while operating the sensor. This is achieved by
@@ -26,14 +28,15 @@
  * 				The DCA consists of the following features:
  * 			 	- Static or dynamic mode. The first is utilizing the nominal
  * 			 	  values while the latter is dynamically adopting between min.
- * 			 	  and max. value and starting form the nominal values.
- * 			 	- Analog Integration Depth Adaption down to single pulses.
+ * 			 	  and max. value and starting from the nominal values.
+ * 			 	- Analog Integration Depth Adaption (from multiple patterns down to single pulses)
  * 			 	- Optical Output Power Adaption
- * 			 	- Pixel Input Gain Adaption
+ * 			 	- Pixel Input Gain Adaption (w/ ambient light rejection)
  * 			 	- Digital Integration Depth Adaption
- * 			 	- Dynamic Global Phase Shift Injection.
+ * 			 	- Power Saving Ratio (to decrease the average output power and thus the current consumption)
  * 			 	- All that features are heeding the Laser Safety limits.
  * 				.
+ *
  * @addtogroup 	argusdca
  * @{
  *****************************************************************************/
@@ -72,11 +75,39 @@
 /*! The maximum saturated pixel threshold value. */
 #define ARGUS_CFG_DCA_PXTH_MAX		(33U)
 
+/*! The dynamic configuration algorithm gain stage count. */
+#define DCA_GAIN_STAGE_COUNT (4U)
+
+/*! The dynamic configuration algorithm power stage count. */
+#define DCA_POWER_STAGE_COUNT (4U)
+
+/*! The dual frequency mode frequency count. */
+#define ARGUS_DFM_FRAME_COUNT (2U)
+
+/*! The dynamic configuration algorithm state mask for the gain stage. */
+#define ARGUS_STATE_DCA_GAIN_MASK (0x03U)
+
+/*! The dynamic configuration algorithm state mask for the gain stage. */
+#define ARGUS_STATE_DCA_GAIN_SHIFT (14U)
+
+/*! Getter for the dynamic configuration algorithm gain stage. */
+#define ARGUS_STATE_DCA_GAIN_GET(state) \
+	(((state) >> ARGUS_STATE_DCA_GAIN_SHIFT) & ARGUS_STATE_DCA_GAIN_MASK)
+
+/*! The dynamic configuration algorithm state mask for the power stage. */
+#define ARGUS_STATE_DCA_POWER_MASK (0x03U)
+
+/*! The dynamic configuration algorithm state mask for the power stage. */
+#define ARGUS_STATE_DCA_POWER_SHIFT (12U)
+
+/*! Getter for the dynamic configuration algorithm power stage. */
+#define ARGUS_STATE_DCA_POWER_GET(state) \
+	(((state) >> ARGUS_STATE_DCA_POWER_SHIFT) & ARGUS_STATE_DCA_POWER_MASK)
 
 /*!***************************************************************************
  * @brief	The dynamic configuration algorithm enable flags.
  *****************************************************************************/
-typedef enum Argus_CFG_DCA_Enable
+typedef enum
 {
 	/*! DCA is disabled and will be completely skipped. */
 	DCA_ENABLE_OFF = 0,
@@ -92,7 +123,7 @@ typedef enum Argus_CFG_DCA_Enable
 /*!***************************************************************************
  * @brief	The dynamic configuration algorithm output power stages enumerator.
  *****************************************************************************/
-typedef enum Argus_CFG_DCA_PowerStages
+typedef enum
 {
 	/*! Low output power stage. */
 	DCA_POWER_LOW = 0,
@@ -108,11 +139,10 @@ typedef enum Argus_CFG_DCA_PowerStages
 
 } argus_dca_power_t;
 
-
 /*!***************************************************************************
  * @brief	The dynamic configuration algorithm gain stages enumerator.
  *****************************************************************************/
-typedef enum Argus_CFG_DCA_GainStages
+typedef enum
 {
 	/*! Low gain stage. */
 	DCA_GAIN_LOW = 0,
@@ -130,85 +160,112 @@ typedef enum Argus_CFG_DCA_GainStages
 
 
 /*!***************************************************************************
- * @brief	The dynamic configuration algorithm state mask for the gain stage.
+ * @brief	State flags for the current frame.
+ * @details	State flags determine the current state of the measurement frame:
+ * 			- [0]: #ARGUS_STATE_MEASUREMENT_MODE: Measurement Mode:
+ * 				- 0: Mode A
+ * 				- 1: Mode B
+ * 				.
+ * 			- [1]: #ARGUS_STATE_DUAL_FREQ_MODE: Dual Frequency Mode Enabled Flag
+ * 				- 0: Disabled, measurements w/ base frequency only
+ * 				- 1: Enabled, measurements w/ detuned frequency
+ * 				.
+ * 			- [2]: #ARGUS_STATE_MEASUREMENT_FREQ: Measurement Frequency for
+ * 			       Dual Frequency Mode, (only valid if #ARGUS_STATE_DUAL_FREQ_MODE
+ * 			       flag is set)
+ * 				- 0: A-Frame w/ detuned frequency
+ * 				- 1: B-Frame w/ detuned frequency
+ * 				.
+ * 			- [3]: #ARGUS_STATE_DEBUG_MODE
+ * 			- [4]: Reserved
+ * 			- [5]: #ARGUS_STATE_BGL_WARNING
+ * 			- [6]: #ARGUS_STATE_BGL_ERROR
+ * 			- [7]: #ARGUS_STATE_PLL_LOCKED
+ * 				- 0: PLL_LOCKED bit was not set at start of integration;
+ * 				- 0: PLL_LOCKED bit was set at start of integration;
+ * 				.
+ * 			- [8]: #ARGUS_STATE_DCA_PHASE_SHIFTED
+ * 			- [9]: Reserved
+ * 			- [10]: Reserved
+ * 			- [11]: Reserved
+ * 			- [12-13]: Power Stages
+ * 			- [14-15]: Gain Stages
+ * 			.
  *****************************************************************************/
-#define DCA_STATE_GAIN_MASK (0x03U)
-
-/*!***************************************************************************
- * @brief	The dynamic configuration algorithm state mask for the gain stage.
- *****************************************************************************/
-#define DCA_STATE_GAIN_SHIFT (6U)
-
-/*!***************************************************************************
- * @brief	The dynamic configuration algorithm gain stage count.
- *****************************************************************************/
-#define DCA_STATE_GAIN_COUNT (4U)
-
-/*!***************************************************************************
- * @brief	Getter for the dynamic configuration algorithm gain stage.
- *****************************************************************************/
-#define DCA_STATE_GAIN_GET(state) (((state) >> DCA_STATE_GAIN_SHIFT) & DCA_STATE_GAIN_MASK)
-
-
-/*!***************************************************************************
- * @brief	The dynamic configuration algorithm state mask for the power stage.
- *****************************************************************************/
-#define DCA_STATE_POWER_MASK (0x03U)
-
-/*!***************************************************************************
- * @brief	The dynamic configuration algorithm state mask for the power stage.
- *****************************************************************************/
-#define DCA_STATE_POWER_SHIFT (4U)
-
-/*!***************************************************************************
- * @brief	The dynamic configuration algorithm power stage count.
- *****************************************************************************/
-#define DCA_STATE_POWER_COUNT (4U)
-
-/*!***************************************************************************
- * @brief	Getter for the dynamic configuration algorithm power stage.
- *****************************************************************************/
-#define DCA_STATE_POWER_GET(state) (((state) >> DCA_STATE_POWER_SHIFT) & DCA_STATE_POWER_MASK)
-
-
-/*!***************************************************************************
- * @brief	The dynamic configuration algorithm state flags.
- *****************************************************************************/
-typedef enum Argus_CFG_DCA_State
+typedef enum
 {
-	/*! DCA is in normal stage. */
-	DCA_STATE_NORMAL = 0,
+	/*! No state flag set. */
+	ARGUS_STATE_NONE = 0,
 
-	/*! DCA is in phase shifted mode. */
-	DCA_STATE_PHASESHIFTED = 1,
+	/*! 0x01: Measurement Mode.
+	 *  - 0: Mode A: Long Range / Medium Precision
+	 *  - 1: Mode B: Short Range / High Precision */
+	ARGUS_STATE_MEASUREMENT_MODE = 1U << 0U,
+
+	/*! 0x02: Dual Frequency Mode Enabled.
+	 *  - 0: Disabled: measurements with base frequency,
+	 *  - 1: Enabled: measurement with detuned frequency. */
+	ARGUS_STATE_DUAL_FREQ_MODE = 1U << 1U,
+
+	/*! 0x04: Measurement Frequency for Dual Frequency Mode
+	 *        (only if #ARGUS_STATE_DUAL_FREQ_MODE flag is set).
+	 *  - 0: A-Frame w/ detuned frequency,
+	 *  - 1: B-Frame w/ detuned frequency */
+	ARGUS_STATE_MEASUREMENT_FREQ = 1U << 2U,
+
+	/*! 0x08: Debug Mode. If set, the range value of erroneous pixels are not
+	 * 		  cleared or reset.
+	 * 	- 0: Disabled (default).
+	 *  - 1: Enabled. */
+	ARGUS_STATE_DEBUG_MODE = 1U << 3U,
+
+	/*! 0x20: Background Light Warning Flag.
+	 * Set whenever the background light is very high and the
+	 *  measurement data might be unreliable.
+	 *  - 0: No Warning Background Light is within valid range.
+	 *  - 1: Warning: Background Light is very high. */
+	ARGUS_STATE_BGL_WARNING = 1U << 5U,
+
+	/*! 0x40: Background Light Error Flag.
+	 *  Set whenever the background light is too high and the
+	 *  measurement data is unreliable or invalid.
+	 *  - 0: No Error, Background Light is within valid range.
+	 *  - 1: Error: Background Light is too high. */
+	ARGUS_STATE_BGL_ERROR = 1U << 6U,
+
+	/*! 0x80: PLL_LOCKED bit.
+	 *  - 0: PLL not locked at start of integration.
+	 *  - 1: PLL locked at start of integration. */
+	ARGUS_STATE_PLL_LOCKED = 1U << 7U,
+
+	/*! 0x0100: DCA is in phase shifted mode. */
+	ARGUS_STATE_DCA_PHASE_SHIFTED = 1U << 8U,
 
 	/*! DCA is in high gain stage. */
-	DCA_STATE_LOW_GAIN = DCA_GAIN_LOW << DCA_STATE_GAIN_SHIFT,
+	ARGUS_STATE_DCA_POWER_LOW = DCA_GAIN_LOW << ARGUS_STATE_DCA_POWER_SHIFT,
 
 	/*! DCA is in high gain stage. */
-	DCA_STATE_MED_LOW_GAIN = DCA_GAIN_MEDIUM_LOW << DCA_STATE_GAIN_SHIFT,
+	ARGUS_STATE_DCA_POWER_MED_LOW = DCA_GAIN_MEDIUM_LOW << ARGUS_STATE_DCA_POWER_SHIFT,
 
 	/*! DCA is in high gain stage. */
-	DCA_STATE_MED_HIGH_GAIN = DCA_GAIN_MEDIUM_HIGH << DCA_STATE_GAIN_SHIFT,
+	ARGUS_STATE_DCA_POWER_MED_HIGH = DCA_GAIN_MEDIUM_HIGH << ARGUS_STATE_DCA_POWER_SHIFT,
 
 	/*! DCA is in low gain stage. */
-	DCA_STATE_HIGH_GAIN = DCA_GAIN_HIGH << DCA_STATE_GAIN_SHIFT,
+	ARGUS_STATE_DCA_POWER_HIGH = DCA_GAIN_HIGH << ARGUS_STATE_DCA_POWER_SHIFT,
 
 	/*! DCA is in high gain stage. */
-	DCA_STATE_LOW_POWER = DCA_GAIN_LOW << DCA_STATE_POWER_SHIFT,
+	ARGUS_STATE_DCA_GAIN_LOW = DCA_GAIN_LOW << ARGUS_STATE_DCA_GAIN_SHIFT,
 
 	/*! DCA is in high gain stage. */
-	DCA_STATE_MED_LOW_POWER = DCA_GAIN_MEDIUM_LOW << DCA_STATE_POWER_SHIFT,
+	ARGUS_STATE_DCA_GAIN_MED_LOW = DCA_GAIN_MEDIUM_LOW << ARGUS_STATE_DCA_GAIN_SHIFT,
 
 	/*! DCA is in high gain stage. */
-	DCA_STATE_MED_HIGH_POWER = DCA_GAIN_MEDIUM_HIGH << DCA_STATE_POWER_SHIFT,
+	ARGUS_STATE_DCA_GAIN_MED_HIGH = DCA_GAIN_MEDIUM_HIGH << ARGUS_STATE_DCA_GAIN_SHIFT,
 
 	/*! DCA is in low gain stage. */
-	DCA_STATE_HIGH_POWER = DCA_GAIN_HIGH << DCA_STATE_POWER_SHIFT,
+	ARGUS_STATE_DCA_GAIN_HIGH = DCA_GAIN_HIGH << ARGUS_STATE_DCA_GAIN_SHIFT,
 
-} argus_dca_state_t;
-
-
+} argus_state_t;
 
 /*!***************************************************************************
  * @brief	Dynamic Configuration Adaption (DCA) Parameters.
@@ -224,7 +281,7 @@ typedef enum Argus_CFG_DCA_State
  * 			 - All that features are heeding the Laser Safety limits.
  * 			 .
  *****************************************************************************/
-typedef struct Argus_CFG_DCA
+typedef struct
 {
 	/*! Enables the automatic configuration adaption features.
 	 *  Enables the dynamic part if #DCA_ENABLE_DYNAMIC and the static only if
@@ -297,12 +354,6 @@ typedef struct Argus_CFG_DCA
 	 *  'MIN' <= AthLow <= Atarget <= AthHigh <= 'MAX' */
 	uq12_4_t AthHigh;
 
-	/*! Whether to use the average binned amplitude rather than the maximum
-	 *  amplitude for the algorithm.
-	 *
-	 *  Boolean value: Disabled == 0 or Enabled != 0 */
-	uint8_t UseAvgAmpl;
-
 	/*! The nominal analog integration depth in UQ10.6 format,
 	 *  i.e. the nominal pattern count per sample.
 	 *
@@ -367,30 +418,6 @@ typedef struct Argus_CFG_DCA
 	 *  'MIN' <= GainMin <= GainNom <= GainMax <= 'MAX' */
 	argus_dca_gain_t GainMax;
 
-	/*! The dynamic phase shift switching area in % of the max. area.
-	 *  Determines the area around the critical part around the edges
-	 *  in the correlation function to be shifted by introducing a global
-	 *  phase shift.
-	 *
-	 *  All available values from the 8-bit representation are valid.
-	 *  The actual percentage value is determined by 100%/256*x.
-	 *
-	 *  Use 0 to disable the global phase shift feature.
-	 *
-	 *  Note that a pattern with periodicity of at least 8-bits is required
-	 *  to induce a phase shift of 1/8-th of the period, otherwise the value
-	 *  is rejected and a zero must be set. */
-	uq0_8_t PhaseShiftArea;
-
-	/*! Single Pulse Mode.
-	 *
-	 *  If a single laser pulse is left from the pattern shortening, the
-	 *  correlation pattern is shortened to a single pulse as well in order
-	 *  to prevent overloading the pixels.
-	 *
-	 *  Boolean value, 0: disabled, else: enabled */
-	uint8_t SinglePulseMode;
-
 	/*! Power Saving Ratio value.
 	 *
 	 *  Determines the percentage of the full available frame time that is not
@@ -413,4 +440,4 @@ typedef struct Argus_CFG_DCA
 } argus_cfg_dca_t;
 
 /*! @} */
-#endif /* ARGUS_CFG_DCA_H */
+#endif /* ARGUS_DCA_H */

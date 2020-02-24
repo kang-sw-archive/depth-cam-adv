@@ -25,3 +25,8 @@ status_t S2PI_SetIrqCallback(
     g_cbIrqObj = callbackData;
     return STATUS_OK;
 }
+
+uint32_t S2PI_ReadIrqPin( s2pi_slave_t slave )
+{
+    return HAL_GPIO_ReadPin( ARGUS_IRQ_GPIO_Port, ARGUS_IRQ_Pin );
+}

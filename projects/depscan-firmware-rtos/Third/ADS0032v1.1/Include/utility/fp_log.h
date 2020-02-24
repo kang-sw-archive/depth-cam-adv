@@ -1,9 +1,9 @@
 /*************************************************************************//**
  * @file
- * @brief    	This file is part of the Argus hardware API.
+ * @brief    	This file is part of the AFBR-S50 API.
  * @details		This file provides an logarithm function for fixed point type.
  * 
- * @copyright	Copyright c 2016-2018, Avago Technologies GmbH.
+ * @copyright	Copyright c 2016-2019, Avago Technologies GmbH.
  * 				All rights reserved.
  *****************************************************************************/
 
@@ -27,7 +27,7 @@
  *
  * 			@see https://www.quinapalus.com/efunc.html
  *
- * @param 	x :	The input parameter in unsigned fixed point format Q15.16.
+ * @param	x The input parameter in unsigned fixed point format Q15.16.
  * @return	Result y = ln(x) in the UQ16.16 format.
  *****************************************************************************/
 q15_16_t fp_log16(uq16_16_t x);

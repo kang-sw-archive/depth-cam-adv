@@ -1,3 +1,13 @@
+//! @file       name
+//! @brief      File brief description
+//!
+//! @author     Seungwoo Kang (ki6080@gmail.com)
+//! @copyright  Copyright (c) 2019. Seungwoo Kang. All rights reserved.
+//!
+//! @details
+//!             File detailed description
+//! 
+//! @bug        Intermittent data corruption issues
 #include <FreeRTOS.h>
 
 #include <alloca.h>
@@ -34,6 +44,9 @@ static size_t       s_hostTrBufHead = 0;
 static volatile int s_writingTask   = 0;
 static void         flushTransmitData();
 TaskHandle_t        s_hTask;
+
+// Logger property
+static bool s_bAllowVerboseWarning = false;
 
 // Read host connection for requested byte length.
 // @returns false when failed to receive data, with given timeout.
@@ -215,6 +228,16 @@ extern "C" void API_Putf( char const* fmt, ... )
     va_end( vp );
 }
 
+void API_SetAllowVerboseWarnings( bool bAllow )
+{
+    s_bAllowVerboseWarning = bAllow;
+}
+
+bool API_GetAllowVerboseWarnings()
+{
+    return s_bAllowVerboseWarning;
+}
+
 void API_Msgf( char const* fmt, ... )
 {
     va_list vp;
@@ -319,6 +342,23 @@ void stringCmdHandler( char* str, size_t len )
     }
     break;
 
+    case STRCASE( "log-verbose" ):
+    {
+        if ( argc == 1 )
+        {
+            s_bAllowVerboseWarning = !s_bAllowVerboseWarning;
+        }
+        else
+        {
+            s_bAllowVerboseWarning = strcmp( argv[1], "true" ) == 0;
+        }
+
+        API_Msgf(
+          "info: Set verbose log enabled [%s]",
+          s_bAllowVerboseWarning ? "on" : "off" );
+    }
+    break;
+
     case STRCASE( "get" ):
     {
         if ( argc == 1 )
@@ -329,6 +369,7 @@ void stringCmdHandler( char* str, size_t len )
         GetHandler( argv[1] );
     }
     break;
+
     default:
         break;
     }
@@ -429,8 +470,8 @@ void flushTransmitData()
     if ( s_hostTrBufHead == 0 )
         return;
 
-    taskENTER_CRITICAL();
+    vTaskSuspendAll();
     td_write( gHostConnection, s_hostTrBuf, s_hostTrBufHead );
     s_hostTrBufHead = 0;
-    taskEXIT_CRITICAL();
+    xTaskResumeAll();
 }

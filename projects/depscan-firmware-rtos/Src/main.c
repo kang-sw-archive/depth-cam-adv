@@ -52,7 +52,7 @@ TIM_HandleTypeDef htim3;
 
 /* Definitions for HostIO */
 osThreadId_t HostIOHandle;
-uint32_t HostIOBuffer[ 512 ];
+uint32_t HostIOBuffer[ 1024 ];
 osStaticThreadDef_t HostIOControlBlock;
 const osThreadAttr_t HostIO_attributes = {
   .name = "HostIO",
@@ -81,6 +81,7 @@ void StartDefaultTask(void *argument);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+
 /* USER CODE END 0 */
 
 /**
@@ -90,6 +91,7 @@ void StartDefaultTask(void *argument);
 int main(void)
 {
   /* USER CODE BEGIN 1 */
+
   /* USER CODE END 1 */
   
 
@@ -117,7 +119,7 @@ int main(void)
   MX_TIM3_Init();
   MX_USB_Device_Init();
   /* USER CODE BEGIN 2 */
-  
+
   /* USER CODE END 2 */
   /* Init scheduler */
   osKernelInitialize();
@@ -490,7 +492,7 @@ static void MX_GPIO_Init(void)
 
   /*Configure GPIO pin : ARGUS_IRQ_Pin */
   GPIO_InitStruct.Pin = ARGUS_IRQ_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
+  GPIO_InitStruct.Mode = GPIO_MODE_IT_FALLING;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(ARGUS_IRQ_GPIO_Port, &GPIO_InitStruct);
 

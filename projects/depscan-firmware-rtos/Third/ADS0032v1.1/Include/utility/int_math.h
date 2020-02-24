@@ -1,9 +1,9 @@
 /*************************************************************************//**
  * @file
- * @brief    	This file is part of the Argus hardware API.
+ * @brief    	This file is part of the AFBR-S50 API.
  * @details		Provides algorithms applied to integer values.
  * 
- * @copyright	Copyright c 2016-2018, Avago Technologies GmbH.
+ * @copyright	Copyright c 2016-2019, Avago Technologies GmbH.
  * 				All rights reserved.
  *****************************************************************************/
 
@@ -54,7 +54,7 @@ static unsigned isqrt(unsigned v);
  * 			minimum for all n.
  * 			Special case 0: returns 0;
  *
- * @param 	x :	Input parameter.
+ * @param	x Input parameter.
  * @return		Nearest exponent n.
  *****************************************************************************/
 
@@ -74,7 +74,7 @@ static unsigned log2_round(unsigned x)
  * 			Special case 0: returns 0;
  * 			Maximum input: 3037000499; higher number result in overflow! (returns 0)
  *
- * @param 	x :	Input parameter.
+ * @param	x Input parameter.
  * @return		Nearest power-of-two number, i.e. 2^n.
  *****************************************************************************/
 
@@ -91,7 +91,7 @@ static unsigned binary_round(unsigned x)
  *
  * @details	@see http://graphics.stanford.edu/~seander/bithacks.html
  *
- * @param 	x :	Input parameter.
+ * @param	x Input parameter.
  * @return		Number of bits set.
  *****************************************************************************/
 static unsigned popcount(unsigned x)
@@ -107,7 +107,7 @@ static unsigned popcount(unsigned x)
  *
  * @details	@see http://graphics.stanford.edu/~seander/bithacks.html
  *
- * @param 	x :	Input parameter.
+ * @param	x Input parameter.
  * @return		True if integer is power of 2.
  *****************************************************************************/
 static unsigned ispowoftwo(unsigned x)
@@ -125,7 +125,7 @@ static unsigned ispowoftwo(unsigned x)
  * 			@see https://en.wikipedia.org/wiki/Integer_square_root
  * 			@see https://github.com/chmike/fpsqrt/blob/master/fpsqrt.c
  *
- * @param 	x :	Input parameter.
+ * @param	x Input parameter.
  * @return		isqrt(x)
  *****************************************************************************/
 static unsigned isqrt(unsigned v)

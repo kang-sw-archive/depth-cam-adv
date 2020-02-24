@@ -1,14 +1,15 @@
 target remote :3333
 file ./build/depscan-firmware-rtos-g431kb.elf
 
+define rst
+monitor reset halt
+monitor adapter_khz 2000
+end
+
 define setup
 shell cmd.exe /c make all -j8
 file ./build/depscan-firmware-rtos-g431kb.elf
-monitor reset halt
-end
-
-define rst
-monitor reset halt
+rst
 end
 
 define program

@@ -94,6 +94,9 @@ bool DistSens_MeasureAsync(
 //! @returns    true if capture can begin.
 bool DistSens_IsAvailable( dist_sens_t );
 
+//! @brief      Request to report current version
+void DistSens_GetVersion( dist_sens_t, char* Out, size_t Len );
+
 //! @}
 //! @}
 //! @}

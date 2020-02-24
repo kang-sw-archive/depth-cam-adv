@@ -56,6 +56,12 @@ void API_SendHostRaw( void const* data, size_t len );
 //!             API_SendHostString
 void API_Putf( char const* fmt, ... ); //!< Print text without time header
 
+//! @brief      Sets log verbosity
+void API_SetAllowVerboseWarnings( bool bAllow );
+
+//! @brief      Get verbose log disabled
+bool API_GetAllowVerboseWarnings();
+
 //! @brief      Transmit log string. It'll automatically append time information
 //! in front.
 //! @return     nothing. Don't use.

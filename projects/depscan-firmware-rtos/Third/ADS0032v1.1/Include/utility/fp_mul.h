@@ -1,9 +1,9 @@
 /*************************************************************************//**
  * @file
- * @brief    	This file is part of the Argus hardware API.
+ * @brief    	This file is part of the AFBR-S50 API.
  * @details		Provides definitions and basic macros for fixed point data types.
  * 
- * @copyright	Copyright c 2016-2018, Avago Technologies GmbH.
+ * @copyright	Copyright c 2016-2019, Avago Technologies GmbH.
  * 				All rights reserved.
  *****************************************************************************/
 
@@ -29,9 +29,9 @@
  * 			Note that the result must fit into the 32-bit value. An assertion
  * 			error occurs otherwise (or undefined behavior of no assert available).
  *
- * @param 	u :	The left parameter in Qx1.y1 format
- * @param 	v :	The right parameter in Qx2.y2 format
- * @param	shift : The final right shift (rounding) value.
+ * @param	u The left parameter in Qx1.y1 format
+ * @param	v The right parameter in Qx2.y2 format
+ * @param	shift The final right shift (rounding) value.
  * @return	Result = (a*b)>>shift in Qx.(y1+y2-shift) format.
  *****************************************************************************/
 int32_t fp_muls(int32_t u, int32_t v, uint_fast8_t shift);
@@ -47,9 +47,9 @@ int32_t fp_muls(int32_t u, int32_t v, uint_fast8_t shift);
  * 			Note that the result must fit into the 32-bit value. An assertion
  * 			error occurs otherwise (or undefined behavior of no assert available).
  *
- * @param 	u :	The left parameter in UQx1.y1 format
- * @param 	v :	The right parameter in UQx2.y2 format
- * @param	shift : The final right shift (rounding) value.
+ * @param	u The left parameter in UQx1.y1 format
+ * @param	v The right parameter in UQx2.y2 format
+ * @param	shift The final right shift (rounding) value.
  * @return	Result = (a*b)>>shift in UQx.(y1+y2-shift) format.
  *****************************************************************************/
 uint32_t fp_mulu(uint32_t u, uint32_t v, uint_fast8_t shift);

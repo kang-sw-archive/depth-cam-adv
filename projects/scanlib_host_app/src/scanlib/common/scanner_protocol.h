@@ -31,16 +31,20 @@ typedef struct
 
     int64_t TimeAfterLaunch_us;
 
+    uint16_t NumMaxPointRequest;
+    uint16_t NumProcessingPointRequest;
+
     bool bIsPrecisionMode;
     bool bIsIdle;
     bool bIsSensorInitialized;
     bool bIsPaused;
+
 } FDeviceStat;
 
 enum ECaptureModeBit
 {
     ECMB_DISTANCE_AUTO = 1,
-    ECMB_DISTANCE_FAR  = 2,
+    ECMB_DISTANCE_FAR = 2,
     ECMB_LOW_PRECISION = 4,
 };
 

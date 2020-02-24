@@ -362,16 +362,26 @@ bool FScannerProtocolHandler::requestReport( bool bSync, size_t TimeoutMs )
 {
     // Request status update
     mReportWait.arg.store( false );
-    SendString( "capture report" );
 
     // Wait until device return status if needed.
     if ( bSync )
     {
-        unique_lock<mutex> lck( mReportWait.mtx, try_to_lock );
-        return mReportWait.cv.wait_for(
-          lck, chrono::milliseconds { TimeoutMs }, [this]() {
-              return mReportWait.arg.load();
-          } );
+        // Try five times
+        constexpr auto Retry = 5;
+        auto           Wait  = std::chrono::milliseconds( TimeoutMs / Retry );
+
+        for ( size_t i = 0; i < Retry; i++ )
+        {
+            unique_lock<mutex> lck( mReportWait.mtx );
+            SendString( "capture report" );
+            if ( mReportWait.cv.wait_for(
+                   lck, Wait, [this]() { return mReportWait.arg.load(); } ) )
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     return true;
@@ -402,20 +412,32 @@ void FScannerProtocolHandler::OnBinaryData( char const* data, size_t len )
     {
     case ECommand::RSP_STAT_REPORT:
     {
-        // Writing for device status structure is only available here.
+        // Writing to device status structure is only available here.
         auto Stat = *ptr_cast<const FDeviceStat>( p )++;
         mStat.store( Stat );
         mReportWait.arg.store( true );
         mReportWait.cv.notify_all();
         if ( OnReport )
+        {
             OnReport( Stat );
+        }
     }
     break;
     case ECommand::RSP_LINE_DATA:
     {
         if ( bRequestingCapture == false )
             break;
-        auto desc  = *ptr_cast<const FLineDesc>( p )++;
+        auto desc = *ptr_cast<const FLineDesc>( p )++;
+        auto ActualReceive
+          = len - sizeof( SCANNER_COMMAND_TYPE ) - sizeof( FLineDesc );
+        auto ExpectedReceive = desc.NumPxls * sizeof FPxlData();
+        if ( ActualReceive != ExpectedReceive )
+        {
+            print(
+              "warning: expected: %ul bytes, received: %ul bytes\n",
+              uint32_t( ExpectedReceive ),
+              uint32_t( ActualReceive ) );
+        }
         mStatCache = mStat.load();
         StoreLineData(
           mImage,
@@ -453,6 +475,7 @@ void FScannerProtocolHandler::OnBinaryData( char const* data, size_t len )
     case ECommand::RSP_POINT:
         auto Data = *ptr_cast<const FPointData>( p )++;
         OnPointRecv ? OnPointRecv( Data ) : (void)0;
+        mNumAvailablePointRequest++;
         break;
 
     default:
@@ -473,15 +496,29 @@ void FScannerProtocolHandler::RequestMotorMovement(
 
 void FScannerProtocolHandler::SetMotorDriveClockSpeed( int Hz ) noexcept
 {
+    SetMotorDriveClockSpeed( Hz, Hz );
+}
+
+void FScannerProtocolHandler::SetMotorDriveClockSpeed(
+  int X_Hz,
+  int Y_Hz ) noexcept
+{
     char buf[256];
-    sprintf( buf, "capture config motor-max-clk %d %d", Hz, Hz );
+    sprintf( buf, "capture config motor-max-clk %d %d", X_Hz, Y_Hz );
     SendString( buf );
 }
 
 void FScannerProtocolHandler::SetMotorAcceleration( int Hz ) noexcept
 {
+    SetMotorAcceleration( Hz, Hz );
+}
+
+void FScannerProtocolHandler::SetMotorAcceleration(
+  int X_Hz,
+  int Y_Hz ) noexcept
+{
     char buf[256];
-    sprintf( buf, "capture config motor-accel %d %d", Hz, Hz );
+    sprintf( buf, "capture config motor-accel %d %d", X_Hz, Y_Hz );
     SendString( buf );
 }
 
@@ -494,6 +531,27 @@ void FScannerProtocolHandler::StopCapture() noexcept
 {
     bRequestingCapture = false;
     SendString( "capture stop" );
+}
+
+bool FScannerProtocolHandler::Report( size_t TimeoutMs ) noexcept
+{
+    return requestReport( true, TimeoutMs );
+}
+
+void FScannerProtocolHandler::ConfigSensorDelay(
+  uint32_t Microseconds ) noexcept
+{
+    char buf[128];
+    sprintf( buf, "capture config delay %d", Microseconds );
+    SendString( buf );
+}
+
+void FScannerProtocolHandler::ConfigSensorDistMode(
+  bool bCloseDistMode ) noexcept
+{
+    SendString(
+      bCloseDistMode ? "capture config precision 1"
+                     : "capture config precision 0" );
 }
 
 bool FScannerProtocolHandler::IsDeviceRunning() const noexcept
@@ -612,4 +670,52 @@ FScanImageDesc::~FScanImageDesc() noexcept
     {
         delete[] mData;
     }
+}
+
+bool FScannerProtocolHandler::QueuePointAngular(
+  uint32_t RequestID,
+  int16_t  xs,
+  int16_t  ys ) noexcept
+{
+    if ( mNumAvailablePointRequest == 0 )
+    {
+        return false;
+    }
+
+    mNumAvailablePointRequest--;
+    char buf[256];
+    sprintf( buf, "capture point-queue %d %d %d", RequestID, xs, ys );
+    SendString( buf );
+}
+
+bool FScannerProtocolHandler::QueuePointAngular(
+  uint32_t RequestID,
+  float    AngleX,
+  float    AngleY ) noexcept
+{
+    return QueuePointAngular(
+      RequestID,
+      int16_t( AngleX / mStatCache.DegreePerStepX ),
+      int16_t( AngleY / mStatCache.DegreePerStepY ) );
+}
+
+size_t FScannerProtocolHandler::GetPendingPointRequestCount() const noexcept
+{
+    return mNumMaxPointRequest - mNumAvailablePointRequest;
+}
+
+bool FScannerProtocolHandler::InitPointMode() noexcept
+{
+    bool bWasIdle = !IsDeviceRunning();
+    SendString( "capture point-start" );
+
+    // Refresh number of available requests
+    mStatCache = mStat.load();
+    constexpr decltype( mStatCache.NumMaxPointRequest ) MAX_VALUE = 15;
+    auto Max = std::min( MAX_VALUE, mStatCache.NumMaxPointRequest );
+    mNumAvailablePointRequest = Max;
+    mNumMaxPointRequest       = Max;
+
+    print( "info: initialize point capture process; Max req %d\n", Max );
+    return bWasIdle;
 }

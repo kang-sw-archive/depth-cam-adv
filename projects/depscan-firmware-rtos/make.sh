@@ -1,1 +1,1 @@
-cmd.exe /c make -j8
+cmd.exe /c make $1 -j8

@@ -31,10 +31,14 @@ typedef struct
 
     int64_t TimeAfterLaunch_us;
 
+    uint16_t NumMaxPointRequest;
+    uint16_t NumProcessingPointRequest;
+
     bool bIsPrecisionMode;
     bool bIsIdle;
     bool bIsSensorInitialized;
     bool bIsPaused;
+
 } FDeviceStat;
 
 enum ECaptureModeBit

@@ -1,9 +1,9 @@
-/*************************************************************************/ /**
+/*************************************************************************//**
  * @file
- * @brief    	This file is part of the Argus API.
+ * @brief    	This file is part of the AFBR-S50 API.
  * @details		This file provides an interface for enabling/disabling interrupts.
  * 
- * @copyright	Copyright c 2016-2018, Avago Technologies GmbH.
+ * @copyright	Copyright c 2016-2019, Avago Technologies GmbH.
  * 				All rights reserved.
  *****************************************************************************/
 
@@ -13,37 +13,64 @@
 /*!***************************************************************************
  * @defgroup	argus_irq IRQ: Global Interrupt Control Layer
  * @ingroup		argus_platform
- * @brief		Argus- Global Interrupt Control Layer
+ *
+ * @brief		Global Interrupt Control Layer
+ *
  * @details		This module provides functionality to globally enable/disable
- * 				interrupts by turning the I-bit in the CPSR on/off.
+ *				interrupts by turning the I-bit in the CPSR on/off.
+ *
+ *				Here is a simple example implementation using the CMSIS functions
+ *				"__enable_irq()" and "__disable_irq()". An integer counter is
+ *				used to achieve nested interrupt disabling:
+ *
+ *				@code
+ *
+ *				// Global lock level counter value.
+ *				static volatile int g_irq_lock_ct;
+ *
+ *				// Global unlock all interrupts using CMSIS function "__enable_irq()".
+ *				void IRQ_UNLOCK(void)
+ *				{
+ *					assert(g_irq_lock_ct > 0);
+ *					if (--g_irq_lock_ct <= 0)
+ *					{
+ *						g_irq_lock_ct = 0;
+ *						__enable_irq();
+ *					}
+ *				}
+ *
+ *				// Global lock all interrupts using CMSIS function "__disable_irq()".
+ *				void IRQ_LOCK(void)
+ *				{
+ *					__disable_irq();
+ *					g_irq_lock_ct++;
+ *				}
+ *
+ *				@endcode
+ *
+ *				\note The IRQ locking mechanism is used to create atomic
+ *				sections that are very few processor instruction only. It does
+ *				NOT lock interrupts for considerable amounts of time.
+ *
  * @addtogroup 	argus_irq
  * @{
  *****************************************************************************/
-
-#ifndef __STATIC_INLINE
-#    define __STATIC_INLINE static inline
-#endif
-#include <assert.h>
-#include <cmsis_gcc.h>
-/*! Lock level counter value. */
 
 /*!***************************************************************************
  * @brief	Enable IRQ Interrupts
  *
  * @details	Enables IRQ interrupts by clearing the I-bit in the CPSR.
  * 			Can only be executed in Privileged modes.
- * @return	-
  *****************************************************************************/
-void IRQ_UNLOCK( void );
+void IRQ_UNLOCK(void);
 
 /*!***************************************************************************
  * @brief	Disable IRQ Interrupts
  *
  * @details	Disables IRQ interrupts by setting the I-bit in the CPSR.
  * 			Can only be executed in Privileged modes.
- * @return	-
  *****************************************************************************/
-void IRQ_LOCK( void );
+void IRQ_LOCK(void);
 
 /*! @} */
 #endif // ARGUS_IRQ_H

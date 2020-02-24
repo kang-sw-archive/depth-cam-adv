@@ -5,6 +5,9 @@
 
 status_t print( const char* fmt, ... )
 {
+    if ( API_GetAllowVerboseWarnings() == false )
+        return STATUS_OK;
+
     va_list vp;
     va_list vp2;
     va_start( vp, fmt );

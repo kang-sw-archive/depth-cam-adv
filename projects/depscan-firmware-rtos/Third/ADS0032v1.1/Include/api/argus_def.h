@@ -1,10 +1,10 @@
 /*************************************************************************//**
  * @file
- * @brief    	This file is part of the Argus hardware API.
+ * @brief    	This file is part of the AFBR-S50 hardware API.
  * @details		This file provides generic definitions belonging to all
- * 				devices from the Argus product family.
+ * 				devices from the AFBR-S50 product family.
  *
- * @copyright	Copyright (c) 2016-2018, Avago Technologies GmbH.
+ * @copyright	Copyright (c) 2016-2019, Avago Technologies GmbH.
  * 				All rights reserved.
  *****************************************************************************/
 
@@ -18,62 +18,16 @@
 #include "argus_version.h"
 #include "utility/fp_def.h"
 #include "utility/time.h"
+#include <assert.h>
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
+#include <string.h>
 
 /*!***************************************************************************
  * @addtogroup 	argusapi
  * @{
  *****************************************************************************/
-
-/*! Argus Chip v1.0 */
-#define ARGUS_CHIP_NONE 0
-
-/*! Argus Chip v1.0 */
-#define ARGUS_CHIP_V1_0 MAKE_VERSION(1, 0, 0)
-
-/*! Argus Chip v1.1 */
-#define ARGUS_CHIP_V1_1 MAKE_VERSION(1, 1, 0)
-
-
-/*!***************************************************************************
- * @brief	The Argus Chip Version.
- * @details Available Versions:
- * 			- v1.0: ARGUS_CHIP_V1_0
- * 			- v1.1: ARGUS_CHIP_V1_1
- * 			.
- *****************************************************************************/
-#define ARGUS_CHIP_VERSION ARGUS_CHIP_V1_1
-
-/*!***************************************************************************
- * @brief	The Argus Chip Name.
- *****************************************************************************/
-#if ARGUS_CHIP_VERSION == ARGUS_CHIP_V1_0
-#define ARGUS_CHIP_NAME "ADS0032 v1.0"
-#elif ARGUS_CHIP_VERSION == ARGUS_CHIP_V1_1
-#define ARGUS_CHIP_NAME "ADS0032 v1.1"
-#else
-#define ARGUS_CHIP_NAME "ADS0032"
-#endif
-
-/*!***************************************************************************
- * @brief	Data logging via serial connection.
- * @warning	Logging decreases the measurement rate drastically!
- *****************************************************************************/
-#define ARGUS_LOGGING 0
-
-/*!***************************************************************************
- * @brief	Hardware (SPI) trace via serial connection.
- * @warning	Tracing decreases the measurement rate drastically!
- *****************************************************************************/
-#define ARGUS_TRACE 0
-
-/*!***************************************************************************
- * @brief	Error logging via serial connection.
- * @warning	Logging decreases the measurement rate drastically!
- *****************************************************************************/
-#define ARGUS_ERROR_LOGGING 1
 
 /*!***************************************************************************
  * @brief	Maximum number of phases per measurement cycle.
@@ -83,48 +37,92 @@
 #define ARGUS_PHASECOUNT 4U
 
 /*!***************************************************************************
- * @brief	The Argus pixel field size in x direction (long edge).
+ * @brief	The device pixel field size in x direction (long edge).
  *****************************************************************************/
 #define ARGUS_PIXELS_X	8U
 
 /*!***************************************************************************
- * @brief	The Argus pixel field size in y direction (short edge).
+ * @brief	The device pixel field size in y direction (short edge).
  *****************************************************************************/
 #define ARGUS_PIXELS_Y	4U
 
 /*!***************************************************************************
- * @brief	The Argus pixel count.
+ * @brief	The total device pixel count.
  *****************************************************************************/
 #define ARGUS_PIXELS	((ARGUS_PIXELS_X)*(ARGUS_PIXELS_Y))
 
-
 /*!***************************************************************************
- * @brief	The Argus module types.
+ * @brief	The AFBR-S50 module types.
  *****************************************************************************/
-typedef enum ArgusModuleVersion
+typedef enum
 {
 	/*! No device connected or not recognized. */
 	MODULE_NONE = 0,
 
 	/*! AFBR-S50MV85G: an ADS0032 based multi-pixel range finder device
-	 *  w/ 4x8 pixel matrix. */
+	 *  w/ 4x8 pixel matrix and infra-red, 850 nm, laser source for
+	 *  medium range 3D applications.
+	 *  Version 1 - legacy version! */
 	AFBR_S50MV85G_V1 = 1,
+
+	/*! AFBR-S50MV85G: an ADS0032 based multi-pixel range finder device
+	 *  w/ 4x8 pixel matrix and infra-red, 850 nm, laser source for
+	 *  medium range 3D applications.
+	 *  Version 2 - legacy version! */
+	AFBR_S50MV85G_V2 = 2,
+
+	/*! AFBR-S50MV85G: an ADS0032 based multi-pixel range finder device
+	 *  w/ 4x8 pixel matrix and infra-red, 850 nm, laser source for
+	 *  medium range 3D applications.
+	 *  Version 7 - current version! */
+	AFBR_S50MV85G_V3 = 7,
+
+	/*! AFBR-S50LV85D: an ADS0032 based multi-pixel range finder device
+	 *  w/ 4x8 pixel matrix and infra-red, 850 nm, laser source for
+	 *  long range 1D applications.
+	 *  Version 1 - current version! */
+	AFBR_S50LV85D_V1 = 3,
+
+	/*! AFBR-S50MV68B: an ADS0032 based multi-pixel range finder device
+	 *  w/ 4x8 pixel matrix and red, 680 nm, laser source for
+	 *  medium range 1D applications.
+	 *  Version 1 - current version! */
+	AFBR_S50MV68B_V1 = 4,
+
+	/*! AFBR-S50MV85G: an ADS0032 based multi-pixel range finder device
+	 *  w/ 4x8 pixel matrix and infra-red, 850 nm, laser source for
+	 *  medium range 3D applications.
+	 *  Version 1 - current version! */
+	AFBR_S50MV85I_V1 = 5,
+
+	/*! AFBR-S50MV85G: an ADS0032 based multi-pixel range finder device
+	 *  w/ 4x8 pixel matrix and infra-red, 850 nm, laser source for
+	 *  short range 3D applications.
+	 *  Version 1 - current version! */
+	AFBR_S50SV85K_V1 = 6,
+
+
+	/*! Reserved for future extensions. */
+	Reserved = 0b111111
 
 } argus_module_version_t;
 
 /*!***************************************************************************
- * @brief	The Argus chip versions.
+ * @brief	The AFBR-S50 chip versions.
  *****************************************************************************/
-typedef enum ArgusChipVersion
+typedef enum
 {
 	/*! No device connected or not recognized. */
-	ADS0032_NONE = ARGUS_CHIP_NONE,
+	ADS0032_NONE = 0,
 
 	/*! ADS0032 v1.0 */
-	ADS0032_V1_0 = ARGUS_CHIP_V1_0,
+	ADS0032_V1_0 = MAKE_VERSION(1, 0, 0),
 
 	/*! ADS0032 v1.1 */
-	ADS0032_V1_1 = ARGUS_CHIP_V1_1
+	ADS0032_V1_1 = MAKE_VERSION(1, 1, 0),
+
+	/*! ADS0032 v1.2 */
+	ADS0032_V1_2 = MAKE_VERSION(1, 2, 0)
 
 } argus_chip_version_t;
 
@@ -134,11 +132,10 @@ typedef enum ArgusChipVersion
  *****************************************************************************/
 #define ARGUS_MODE_COUNT (2)
 
-
 /*!***************************************************************************
- * @brief	The Argus measurement mode.
+ * @brief	The measurement modes.
  *****************************************************************************/
-typedef enum Argus_Mode
+typedef enum
 {
 	/*! Measurement Mode A: Baseline Mode = Long Range Mode. */
 	ARGUS_MODE_A = 1,
@@ -148,28 +145,13 @@ typedef enum Argus_Mode
 
 } argus_mode_t;
 
-
 /*!***************************************************************************
- * @brief	The clock mode.
- *****************************************************************************/
-typedef enum
-{
-	/*! Intern clock mode: internal RC oscillator is used for clock generation. */
-	ARGUS_CLOCK_MODE_INTERN,
-
-	/*! Extern clock mode: external source is used for clock generation.
-	 *  (Not supported yet!!) */
-	ARGUS_CLOCK_MODE_EXTERN
-} argus_clock_mode_t;
-
-
-/*!***************************************************************************
- * @brief	Generic argus callback function.
+ * @brief	Generic API callback function.
  * @details	Invoked by the API. The content of the abstract data pointer
  * 			depends upon the context.
- * @param	status : The module status that caused the callback. #STATUS_OK if
+ * @param	status The module status that caused the callback. #STATUS_OK if
  * 					 everything was as expected.
- * @param	data   : An abstract pointer to an user defined data. This will
+ * @param	data   An abstract pointer to an user defined data. This will
  * 					 usually be passed to the function that also takes the
  * 					 callback as an parameter. Otherwise it has a special
  * 					 meaning such as configuration or calibration data.

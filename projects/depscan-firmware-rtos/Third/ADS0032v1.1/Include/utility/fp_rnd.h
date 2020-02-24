@@ -1,9 +1,9 @@
 /*************************************************************************//**
  * @file
- * @brief    	This file is part of the Argus hardware API.
+ * @brief    	This file is part of the AFBR-S50 API.
  * @details		Provides definitions and basic macros for fixed point data types.
  * 
- * @copyright	Copyright c 2016-2018, Avago Technologies GmbH.
+ * @copyright	Copyright c 2016-2019, Avago Technologies GmbH.
  * 				All rights reserved.
  *****************************************************************************/
 
@@ -22,8 +22,8 @@
  * @brief	Converting with rounding from UQx.n1 to UQx.n2.
  * @details	Equivalent to dividing by 2^n with correct rounding to unsigned
  * 			integer values.
- * @param 	Q : The number in (U)Qx.n1 fixed point format to be rounded.
- * @param 	n : The number of bits to be truncated/rounded,
+ * @param	Q The number in (U)Qx.n1 fixed point format to be rounded.
+ * @param	n The number of bits to be truncated/rounded,
  * 			    e.g. UQ8.8 -> UQ12.4 => n = 8 - 4 = 4.
  * @return	The rounded value in (U)Qx.n2 format.
  *****************************************************************************/
@@ -48,8 +48,8 @@ static inline uint32_t fp_rndu(uint32_t Q, uint_fast8_t n)
  * @brief	Converting with rounding from Qx.n1 to Qx.n2.
  * @details	Equivalent to dividing by 2^n with correct rounding to integer
  * 			values.
- * @param 	Q : The number in (U)Qx.n1 fixed point format to be rounded.
- * @param 	n : The number of bits to be truncated/rounded,
+ * @param	Q The number in (U)Qx.n1 fixed point format to be rounded.
+ * @param	n The number of bits to be truncated/rounded,
  * 			    e.g. Q7.8 -> Q11.4 => n = 8 - 4 = 4.
  * @return	The rounded value in (U)Qx.n2 format.
  *****************************************************************************/

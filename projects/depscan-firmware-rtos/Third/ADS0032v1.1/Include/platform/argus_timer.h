@@ -1,21 +1,24 @@
 /*************************************************************************//**
  * @file
- * @brief    	This file is part of the Argus API.
+ * @brief    	This file is part of the AFBR-S50 API.
  * @details		This file provides an interface for the required timer modules.
  * 
- * @copyright	Copyright c 2016-2018, Avago Technologies GmbH.
+ * @copyright	Copyright c 2016-2019, Avago Technologies GmbH.
  * 				All rights reserved.
  *****************************************************************************/
 
 #ifndef ARGUS_TIMER_H
-#define ARGUS_TIMER_H 
+#define ARGUS_TIMER_H
+
 /*!***************************************************************************
- * @defgroup	argus_timer Timer: Argus Timer Interface
+ * @defgroup	argus_timer Timer: Hardware Timer Interface
  * @ingroup		argus_platform
+ *
  * @brief 		Timer implementations for lifetime counting as well as periodic
  * 				callback.
+ *
  * @details		The module provides an interface to the timing utilities that
- * 				are required by the Argus time-of-flight sensor API.
+ * 				are required by the AFBR-S50 time-of-flight sensor API.
  *
  *				Two essential features have to be provided by the user code:
  *				1. Time Measurement Capability: In order to keep track of outgoing
@@ -25,7 +28,8 @@
  *				2. Periodic Callback: The API provides an automatic starting of
  *				  measurement cycles at a fixed frame rate via a periodic
  *				  interrupt timer. If this feature is not used, implementation
- *				  of the periodic interrupts can be skipped.
+ *				  of the periodic interrupts can be skipped. An weak default
+ *				  implementation is provide in the API.
  *				.
  *
  *				The time measurement feature is simply implemented by the function
@@ -57,14 +61,14 @@
  *				\endcode
  *
  *				Note that the implemented timer module must therefore support
- *				as many different intervals as instanced of the Argus API are
+ *				as many different intervals as instances of the AFBR-S50 device are
  *				used.
  *
  * @addtogroup 	argus_timer
  * @{
  *****************************************************************************/
 
-#include <stdint.h>
+#include "api/argus_def.h"
 
 /*******************************************************************************
  * Lifetime Counter Timer Interface
@@ -72,12 +76,19 @@
 
 /*!***************************************************************************
  * @brief	Obtains the lifetime counter value from the timers.
- * *
- * @param 	hct : A pointer to the high counter value bits representing current
- * 				  time in seconds.
- * @param 	lct : A pointer to the low counter value bits representing current
- * 				  time in microseconds.
- * @return 	-
+ *
+ * @details The function is required to get the current time relative to any
+ * 			point in time, e.g. the startup time. The returned values \p hct and
+ * 			\p lct are given in seconds and microseconds respectively. The current
+ * 			elapsed time since the reference time is then calculated from:
+ *
+ * 			t_now [µsec] = hct * 1000000 µsec + lct * 1 µsec
+ *
+ * @param	hct A pointer to the high counter value bits representing current
+ * 				time in seconds.
+ *
+ * @param	lct A pointer to the low counter value bits representing current
+ * 				time in microseconds. Range: 0, .., 999999 µsec
  *****************************************************************************/
 void Timer_GetCounterValue(uint32_t * hct, uint32_t * lct);
 
@@ -87,60 +98,75 @@ void Timer_GetCounterValue(uint32_t * hct, uint32_t * lct);
 
 /*!***************************************************************************
  * @brief	The callback function type for periodic interrupt timer.
+ *
  * @details	The function that is invoked every time a specified interval elapses.
  * 			An abstract parameter is passed to the function whenever it is called.
- * @param 	param : An abstract parameter to be passed to the callback. This is
+ *
+ * @param	param An abstract parameter to be passed to the callback. This is
  * 					also the identifier of the given interval.
- * @return	-
  *****************************************************************************/
 typedef void (*timer_cb_t)(void * param);
 
 /*!***************************************************************************
  * @brief	Installs an periodic timer callback function.
+ *
  * @details	Installs an periodic timer callback function that is invoked whenever
  * 			an interval elapses. The callback is the same for any interval,
  * 			however, the single intervals can be identified by the passed
  * 			parameter.
  * 			Passing a zero-pointer removes and disables the callback.
- * @param	f :	The timer callback function.
- * @return 	-
+ *
+ * @param	f The timer callback function.
+ *
+ * @return 	Returns the \link #status_t status\endlink (#STATUS_OK on success).
  *****************************************************************************/
-void Timer_SetCallback(timer_cb_t f);
+status_t Timer_SetCallback(timer_cb_t f);
 
 /*!***************************************************************************
  * @brief	Sets the timer interval for a specified callback parameter.
+ *
  * @details	Sets the callback interval for the specified parameter and starts
  * 			the timer with a new interval. If there is already an interval with
  * 			the given parameter, the timer is restarted with the given interval.
  * 			If the same time interval as already set is passed, nothing happens.
  * 			Passing a interval of 0 disables the timer.
- * @param 	dt_microseconds : The callback interval in microseconds.
- * @param 	param : An abstract parameter to be passed to the callback. This is
+ *
+ * @param	dt_microseconds The callback interval in microseconds.
+ *
+ * @param	param An abstract parameter to be passed to the callback. This is
  * 					also the identifier of the given interval.
- * @return	-
+ *
+ * @return 	Returns the \link #status_t status\endlink (#STATUS_OK on success).
  *****************************************************************************/
-void Timer_SetInterval(uint32_t dt_microseconds, void * param);
+status_t Timer_SetInterval(uint32_t dt_microseconds, void * param);
 
 /*!***************************************************************************
  * @brief	Starts the timer for a specified callback parameter.
+ *
  * @details	Sets the callback interval for the specified parameter and starts
  * 			the timer with a new interval. If there is already an interval with
  * 			the given parameter, the timer is restarted with the given interval.
  * 			Passing a interval of 0 disables the timer.
- * @param 	dt_microseconds : The callback interval in microseconds.
- * @param 	param : An abstract parameter to be passed to the callback. This is
- * 					also the identifier of the given interval.
- * @return	-
+ *
+ * @param	dt_microseconds The callback interval in microseconds.
+ *
+ * @param	param An abstract parameter to be passed to the callback. This is
+ * 				  also the identifier of the given interval.
+ *
+ * @return 	Returns the \link #status_t status\endlink (#STATUS_OK on success).
  *****************************************************************************/
-void Timer_Start(uint32_t dt_microseconds, void * param);
+status_t Timer_Start(uint32_t dt_microseconds, void * param);
 
 /*!***************************************************************************
  * @brief	Stops the timer for a specified callback parameter.
+ *
  * @details	Stops a callback interval for the specified parameter.
- * @param 	param : An abstract parameter that identifies the interval to be stopped.
- * @return	-
+ *
+ * @param	param An abstract parameter that identifies the interval to be stopped.
+ *
+ * @return 	Returns the \link #status_t status\endlink (#STATUS_OK on success).
  *****************************************************************************/
-void Timer_Stop(void * param);
+status_t Timer_Stop(void * param);
 
 /*! @} */
 #endif /* ARGUS_TIMER_H */

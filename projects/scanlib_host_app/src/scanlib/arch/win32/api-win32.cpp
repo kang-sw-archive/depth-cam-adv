@@ -10,6 +10,22 @@
 #    include <winusb.h>
 #    pragma comment( lib, "setupapi.lib" )
 
+bool API_RefreshScannerControl( FScannerProtocolHandler& S )
+{
+    char Port[20];
+    Port[0] = 0;
+    API_FindConnection( Port );
+    std::string str = Port;
+
+    if ( strlen( Port ) == 0 )
+    {
+        return false;
+    }
+
+    API_SystemCreateScannerControl( S, Port );
+    return true;
+}
+
 bool API_MappToRGB(
   intptr_t                     context,
   std::function<void( void* )> draw_cb,

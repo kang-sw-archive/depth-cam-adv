@@ -57,6 +57,12 @@ extern "C" void StartDefaultTask( void* nouse_ )
         (void)0;
 }
 
+void vApplicationStackOverflowHook( TaskHandle_t xTask, char* pcTaskName )
+{
+    // Catches error
+    uassert( false );
+}
+
 /**
 
 @mainpage Depscan firmware

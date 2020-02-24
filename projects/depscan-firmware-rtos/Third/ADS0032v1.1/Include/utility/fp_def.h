@@ -1,9 +1,9 @@
 /*************************************************************************//**
  * @file
- * @brief    	This file is part of the Argus hardware API.
+ * @brief    	This file is part of the AFBR-S50 API.
  * @details		Provides definitions and basic macros for fixed point data types.
  * 
- * @copyright	Copyright c 2016-2018, Avago Technologies GmbH.
+ * @copyright	Copyright c 2016-2019, Avago Technologies GmbH.
  * 				All rights reserved.
  *****************************************************************************/
 
@@ -42,6 +42,25 @@
  * 			- Granularity: 0.25
  *****************************************************************************/
 typedef uint8_t uq6_2_t;
+
+
+/*******************************************************************************
+ * UQ4.4
+ ******************************************************************************/
+/*!***************************************************************************
+ * @brief	Unsigned fixed point number: UQ4.4
+ * @details	An unsigned fixed point number format based on the 8-bit unsigned
+ * 			integer type with 4 integer and 4 fractional bits.
+ * 			- Range: 0 .. 15.9375
+ * 			- Granularity: 0.0625
+ *****************************************************************************/
+typedef uint8_t uq4_4_t;
+
+/*! Maximum value of UQ4.4 number format. */
+#define UQ4_4_MAX ((uq4_4_t)UINT8_MAX)
+
+/*! The 1/one/unity in UQ4.4 number format. */
+#define UQ4_4_ONE ((uq4_4_t)(1U<<4U))
 
 
 /*******************************************************************************
@@ -94,6 +113,9 @@ typedef int8_t q0_7_t;
  * 			- Granularity: 0.00390625
  *****************************************************************************/
 typedef uint8_t uq0_8_t;
+
+/*! Maximum value of UQ0.8 number format. */
+#define UQ0_8_MAX ((uq0_8_t)UINT8_MAX)
 
 /*******************************************************************************
  * UQ12.4
@@ -164,6 +186,9 @@ typedef uint16_t uq10_6_t;
  *****************************************************************************/
 typedef uint16_t uq1_15_t;
 
+/*! Maximum value of UQ1.15 number format. */
+#define UQ1_15_MAX ((uq1_15_t)UINT16_MAX)
+
 /*! The 1/one/unity in UQ1.15 number format. */
 #define UQ1_15_ONE ((uq1_15_t)(1U << 15U))
 
@@ -202,6 +227,26 @@ typedef int16_t q2_13_t;
  * 			- Granularity: 0.25
  *****************************************************************************/
 typedef int16_t q13_2_t;
+
+
+/*******************************************************************************
+ * UQ28.4
+ ******************************************************************************/
+/*!***************************************************************************
+ * @brief	Unsigned fixed point number: UQ28.4
+ * @details	An unsigned fixed point number format based on the 32-bit unsigned
+ * 			integer type with 28 integer and 4 fractional bits.
+ * 			- Range: 0 ... 268435455.9375
+ * 			- Granularity: 0.0625
+ *****************************************************************************/
+typedef uint32_t uq28_4_t;
+
+/*! Maximum value of UQ28.4 number format. */
+#define UQ28_4_MAX ((uq28_4_t)UINT32_MAX)
+
+/*! The 1/one/unity in UQ28.4 number format. */
+#define UQ28_4_ONE ((uq28_4_t)(1U<<4U))
+
 
 /*******************************************************************************
  * UQ16.16
@@ -268,6 +313,12 @@ typedef int32_t q9_22_t;
 
 /*! The 1/one/unity in Q9.22 number format. */
 #define Q9_22_ONE ((q9_22_t)(1U<<22U))
+
+/*! Maximum value of Q9.22 number format. */
+#define Q9_22_MAX ((q9_22_t)INT32_MAX)
+
+/*! Minimum value of Q9.22 number format. */
+#define Q9_22_MIN ((q9_22_t)INT32_MIN)
 
 /*! @} */
 #endif /* FP_DEF_H */

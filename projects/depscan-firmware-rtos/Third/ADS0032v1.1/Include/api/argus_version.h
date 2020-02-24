@@ -1,9 +1,9 @@
 /*************************************************************************//**
  * @file
- * @brief    	This file is part of the Argus hardware API.
- * @details		This file contains current Argus API version number.
+ * @brief    	This file is part of the AFBR-S50 API.
+ * @details		This file contains the current API version number.
  * 
- * @copyright	Copyright c 2016-2018, Avago Technologies GmbH.
+ * @copyright	Copyright c 2016-2019, Avago Technologies GmbH.
  * 				All rights reserved.
  *****************************************************************************/
 
@@ -13,27 +13,29 @@
 /*!***************************************************************************
  * @defgroup	version API Version
  * @ingroup		argusapi
- * @brief		Argus API Code Version.
- * @details		Provides a version number for the Argus Firmware.
+ *
+ * @brief		API and library core version number
+ *
+ * @details		Contains the AFBR-S50 API and Library Core Version Number.
+ *
  * @addtogroup 	version
  * @{
  *****************************************************************************/
 
-/*! Major version number of the Argus API. */
-#define ARGUS_API_VERSION_MAJOR	0
+/*! Major version number of the AFBR-S50 API. */
+#define ARGUS_API_VERSION_MAJOR	1
 
-/*! Minor version number of the Argus API. */
-#define ARGUS_API_VERSION_MINOR	9
+/*! Minor version number of the AFBR-S50 API. */
+#define ARGUS_API_VERSION_MINOR	0
 
-/*! Bugfix version number of the Argus API. */
-#define ARGUS_API_VERSION_BUGFIX 5
-
+/*! Bugfix version number of the AFBR-S50 API. */
+#define ARGUS_API_VERSION_BUGFIX 4
 
 /*! Construct the version number for drivers. */
 #define MAKE_VERSION(major, minor, bugfix) \
 	(((major) << 24) | ((minor) << 16) | (bugfix))
 
-/*! Version number of the API. */
+/*! Version number of the AFBR-S50 API. */
 #define ARGUS_API_VERSION MAKE_VERSION((ARGUS_API_VERSION_MAJOR), \
 									   (ARGUS_API_VERSION_MINOR), \
 									   (ARGUS_API_VERSION_BUGFIX))

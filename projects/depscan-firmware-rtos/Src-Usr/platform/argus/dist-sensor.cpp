@@ -8,8 +8,11 @@
 //! @todo Check if default calibration is required or not
 #include <FreeRTOS.h>
 
+extern "C" {
 #include <argus.h>
+}
 #include <semphr.h>
+#include <stdio.h>
 #include <uEmbedded/uassert.h>
 #include "../../app/app.h"
 #include "../../app/dist-sensor.h"
@@ -48,6 +51,27 @@ bool DistSens_IsAvailable( dist_sens_t h )
 {
     return h->init_correct_ && !h->capturing_
            && Argus_GetStatus( h->hnd_ ) == STATUS_OK;
+}
+
+void DistSens_GetVersion( dist_sens_t h, char* Out, size_t Len )
+{
+    auto ID            = Argus_GetChipID( h->hnd_ );
+    auto ChipVersion   = Argus_GetChipVersion( h->hnd_ );
+    auto ApiVersion    = Argus_GetAPIVersion();
+    auto ModuleVersion = Argus_GetModuleVersion( h->hnd_ );
+
+    Len -= snprintf(
+      Out,
+      Len,
+      "-- AFBR-S50 DRIVER -- \n"
+      "Chip ID       :   %x \n"
+      "API Version   :   %x \n"
+      "Chip Version  :   %x \n"
+      "Module Version:   %x \n",
+      ID,
+      ApiVersion,
+      ChipVersion,
+      ModuleVersion );
 }
 
 bool DistSens_Configure( dist_sens_t h, dist_sens_config_t const* opt )
@@ -135,8 +159,7 @@ bool DistSens_MeasureAsync(
     const argus_callback_t cb_a = []( status_t result, void* raw ) -> status_t {
         if ( result == STATUS_OK )
         {
-            result = Argus_EvaluateData(
-              si.hnd_, &si.result_, (ads_value_buf_t*)raw );
+            result = Argus_EvaluateData( si.hnd_, &si.result_, raw );
 
             // Both of evaluation and data status should be OK
             if ( result == STATUS_OK )
@@ -188,10 +211,25 @@ bool DistSens_MeasureAsync(
             // To prevent waiting forever, a watchdog timer will trigger to
             // reset sensor's status when the sensor doesn't respond.
             si.watchdog_hnd_ = API_SetTimer(
-              si.conf_.Delay_us * 10, NULL, []( auto ) {
-                  API_Msg( "warning: Oops, seems capture request is lost! \n" );
+              si.conf_.Delay_us * 10, (void*)si.conf_.Delay_us, []( void* pp ) {
+                  auto ModeStr = si.conf_.bCloseDistanceMode ? "Near" : "Far";
+                  auto Delay   = (uint32_t)pp;
+                  API_Msgf(
+                    "warning: Oops, seems capture request is lost! \n"
+                    ">> Delay: %d us ... Timeout by %d us \n"
+                    ">> Mode : %s\n"
+                    ">> Device Stat : %d\n",
+                    Delay,
+                    Delay * 10,
+                    ModeStr,
+                    Argus_GetStatus( si.hnd_ ) );
+
                   si.capturing_    = false;
                   si.init_correct_ = false;
+                  Argus_Abort( si.hnd_ );
+
+                  if ( si.cb_ )
+                      si.cb_( ghDistSens, si.cb_obj_, ERROR_TIMEOUT );
               } );
             return true;
         }
@@ -274,15 +312,11 @@ static bool RefreshArgusSens()
         // Configure calibration options of sensor only when initialization
         // process is finished without error. Sensor will be configured with
         // default calibrations
-        argus_calibration_t calib;
-        Argus_GetDefaultCalibration( &calib );
-
-        // Stores result to evaluate configuration result.
-        res = Argus_SetCalibration( s.hnd_, &calib );
-
         Argus_SetConfigurationFrameTime( s.hnd_, s.conf_.Delay_us );
         Argus_SetConfigurationMeasurementMode(
           s.hnd_, s.conf_.bCloseDistanceMode ? ARGUS_MODE_B : ARGUS_MODE_A );
+        Argus_SetConfigurationDFMEnabled( s.hnd_, ARGUS_MODE_A, false );
+        Argus_SetConfigurationDFMEnabled( s.hnd_, ARGUS_MODE_B, false );
     }
 
     si.capturing_ = false;

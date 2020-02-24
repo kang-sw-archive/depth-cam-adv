@@ -1,9 +1,9 @@
 /*************************************************************************//**
  * @file
- * @brief    	This file is part of the Argus hardware API.
+ * @brief    	This file is part of the AFBR-S50 API.
  * @details		This file provides a square root function for fixed point type.
  * 
- * @copyright	Copyright c 2016-2018, Avago Technologies GmbH.
+ * @copyright	Copyright c 2016-2019, Avago Technologies GmbH.
  * 				All rights reserved.
  *****************************************************************************/
 
@@ -26,8 +26,8 @@
  *
  *			@see https://code.google.com/archive/p/libfixmath
  *
- * @param 	q :	The input parameter in unsigned fixed point format UQx.y.
- * @param	y : The number of fractional bits of the fixed point format.
+ * @param	q The input parameter in unsigned fixed point format UQx.y.
+ * @param	y The number of fractional bits of the fixed point format.
  * @return	Result = sqrt(y) in the same Qx.y format as the input parameter q.
  *****************************************************************************/
 uint32_t fp_sqrt0(uint32_t q);

@@ -104,8 +104,8 @@ static GPIO_TypeDef* const      dir_gpio_xy[]
 static uint16_t const      dir_gpio_pin_xy[] = { MOT_DIR_1_Pin, MOT_DIR_2_Pin };
 static GPIO_PinState const dir_gpio_value_xy[][2] = {
   // [hwid][fwd?]
-  { GPIO_PIN_SET, GPIO_PIN_RESET }, // Motor x
-  { GPIO_PIN_RESET, GPIO_PIN_SET }, // Motor y
+  { GPIO_PIN_RESET, GPIO_PIN_SET }, // Motor x
+  { GPIO_PIN_SET, GPIO_PIN_RESET }, // Motor y
 };
 
 /////////////////////////////////////////////////////////////////////////////

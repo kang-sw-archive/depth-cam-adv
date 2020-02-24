@@ -1,10 +1,10 @@
 /*************************************************************************//**
  * @file
- * @brief    	This file is part of the Argus hardware API.
+ * @brief    	This file is part of the AFBR-S50 API.
  * @details		This file contains status codes for all platform specific
  * 				functions.
  * 
- * @copyright	Copyright c 2016-2018, Avago Technologies GmbH.
+ * @copyright	Copyright c 2016-2019, Avago Technologies GmbH.
  * 				All rights reserved.
  *****************************************************************************/
 
@@ -13,8 +13,8 @@
 
 /*!***************************************************************************
  * @defgroup	status Status Codes
- * @brief		Status Codes Definitions
- * @details		Defines status codes for specific functions.
+ * @brief		Status and error code definitions
+ * @details		Defines status and error codes for function return values.
  * @addtogroup 	status
  * @{
  *****************************************************************************/
@@ -25,7 +25,8 @@
  * Definitions
  ******************************************************************************/
 
-/*! Generic status and error return codes. */
+/*! Generic status and error return codes.
+ *  @ingroup status */
 enum StatusGeneric
 {
 	/*! Status for success/no error. */
@@ -68,7 +69,12 @@ enum StatusGeneric
 	ERROR_NOT_IMPLEMENTED = -9,
 };
 
-/*! Type used for all status and error return values. */
+/*!***************************************************************************
+ * @brief	Type used for all status and error return values.
+ * @details - 0 is OK or no error.
+ * 			- negative values determine errors.
+ * 			- positive values determine warnings or status information.
+ *****************************************************************************/
 typedef int32_t status_t;
 
 /*! @} */

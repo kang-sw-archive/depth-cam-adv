@@ -65,9 +65,9 @@
 
 #define USBD_VID     0x6080
 #define USBD_LANGID_STRING     1033
-#define USBD_MANUFACTURER_STRING     "S.W.Kang"
+#define USBD_MANUFACTURER_STRING     "STMicroelectronics"
 #define USBD_PID     0xccd2
-#define USBD_PRODUCT_STRING     "Depscan v2"
+#define USBD_PRODUCT_STRING     "STM32 Virtual ComPort"
 #define USBD_CONFIGURATION_STRING     "CDC"
 #define USBD_INTERFACE_STRING     "CDC Interface"
 

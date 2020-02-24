@@ -1,19 +1,15 @@
-/*************************************************************************/ /**
+/*************************************************************************//**
  * @file
- * @brief    	This file is the main header of the Argus API.
- * @details		This file is the main header of the Argus API.
+ * @brief    	This file is part of the AFBR-S50 API.
+ * @details		This file the main header of the AFBR-S50 API.
  * 
- * @copyright	Copyright c 2016-2018, Avago Technologies GmbH.
+ * @copyright	Copyright c 2016-2019, Avago Technologies GmbH.
  * 				All rights reserved.
  *****************************************************************************/
 
 #ifndef ARGUS_H
 #define ARGUS_H
-#ifdef __cplusplus
-extern "C" {
-#endif
+
 #include "api/argus_api.h"
-#ifdef __cplusplus
-}
-#endif
+
 #endif /* ARGUS_H */

@@ -106,14 +106,15 @@ static void timer_cb__spi( void* p )
 #if ASYNC_SPI
 static void transfer_done( DMA_HandleTypeDef* h )
 {
-    if ( g_rxtxRunning > 0 )
+    if ( --g_rxtxRunning > 0 )
     {
-        g_rxtxRunning--;
         return;
     }
+    g_rxtxRunning = 0;
 
     struct slave_desc volatile* s = g_slaves + g_activeSlave;
-    HAL_GPIO_WritePin( s->chipSelectPort, s->chipSelectPin, !s->csActiveVal );
+    // HAL_GPIO_WritePin( s->chipSelectPort, s->chipSelectPin, !s->csActiveVal
+    // );
 
     // print("Receiving Bytes ...\n");
     if ( s->callback )
@@ -127,14 +128,15 @@ static void transfer_done( DMA_HandleTypeDef* h )
 
 static void transfer_error( DMA_HandleTypeDef* h )
 {
-    if ( g_rxtxRunning > 0 )
+    if ( --g_rxtxRunning > 0 )
     {
-        g_rxtxRunning--;
         return;
     }
+    g_rxtxRunning = 0;
 
     struct slave_desc volatile* s = g_slaves + g_activeSlave;
-    HAL_GPIO_WritePin( s->chipSelectPort, s->chipSelectPin, !s->csActiveVal );
+    // HAL_GPIO_WritePin( s->chipSelectPort, s->chipSelectPin, !s->csActiveVal
+    // );
     if ( s->callback )
     {
         s->latestTransferStatus = ERROR_FAIL;
@@ -259,7 +261,7 @@ status_t S2PI_TransferFrame(
         g_rxtxRunning = 1;
 #if !ASYNC_SPI
         res = HAL_SPI_TransmitReceive(
-          &hspi1, (uint8_t*)txData, rxData, frameSize, 1000 );
+          &hspi1, (uint8_t*)txData, rxData, frameSize, 10000 );
 #else
         res = HAL_SPI_TransmitReceive_DMA(
           &hspi1, (uint8_t*)txData, rxData, frameSize );
@@ -269,7 +271,7 @@ status_t S2PI_TransferFrame(
     {
         g_rxtxRunning = 1;
 #if !ASYNC_SPI
-        res = HAL_SPI_Transmit( &hspi1, (uint8_t*)txData, frameSize, 1000 );
+        res = HAL_SPI_Transmit( &hspi1, (uint8_t*)txData, frameSize, 10000 );
 #else
         res = HAL_SPI_Transmit_DMA( &hspi1, (uint8_t*)txData, frameSize );
 #endif

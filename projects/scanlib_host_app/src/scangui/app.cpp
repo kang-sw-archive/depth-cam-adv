@@ -16,9 +16,8 @@ using namespace std;
 //
 // Flag definitions
 //
-DEFINE_bool( no_gui, false, "Disables GUI mode" );
+DEFINE_bool( no_gui, true, "Disables GUI mode" );
 DEFINE_bool( show_console, false, "Hide console window printing log" );
-DEFINE_string( com, "", "Specify com port name manually. e.g. COM5" );
 DEFINE_string( config_path, "", "Specify configuration path" );
 
 int gui_app( int argc, char** argv );
@@ -44,24 +43,10 @@ int main( int argc, char** argv )
         else
         {
             API_SystemShowConsole( FLAGS_show_console );
-            return gui_app( argc, argv );
+            auto ret = gui_app( argc, argv );
+            API_SystemShowConsole( true );
         }
     }
 
     return 0;
-}
-
-bool API_RefreshScannerControl( FScannerProtocolHandler& S )
-{
-    char Port[20];
-    Port[0] = 0;
-    API_FindConnection( Port );
-    FLAGS_com = Port;
-
-    if ( FLAGS_com.empty() )
-    {
-        return false;
-    }
-    API_SystemCreateScannerControl( S, FLAGS_com.c_str() );
-    return true;
 }

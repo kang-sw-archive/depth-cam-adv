@@ -1,9 +1,9 @@
 /*************************************************************************//**
  * @file
- * @brief    	This file is part of the Argus hardware API.
- * @details		Defines the generic Argus API results data structure.
+ * @brief    	This file is part of the AFBR-S50 API.
+ * @details		Defines the generic measurement results data structure.
  * 
- * @copyright	Copyright c 2016-2018, Avago Technologies GmbH.
+ * @copyright	Copyright c 2016-2019, Avago Technologies GmbH.
  * 				All rights reserved.
  *****************************************************************************/
 
@@ -11,11 +11,20 @@
 #define ARGUS_RES_H
 
 /*!***************************************************************************
- * @defgroup	argusres Measurement Data API
+ * @defgroup	argusres Measurement Data
  * @ingroup		argusapi
- * @brief		Argus measurement results data structure.
- * @details		Structure that gathers all the results from the Argus device.
- * 				E.g. distance and amplitude values.
+ *
+ * @brief		Measurement results data structures.
+ *
+ * @details		The interface defines all data structures that correspond to
+ * 				the AFBR-S50 measurement results, e.g.
+ * 					- 1D distance and amplitude values,
+ * 					- 3D distance and amplitude values (i.e. per pixel),
+ * 					- Auxiliary channel measurement results (VDD, IAPD, temperature, ...)
+ * 					- Device and result status
+ * 					- ...
+ * 					.
+ *
  * @addtogroup 	argusres
  * @{
  *****************************************************************************/
@@ -28,11 +37,8 @@
  * @brief	The 1d measurement results data structure.
  * @details The 1d measurement results obtained by the pixel binning algorithm.
  *****************************************************************************/
-typedef struct Argus_1dResults
+typedef struct
 {
-	/*! Mask of pixels that are used to obtain the 1D measurement results. */
-	uint32_t PixelMask;
-
 	/*! Raw 1D range value in meter (Q9.22 format). The distance obtained by
 	 *  the pixel binning algorithm from the current measurement frame. */
 	q9_22_t Range;
@@ -49,7 +55,7 @@ typedef struct Argus_1dResults
  * @details The auxiliary measurement results obtained by the auxiliary task.
  * 			Special values, i.e. 0xFFFFU, indicate no readout value available.
  *****************************************************************************/
-typedef struct Argus_AuxResults
+typedef struct
 {
 	/*! VDD ADC channel readout value.
 	 *  Special Value if no value has been measured:
@@ -84,14 +90,14 @@ typedef struct Argus_AuxResults
  * @code
  * 			// Pixel Field: Pixel[x][y]
  * 			//
- * 			// y  O O O O O O O O
- * 			// ^   O O O O O O O O
- * 			// |  O O O O O O O O          O (ref. Px)
- * 			// |   O O O O O O O O
  * 			// 0  -----------> x
+ * 			// |  O O O O O O O O
+ * 			// |   O O O O O O O O
+ * 			// |  O O O O O O O O          O (ref. Px)
+ * 			// y   O O O O O O O O
  * @endcode
  *****************************************************************************/
-typedef struct Argus_Results
+typedef struct
 {
 	/*! The \link #status_t status\endlink of the current measurement frame.
 	 *   - 0 (i.e. #STATUS_OK) for a good measurement signal.
@@ -102,14 +108,6 @@ typedef struct Argus_Results
 	/*! Time in milliseconds (measured since the last MCU startup/reset)
 	 *  when the measurement was triggered. */
 	ltc_t TimeStamp;
-
-	/*! ADC channel saturated mask for the first
-	 *  channels 0 .. 31 (active pixels channels). */
-	uint32_t PxSatMask;
-
-	/*! ADS channel saturated mask for the remaining
-	 *  channels 31 .. 63 (miscellaneous values). */
-	uint32_t ChSatMask;
 
 	/*! The configuration for the current measurement frame. */
 	argus_meas_frame_t Frame;
@@ -132,6 +130,7 @@ typedef struct Argus_Results
 	argus_results_aux_t Auxiliary;
 
 } argus_results_t;
+
 
 /*! @} */
 #endif /* ARGUS_RES_H */

@@ -1,9 +1,9 @@
 /*************************************************************************//**
  * @file
- * @brief		This file is part of the Argus hardware API.
+ * @brief		This file is part of the AFBR-S50 API.
  * @details		Provides trigonometric functions applied to fixed point data types.
  * 
- * @copyright	Copyright c 2016-2018, Avago Technologies GmbH.
+ * @copyright	Copyright c 2016-2019, Avago Technologies GmbH.
  * 				All rights reserved.
  *****************************************************************************/
 
@@ -32,7 +32,7 @@
  * 			limited to [ 0 ... 2 ). The result is given as Q0.7.
  * 			The output error is between -7.813E-03 .. 3.831E-03.
  *
- * @param 	x : Phase in units of PI and UQ1.7 format.
+ * @param	x Phase in units of PI and UQ1.7 format.
  * @return  	Sine value in Q0.7 format. Note the missing 1.00 in this
  * 				format and the corresponding error.
  *****************************************************************************/
@@ -45,7 +45,7 @@ q0_7_t fp_sin7(uq1_7_t x);
  * 			limited to [ 0 ... 2 ). The result is given as Q0.7.
  * 			The output error is between -7.813E-03 .. 3.831E-03.
  *
- * @param 	x : Phase in units of PI and UQ1.7 format.
+ * @param	x Phase in units of PI and UQ1.7 format.
  * @return  	Cosine value in Q0.7 format. Note the missing 1.00 in this
  * 				format and the corresponding error.
  *****************************************************************************/
@@ -62,7 +62,7 @@ q0_7_t fp_cos7(uq1_7_t x);
  * 			limited to [ 0 ... 2 ). The result is given as Q0.15.
  * 			The output error is between -3.052E-05 .. 1.512E-05.
  *
- * @param 	x : Phase in units of PI and UQ1.7 format.
+ * @param	x Phase in units of PI and UQ1.7 format.
  * @return  	Sine value in Q0.15 format. Note the missing 1.00 in this
  * 				format and the corresponding error.
  *****************************************************************************/
@@ -75,7 +75,7 @@ q0_15_t fp_sin15(uq1_7_t x);
  * 			limited to [ 0 ... 2 ). The result is given as Q0.15.
  * 			The output error is between -3.052E-05 .. 1.512E-05.
  *
- * @param 	x : Phase in units of PI and UQ1.7 format.
+ * @param	x Phase in units of PI and UQ1.7 format.
  * @return  	Cosine value in Q0.15 format. Note the missing 1.00 in this
  * 				format and the corresponding error.
  *****************************************************************************/

@@ -23,13 +23,21 @@
 #include "internal-capture.h"
 
 /////////////////////////////////////////////////////////////////////////////
+// Constants
+enum : size_t
+{
+    POINT_TOTAL_BUF_SZ     = sizeof( Capture_Buffer ),
+    POINT_NUM_RDQUEUE_ELEM = POINT_TOTAL_BUF_SZ / sizeof( FPointReq ),
+};
+
+/////////////////////////////////////////////////////////////////////////////
 // Globals
 capture_t gCapture = {
-  .AnglePerStep    = { .x = 1.8f / 32.f, .y = 1.8f / 32.f },
-  .Scan_Resolution = { .x = 10, .y = 10 },
-  .Scan_StepPerPxl = { .x = 10, .y = 1 } };
+  .AnglePerStep       = { .x = 1.8f / 32.f, .y = 1.8f / 32.f },
+  .Scan_Resolution    = { .x = 10, .y = 10 },
+  .Scan_StepPerPxl    = { .x = 10, .y = 1 },
+  .Point_NumMaxRequest = POINT_NUM_RDQUEUE_ELEM };
 char Capture_Buffer[CAPTURER_BUFFER_SIZE];
-
 /////////////////////////////////////////////////////////////////////////////
 // Aliasing for easy use
 capture_t& cc = gCapture;
@@ -85,21 +93,23 @@ extern "C" bool AppHandler_CaptureCommand( int argc, char* argv[] )
         DistSens_GetConfigure( ghDistSens, &opt );
 
         FDeviceStat r;
-        r.bIsPaused            = cc.bPaused;
-        r.bIsIdle              = cc.CaptureTask == NULL;
-        r.bIsPrecisionMode     = opt.bCloseDistanceMode;
-        r.bIsSensorInitialized = ghDistSens != NULL;
-        r.CurMotorStepX        = Motor_GetPos( gMotX );
-        r.CurMotorStepY        = Motor_GetPos( gMotY );
-        r.DegreePerStepX       = cc.AnglePerStep.x;
-        r.DegreePerStepY       = cc.AnglePerStep.y;
-        r.DelayPerCapture      = opt.Delay_us;
-        r.OfstX                = cc.Scan_CaptureOfst.x;
-        r.OfstY                = cc.Scan_CaptureOfst.y;
-        r.SizeX                = cc.Scan_Resolution.x;
-        r.SizeY                = cc.Scan_Resolution.y;
-        r.StepPerPxlX          = cc.Scan_StepPerPxl.x;
-        r.StepPerPxlY          = cc.Scan_StepPerPxl.y;
+        r.bIsPaused                 = cc.bPaused;
+        r.bIsIdle                   = cc.CaptureTask == NULL;
+        r.bIsPrecisionMode          = opt.bCloseDistanceMode;
+        r.bIsSensorInitialized      = ghDistSens != NULL;
+        r.CurMotorStepX             = Motor_GetPos( gMotX );
+        r.CurMotorStepY             = Motor_GetPos( gMotY );
+        r.DegreePerStepX            = cc.AnglePerStep.x;
+        r.DegreePerStepY            = cc.AnglePerStep.y;
+        r.DelayPerCapture           = opt.Delay_us;
+        r.OfstX                     = cc.Scan_CaptureOfst.x;
+        r.OfstY                     = cc.Scan_CaptureOfst.y;
+        r.SizeX                     = cc.Scan_Resolution.x;
+        r.SizeY                     = cc.Scan_Resolution.y;
+        r.StepPerPxlX               = cc.Scan_StepPerPxl.x;
+        r.StepPerPxlY               = cc.Scan_StepPerPxl.y;
+        r.NumMaxPointRequest        = POINT_NUM_RDQUEUE_ELEM;
+        r.NumProcessingPointRequest = cc.Point_NumPendingRequest;
         r.TimeAfterLaunch_us
           = API_GetTime_us() - !r.bIsIdle * cc.TimeProcessBegin;
 
@@ -203,6 +213,15 @@ extern "C" bool AppHandler_CaptureCommand( int argc, char* argv[] )
           "   help                \n" );
     }
     break;
+
+    case SCASE( "version" ):
+    {
+        char VersionString[256];
+        DistSens_GetVersion( ghDistSens, VersionString, sizeof VersionString );
+        API_Msg( VersionString );
+    }
+    break;
+
     default:
     {
         API_Msgf( "warning: unknown capture command [%s]\n", argv[0] );
@@ -442,10 +461,16 @@ static void wait_motor()
     }
 }
 
-static std::optional<FPxlData> TryMeasureDistance( int NumRetry )
+static std::optional<FPxlData>
+TryMeasureDistance( int NumRetry, status_t* outResult = nullptr )
 {
-    for ( status_t result;
-          ( result = DistSens_MeasureSync( ghDistSens, 5 ) ) < 0; )
+    status_t placeholder__; // Prevents segmentation fault
+    if ( outResult == nullptr )
+    {
+        outResult = &placeholder__;
+    }
+
+    for ( ; ( *outResult = DistSens_MeasureSync( ghDistSens, 5 ) ) < 0; )
     {
         if ( NumRetry-- == 0 )
         {
@@ -484,7 +509,7 @@ static void Task_Scan( void* nouse_ )
     pos.x = 0, pos.y = 0;
     FLineDesc     desc;
     constexpr int NumMaxBufferedPxl
-      = sizeof( Capture_Buffer ) / sizeof( FPxlData );
+      = std::min( sizeof( Capture_Buffer ) / sizeof( FPxlData ), size_t( 24 ) );
     auto& pixels = reinterpret_cast<std::array<FPxlData, NumMaxBufferedPxl>&>(
       Capture_Buffer );
 
@@ -531,14 +556,24 @@ static void Task_Scan( void* nouse_ )
 
         // 1. Captures distance
         FPxlData data;
-        if ( auto result = TryMeasureDistance( CAPTURE_NUM_MEASUREMENT_RETRY );
-             !result )
+        for ( size_t i = 0; i < CAPTURE_NUM_MEASUREMENT_RETRY; ++i )
         {
-            goto ABORT;
-        }
-        else
-        {
-            data = *result;
+            status_t result;
+            if ( auto measurement
+                 = TryMeasureDistance( CAPTURE_NUM_MEASUREMENT_RETRY, &result );
+                 !measurement )
+            {
+                goto ABORT;
+            }
+            else
+            {
+                data = *measurement;
+
+                // If data measurement was successful but has weak/invalid data,
+                // it will retry capture for few times.
+                if ( result == STATUS_OK )
+                    break;
+            }
         }
 
         // 2.a. Fill buffer
@@ -629,11 +664,6 @@ ABORT:;
 
 /////////////////////////////////////////////////////////////////////////////
 // Point capture process
-enum : size_t
-{
-    POINT_TOTAL_BUF_SZ     = sizeof( Capture_Buffer ),
-    POINT_NUM_RDQUEUE_ELEM = POINT_TOTAL_BUF_SZ / sizeof( FPointReq ),
-};
 
 static class PointCaptureStat
 {
@@ -645,6 +675,7 @@ public:
         Requests[Head] = data;
         Head += AddVal[Head == POINT_NUM_RDQUEUE_ELEM - 1];
         uassert( Head != Tail ); // ASSERTION FOR DATA OVERFLOW
+        cc.Point_NumPendingRequest++;
     }
 
     std::optional<FPointReq> Pop( void )
@@ -654,6 +685,7 @@ public:
 
         auto ret = Requests[Tail];
         Tail += AddVal[Tail == POINT_NUM_RDQUEUE_ELEM - 1];
+        cc.Point_NumPendingRequest--;
         return ret;
     }
 

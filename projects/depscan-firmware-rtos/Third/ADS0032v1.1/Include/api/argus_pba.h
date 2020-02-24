@@ -1,22 +1,68 @@
 /*************************************************************************//**
  * @file
- * @brief    	This file is part of the Argus hardware API.
- * @details		Defines the generic Argus API calibration data structure.
+ * @brief    	This file is part of the AFBR-S50 API.
+ * @details		Defines the pixel binning algorithm (PBA) setup parameters and
+ * 				data structure.
  * 
- * @copyright	Copyright c 2016-2018, Avago Technologies GmbH.
+ * @copyright	Copyright c 2016-2019, Avago Technologies GmbH.
  * 				All rights reserved.
  *****************************************************************************/
 
-#ifndef ARGUS_CFG_PBA_H
-#define ARGUS_CFG_PBA_H
+#ifndef ARGUS_PBA_H
+#define ARGUS_PBA_H
 
 /*!***************************************************************************
- * @defgroup 	arguspba Pixel Binning Algorithm (PBA) API
- * @ingroup		arguscfg
- * @brief 		This module manages the pixel binning algorithm.
- * @details		The PBA module contains filter algorithms that determine the
- * 				pixels with the best signal quality and extract an 1-d distance
+ * @defgroup 	arguspba Pixel Binning Algorithm
+ * @ingroup		argusapi
+ *
+ * @brief		Pixel Binning Algorithm (PBA) parameter definitions and API functions.
+ *
+ * @details		Defines the generic pixel binning algorithm (PBA) setup parameters
+ * 				and data structure.
+ *
+ * 				The PBA module contains filter algorithms that determine the
+ * 				pixels with the best signal quality and extract an 1d distance
  * 				information from the filtered pixels.
+ *
+ * 				The pixel filter algorithm is a three-stage filter with a
+ * 				fallback value:
+ *
+ * 				-# A fixed pre-filter mask is applied to statically disable
+ * 				    specified pixels.
+ * 				-# A relative and absolute amplitude filter is applied in the
+ * 				 	second stage. The relative filter is determined by a ratio
+ * 				 	of the maximum amplitude off all available (i.e. not filtered
+ * 				 	in stage 1) pixels. Pixels that have an amplitude below the
+ * 				 	relative threshold are dismissed. The same holds true for
+ * 				 	the absolute amplitude threshold. All pixel with smaller
+ * 				 	amplitude are dismissed.\n
+ * 				 	The relative threshold is useful to setup a distance
+ * 				 	measurement scenario. All well illuminated pixels are
+ * 				 	selected and considered for the final 1d distance. The
+ * 				 	absolute threshold is used to dismiss pixels that are below
+ * 				 	the noise level. The latter would be considered for the 1d
+ * 				 	result if the maximum amplitude is already very low.
+ * 				-# A distance filter is used to distinguish pixels that target
+ * 				    the actual object from pixels that see the brighter background,
+ * 				    e.g. white walls. Thus, the pixel with the minimum distance
+ * 				    is referenced and all pixel that have a distance between
+ * 				    the minimum and the given minimum distance scope are selected
+ * 				    for the 1d distance result. The minimum distance scope is
+ * 				    determined by an relative (to the current minimum distance)
+ * 				    and an absolute value. The larger scope value is the
+ * 				    relevant one, i.e. the relative distance scope can be used
+ * 				    to heed the increasing noise at larger distances.
+ * 				-# If all of the above filters fail to determine a single valid
+ * 				    pixel, the golden pixel is used as a fallback value. The
+ * 				    golden pixel is the pixel that sits right at the focus point
+ * 				    of the optics at large distances.
+ * 				.
+ *
+ *				After filtering is done, there may be more than a single pixel
+ *				left to determine the 1d signal. Therefore several averaging
+ *				methods are implemented to obtain the best 1d result from many
+ *				pixels. See #argus_pba_averaging_mode_t for details.
+ *
  *
  * @addtogroup 	arguspba
  * @{
@@ -24,75 +70,66 @@
 
 #include "argus_def.h"
 
-/*! The minimum golden pixel x-index. */
-#define ARGUS_CFG_PBA_GOLDEN_PX_X_MIN 	(0)
-
-/*! The maximum golden pixel x-index. */
-#define ARGUS_CFG_PBA_GOLDEN_PX_X_MAX 	(ARGUS_PIXELS_X-1)
-
-/*! The minimum golden pixel y-index. */
-#define ARGUS_CFG_PBA_GOLDEN_PX_Y_MIN 	(0)
-
-/*! The maximum golden pixel y-index. */
-#define ARGUS_CFG_PBA_GOLDEN_PX_Y_MAX 	(ARGUS_PIXELS_Y-1)
-
 /*!***************************************************************************
  * @brief	Enable flags for the pixel binning algorithm.
+ *
+ * @details Determines the pixel binning algorithm feature enable status.
+ * 			- [0]: #PBA_ENABLE: Enables the pixel binning feature.
+ * 			- [1]: reserved
+ * 			- [2]: reserved
+ * 			- [3]: reserved
+ * 			- [4]: reserved
+ * 			- [5]: #PBA_ENABLE_GOLDPX: Enables the golden pixel feature.
+ * 			- [6]: #PBA_ENABLE_MIN_DIST_SCOPE: Enables the minimum distance scope
+ * 					 feature.
+ * 			- [7]: reserved
+ * 			.
  *****************************************************************************/
-typedef enum Argus_CFG_PBA_Flags
+typedef enum
 {
-	/*! Enable pixel binning. */
-	PBA_ENABLE = 0x01U,
+	/*! Enables the pixel binning feature. */
+	PBA_ENABLE = 1U << 0U,
 
-//	/*! Enable pixel binning pre-filter. */
-//	PBA_ENABLE_PREFILTER = 0x02U,
+	/*! Enables the golden pixel. */
+	PBA_ENABLE_GOLDPX = 1U << 5U,
 
-//	/*! Enable pixel binning absolute threshold value. */
-//	PBA_ENABLE_ABSTH = 0x04U,
+	/*! Enables the minimum distance scope filter. */
+	PBA_ENABLE_MIN_DIST_SCOPE = 1U << 6U,
 
-//	/*! Enable pixel binning relative threshold value. */
-//	PBA_ENABLE_RELTH = 0x08U,
-
-//	/*! Enable pixel binning average threshold value. */
-//	PBA_ENABLE_AVGTH = 0x10U,
-
-	/*! Enable pixel binning golden pixel. */
-	PBA_ENABLE_GOLDPX = 0x20U,
-
-//	/*! Enable pixel binning maximum threshold value. */
-//	PBA_ENABLE_MAXTH = 0x40U,
-
-} argus_cfg_pba_flags_t;
+} argus_pba_flags_t;
 
 /*!***************************************************************************
- * @brief	The operation modes for the pixel binning algorithm.
+ * @brief	The averaging modes for the pixel binning algorithm.
  *****************************************************************************/
-typedef enum Argus_CFG_PBA_Mode
+typedef enum
 {
-	/*! Evaluate the average range from all available pixels. */
-	PBA_MODE_AVG = 1U,
+	/*! Evaluate the 1D range from all available pixels using
+	 *  a simple average. */
+	PBA_SIMPLE_AVG = 1U,
 
-	/*! Evaluate the minimum range from all available pixels. */
-	PBA_MODE_MIN = 2U,
+	/*! Evaluate the 1D range from all available pixels using
+	 *  a linear amplitude weighted averaging method.
+	 *  Formula: x_mean = sum(x_i * A_i) / sum(A_i) */
+	PBA_LINEAR_AMPLITUDE_WEIGHTED_AVG = 2U,
 
-} argus_cfg_pba_mode_t;
+} argus_pba_averaging_mode_t;
 
 /*!***************************************************************************
- * @brief	The Argus pixel binning algorithm settings data structure.
+ * @brief	The pixel binning algorithm settings data structure.
  * @details	Describes the pixel binning algorithm settings.
  *****************************************************************************/
-typedef struct Argus_CFG_PBA
+typedef struct
 {
 	/*! Enables the pixel binning features.
-	 *  Each bit may enable a different feature. See #argus_cfg_pba_flags_t
+	 *  Each bit may enable a different feature. See #argus_pba_flags_t
 	 *  for details about the enabled flags. */
-	argus_cfg_pba_flags_t Enabled;
+	argus_pba_flags_t Enabled;
 
-	/*! Determines the PBA evaluation mode which is used to obtain the
+	/*! Determines the PBA averaging mode which is used to obtain the
 	 *  final range value from the algorithm, for example, the average
-	 *  of all pixels. See #argus_cfg_pba_mode_t for more details about
-	 *  the individual evaluation modes. */
-	argus_cfg_pba_mode_t Mode;
+	 *  of all pixels. See #argus_pba_averaging_mode_t for more details
+	 *  about the individual evaluation modes. */
+	argus_pba_averaging_mode_t Mode;
 
 	/*! The pre-filter pixel mask determines the pixel channels that are
 	 * 	statically excluded from the pixel binning (i.e. 1D distance) result.
@@ -124,7 +161,37 @@ typedef struct Argus_CFG_PBA
 	 *  Use 0 to disable the absolute amplitude threshold. */
 	uq12_4_t AbsAmplThreshold;
 
+	/*! The absolute minimum distance scope value in m.
+	 * 	Pixels that have a range value within [x0, x0 + dx] are considered
+	 * 	for the pixel binning, where x0 is the minimum distance of all
+	 * 	amplitude picked pixels and dx is the minimum distance scope value.
+	 * 	The minimum distance scope value will be the maximum of relative
+	 * 	and absolute value.
+	 *
+	 *  All available values from the 16-bit representation are valid.
+	 *  The actual LSB value is determined by x/2^15.
+	 *
+	 *	Special values:
+	 *  - 0: Use 0 for relative value only or to choose the pixel with the
+	 *  	 minimum distance only (of also the relative value is 0)! */
+	uq1_15_t AbsMinDistanceScope;
+
+	/*! The relative minimum distance scope value in %.
+	 * 	Pixels that have a range value within [x0, x0 + dx] are considered
+	 * 	for the pixel binning, where x0 is the minimum distance of all
+	 * 	amplitude picked pixels and dx is the minimum distance scope value.
+	 * 	The minimum distance scope value will be the maximum of relative
+	 * 	and absolute value.
+	 *
+	 *  All available values from the 8-bit representation are valid.
+	 *  The actual percentage value is determined by 100%/256*x.
+	 *
+	 *	Special values:
+	 *  - 0: Use 0 for absolute value only or to choose the pixel with the
+	 *  	 minimum distance only (of also the absolute value is 0)! */
+	uq0_8_t RelMinDistanceScope;
+
 } argus_cfg_pba_t;
 
 /*! @} */
-#endif /* ARGUS_CFG_PBA_H */
+#endif /* ARGUS_PBA_H */

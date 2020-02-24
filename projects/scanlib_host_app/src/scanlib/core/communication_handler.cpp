@@ -45,7 +45,7 @@ bool ICommunicationHandlerBase::SendString( char const* str )
 
 void ICommunicationHandlerBase::ClearConnection() noexcept
 {
-    lock_guard lck { m_shutdown_lock };
+    lock_guard lck { m_shutdown_lock }; 
     m_strmbuf = nullptr;
     m_os      = nullptr;
 }

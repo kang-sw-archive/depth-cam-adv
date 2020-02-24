@@ -30,7 +30,6 @@ void InitConsoleApp()
     scan.OnReport = []( const FDeviceStat& Stat ) {
         char buf[2048];
         double progress = !Stat.bIsIdle * 100.0 * ( ( Stat.CurMotorStepY - Stat.OfstY ) / (double) ( Stat.SizeY * Stat.StepPerPxlY ) );
-
         sprintf(
           buf,
           "\n"
@@ -43,12 +42,13 @@ void InitConsoleApp()
           " OfstInAngle   [ %8.4f %8.4f  deg ]\n"
           " AnglePerStep  [ %8.6f %8.6f  deg ]\n"
           " CurMotorPos   [ %8d %8d step ]\n"
+          " NumMaxPointRq [ %17d      ]\n"
           "\n"
           " MeasureDelay  [ %17d   us ]\n"
           " DistanceMode  [ %17s      ]\n"
           " %-13s [ %17.3f    s ]\n"
           "\n"
-          "      :::      %04.1f%% done      ::: \n ",
+          "      :::      %04.1f percent done      ::: \n ",
           'x',
           'y',
           Stat.StepPerPxlX,
@@ -67,6 +67,7 @@ void InitConsoleApp()
           Stat.DegreePerStepY,
           Stat.CurMotorStepX,
           Stat.CurMotorStepY,
+          Stat.NumMaxPointRequest,
           Stat.DelayPerCapture,
           Stat.bIsPrecisionMode ? "Near" : "Far",
           Stat.bIsIdle ? "TimeLaunch" : "TimeMeasure",
@@ -98,6 +99,15 @@ void InitConsoleApp()
             if ( inp == "scan" )
             {
                 scan.BeginCapture();
+            }
+            else if ( inp == "report" )
+            {
+                auto v = scan.Report( 1000 );
+                printf( "Report result: %d\n", v );
+            }
+            else if ( inp == "pt" )
+            {
+                scan.QueuePointAngular( 0, 0.f, 0.f );
             }
             else
             {
