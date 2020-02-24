@@ -6,7 +6,7 @@ encoding utf-8
 Sheet 1 1
 Title "Depscan Interface Board"
 Date "2020-02-03"
-Rev "0.9.2"
+Rev "0.9"
 Comp "KOREATECH"
 Comment1 "@Author Seungwoo Kang"
 Comment2 "Copyright 2020. Seungwoo Kang. All rights reserved"
@@ -925,6 +925,82 @@ Wire Wire Line
 	800  1200 1450 1200
 Text Notes 2600 3950 0    50   ~ 0
 2.54mm Normal Pitch
+Connection ~ 5450 6600
+Wire Wire Line
+	5450 6500 5900 6500
+Wire Wire Line
+	5450 6600 5450 6500
+Wire Wire Line
+	5900 6400 5350 6400
+Wire Wire Line
+	5350 6300 5900 6300
+Wire Wire Line
+	5900 6200 5350 6200
+Wire Wire Line
+	5350 6100 5900 6100
+Wire Wire Line
+	5900 6000 5350 6000
+Text Label 5350 6100 0    50   ~ 0
+SPI_SCK
+Text Label 5350 6300 0    50   ~ 0
+SPI_MOSI
+Text Label 5350 6200 0    50   ~ 0
+SPI_MISO
+Text Label 5350 6000 0    50   ~ 0
+ARGUS_IRQ
+Text Label 5350 6400 0    50   ~ 0
+ARGUS_CS
+Connection ~ 5450 6700
+Wire Wire Line
+	5450 6600 5450 6700
+Wire Wire Line
+	5900 6600 5450 6600
+Wire Wire Line
+	5450 6700 5900 6700
+Wire Wire Line
+	5450 6750 5450 6700
+$Comp
+L power:GND #PWR018
+U 1 1 5E811E5D
+P 5450 6750
+F 0 "#PWR018" H 5450 6500 50  0001 C CNN
+F 1 "GND" H 5455 6577 50  0000 C CNN
+F 2 "" H 5450 6750 50  0001 C CNN
+F 3 "" H 5450 6750 50  0001 C CNN
+	1    5450 6750
+	1    0    0    -1  
+$EndComp
+Connection ~ 5450 5800
+Wire Wire Line
+	5450 5900 5450 5800
+Wire Wire Line
+	5900 5900 5450 5900
+Wire Wire Line
+	5450 5800 5450 5750
+Wire Wire Line
+	5900 5800 5450 5800
+$Comp
+L power:VCC #PWR017
+U 1 1 5E7EBCAC
+P 5450 5750
+F 0 "#PWR017" H 5450 5600 50  0001 C CNN
+F 1 "VCC" H 5467 5923 50  0000 C CNN
+F 2 "" H 5450 5750 50  0001 C CNN
+F 3 "" H 5450 5750 50  0001 C CNN
+	1    5450 5750
+	1    0    0    -1  
+$EndComp
+$Comp
+L Connector:Conn_01x10_Male J3
+U 1 1 5E7E9C9E
+P 6100 6300
+F 0 "J3" H 6072 6182 50  0000 R CNN
+F 1 "ARGUS_SPI_FFC_CONN" H 6072 6273 50  0000 R CNN
+F 2 "Connector_FFC-FPC:Hirose_FH12-10S-0.5SH_1x10-1MP_P0.50mm_Horizontal" H 6100 6300 50  0001 C CNN
+F 3 "~" H 6100 6300 50  0001 C CNN
+	1    6100 6300
+	-1   0    0    1   
+$EndComp
 Wire Wire Line
 	5250 5050 5650 5050
 Wire Wire Line
