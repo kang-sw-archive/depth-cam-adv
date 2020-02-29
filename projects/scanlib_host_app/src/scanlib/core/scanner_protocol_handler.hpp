@@ -208,7 +208,7 @@ public:
 
     //! @brief      Queue point capture.
     bool
-    QueuePointAngular( uint32_t RequestID, int16_t xs, int16_t ys ) noexcept;
+    QueuePoint( uint32_t RequestID, int16_t xs, int16_t ys ) noexcept;
 
     //! @brief      Queue point capture in angular base
     bool QueuePointAngular(

@@ -672,7 +672,7 @@ FScanImageDesc::~FScanImageDesc() noexcept
     }
 }
 
-bool FScannerProtocolHandler::QueuePointAngular(
+bool FScannerProtocolHandler::QueuePoint(
   uint32_t RequestID,
   int16_t  xs,
   int16_t  ys ) noexcept
@@ -693,7 +693,7 @@ bool FScannerProtocolHandler::QueuePointAngular(
   float    AngleX,
   float    AngleY ) noexcept
 {
-    return QueuePointAngular(
+    return QueuePoint(
       RequestID,
       int16_t( AngleX / mStatCache.DegreePerStepX ),
       int16_t( AngleY / mStatCache.DegreePerStepY ) );
