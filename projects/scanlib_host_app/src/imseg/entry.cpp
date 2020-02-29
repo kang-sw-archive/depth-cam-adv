@@ -7,7 +7,7 @@
 //! @details
 //!             File detailed description
 //! @todo       Find center of each super pixels
-//! @todo       Calibrate motor and camera centor position
+//! @todo       Calibrate motor and camera center position
 //! @todo
 #include <chrono>
 #include <cstdarg>
@@ -33,17 +33,17 @@ using namespace std::chrono_literals;
 /////////////////////////////////////////////////////////////////////////////
 // GLOBAL FLAGS
 DEFINE_int32( cam_index, 1, "Specify camera index to use" );
-DEFINE_int32( desired_pixel_cnt, int( 2e5 ), "Number of intended pixels" );
-DEFINE_double( slic_compactness, 100.f, "Pixel compactness" );
-DEFINE_int32( desired_superpixel_cnt, 312, "Number of desired super pixels" );
-DEFINE_double( vertical_fov, 45.f, "Camera vertical FOV in degree" );
-DEFINE_int32( ocl_dev_idx, 0, "Specify opencl device index" );
+DEFINE_int32( desired_pixel_cnt, int( 4e5 ), "Number of intended pixels" );
+DEFINE_double( slic_compactness, 75.f, "Pixel compactness" );
+DEFINE_int32( desired_superpixel_cnt, 2200, "Number of desired super pixels" );
+DEFINE_double( vertical_fov, 40, "Camera vertical FOV in degree" );
+DEFINE_int32( ocl_dev_idx, 0, "Specify open-cl device index" );
 
 DEFINE_double(
   path_x_tolerance,
   0.06f,
   "X axis movement tolerance of Depscan" );
-DEFINE_int32( device_x_accel, 16400, "Stepper motor acceleration in Hz/s" );
+DEFINE_int32( device_x_accel, 32400, "Stepper motor acceleration in Hz/s" );
 DEFINE_int32( device_y_accel, 544800, "Stepper motor acceleration in Hz/s" );
 DEFINE_int32(
   device_sample_delay,
@@ -57,12 +57,11 @@ using depth_t = struct
 };
 
 /////////////////////////////////////////////////////////////////////////////
-// Static method decls
+// Static method declares
 static void
 FindCenters( cv::Mat Contour, std::vector<cv::Point2f>& Out, size_t NumSpxls );
 
 static bool InitializeMeasurementDevice();
-
 static bool MeasureSampleDepths(
   std::vector<cv::Point2f> const& Points,
   std::vector<depth_t>*           Depths,
@@ -88,7 +87,7 @@ static std::string stringf( char const* fmt, ... );
 FScannerProtocolHandler gScan;
 
 /////////////////////////////////////////////////////////////////////////////
-// Static Decls / Data
+// Static Declares / Data
 
 static std::vector<cv::Point2f> Centers;
 static std::vector<depth_t>     Depths;
@@ -140,7 +139,7 @@ int main( int argc, char* argv[] )
     if ( Video.isOpened() == false )
     {
         CV_LOG_ERROR( nullptr, "Failed to open camera" );
-        return 0;
+        return -1;
     }
 
     // Configure video resolution ... Set pixel count as the desired
@@ -161,13 +160,18 @@ int main( int argc, char* argv[] )
         Video.set( cv::CAP_PROP_FRAME_HEIGHT, h );
         w = Video.get( cv::CAP_PROP_FRAME_WIDTH );
         h = Video.get( cv::CAP_PROP_FRAME_HEIGHT );
-        LOG_INFO( nullptr, "Video resolution is set to %.0f %.0f", w, h );
+        LOG_INFO( "Video resolution is set to %.0f %.0f", w, h );
 
         AspectRatio = w / h;
     }
 
-    // Create Superpixel object
-    Video >> FrameData; // Dummy frame to load metadata
+    // Create Super pixel object
+    Video >> FrameData; // Dummy frame to load meta data
+    if ( FrameData.empty() )
+    {
+        LOG_ERROR( "Failed to capture first frame from Video \n" );
+        return -1;
+    }
     GpuSLIC.initialize(
       FrameData,
       FLAGS_desired_superpixel_cnt,
@@ -176,28 +180,59 @@ int main( int argc, char* argv[] )
 
     // Open named window
     cv::namedWindow( "camera" );
+    cv::namedWindow( "depth" );
+    cv::namedWindow( "active" );
 
-    // Initialize superpixel object
+    // Reset device's origin point
+    while ( InitializeMeasurementDevice() == false )
+    {
+        LOG_INFO(
+          "Device connection failed. Retrying ... (Press any key to abort)" );
+        if ( cv::waitKey( 500 ) != -1 )
+        {
+            return -1;
+        }
+    }
+    LOG_INFO( "Successfully connected to DepScan device.\n" );
+    gScan.QueuePoint( 0, 0, 0 );
+
+    // Initialize super-pixel object
     for ( ;; )
     {
-        Video >> FrameData;
-        if ( cv::waitKey( 33 ) != -1 )
+        if ( auto key = cv::waitKey( 33 ); key == -1 )
+        {
+            Video >> FrameData;
+            imshow( "active", FrameData );
+            continue;
+        }
+        else if ( key == 27 )
+        {
             break;
-
-        if ( FrameTask.valid() == false )
-        {
-            FrameTask = async( CaptureDepthImage, FrameData );
-            continue;
         }
 
-        if ( FrameTask.wait_for( 0ms ) != future_status::ready )
+        for ( ;; )
         {
-            continue;
-        }
+            if ( cv::waitKey( 33 ) == 27 )
+                return -1;
 
-        if ( auto Frame = FrameTask.get(); Frame )
-        {
-            cv::imshow( "camera", Frame.value() );
+            if ( FrameTask.valid() == false )
+            {
+                FrameTask = async( CaptureDepthImage, FrameData );
+                continue;
+            }
+
+            if ( FrameTask.wait_for( 0ms ) != future_status::ready )
+            {
+                continue;
+            }
+
+            if ( auto Depth = FrameTask.get(); Depth )
+            {
+                cv::imshow( "camera", FrameData );
+                cv::imshow( "depth", Depth.value() );
+                gScan.QueuePoint( 0, 0, 0 );
+                break;
+            }
         }
     }
 
@@ -229,26 +264,15 @@ static std::optional<cv::Mat> CaptureDepthImage( cv::Mat Frame )
       "Time consumed to iterate: %ul",
       duration_cast<milliseconds>( TimeIterDone - TimeBegin ).count() );
 
-    cv::Mat Contour = GpuSLIC.getLabels();
-#if 0 // For debugging purpose ...
-    cv::Mat DebugContour;
-    {
-        cv::UMat GpuContour;
-        Contour.copyTo( GpuContour );
-        cv::Laplacian( GpuContour, GpuContour, -1 );
-        cv::compare( GpuContour, 0, GpuContour, cv::CMP_NE );
-        cv::cvtColor( GpuContour, GpuContour, cv::COLOR_GRAY2BGR );
-        GpuContour.convertTo( GpuContour, CV_8UC3 );
-        cv::add( GpuContour, GpuFrame, Out );
-        GpuContour.copyTo( DebugContour );
-    }
-#endif
+    cv::Mat Contour = GpuSLIC.getLabels().clone();
+    Contour.convertTo( Contour, CV_32S );
+
     auto TimeContourDone = system_clock::now();
     LOG_INFO(
       "Time Consumed to Extract Contour: %ul ",
       duration_cast<milliseconds>( TimeContourDone - TimeIterDone ).count() );
 
-    // Get number of superpixels
+    // Get number of super pixels
     {
         double Max;
         cv::minMaxLoc( Contour, nullptr, &Max );
@@ -256,7 +280,7 @@ static std::optional<cv::Mat> CaptureDepthImage( cv::Mat Frame )
     }
 
     // Find center of each super pixels
-    FindCenters( Contour.clone(), Centers, NumSpxls );
+    FindCenters( Contour, Centers, NumSpxls );
     auto TimeCenterLookupDone = system_clock::now();
     LOG_INFO(
       "Time Consumed to Calculate Centers: %ul",
@@ -280,12 +304,39 @@ static std::optional<cv::Mat> CaptureDepthImage( cv::Mat Frame )
         .count() );
 
     // Fill depth map with initial values
-    cv::Mat DepthMap { Contour.rows, Contour.cols, CV_32FC1 };
+    auto    NumRows = Contour.rows;
+    auto    NumCols = Contour.cols;
+    int     Sizes[] = { NumRows, NumCols };
+    cv::Mat DepthMap { 2, Sizes, CV_32F };
     {
-        for ( size_t i = 0; i < NumSpxls; i++ )
+        for ( size_t i = 0; i < NumRows; i++ )
         {
+            auto LabelRow = Contour.ptr<int>( i );
+            auto DepthRow = DepthMap.ptr<float>( i );
+            for ( size_t j = 0; j < NumCols; j++ )
+            {
+                DepthRow[j] = Depths[LabelRow[j]].Range;
+            }
         }
     }
+
+#if 1 // Debug display ...
+    cv::Mat DebugContour;
+    {
+        cv::UMat GpuContour;
+        Contour.copyTo( GpuContour );
+        cv::Laplacian( GpuContour, GpuContour, -1 );
+        cv::compare( GpuContour, 0, GpuContour, cv::CMP_NE );
+        cv::cvtColor( GpuContour, GpuContour, cv::COLOR_GRAY2BGR );
+        GpuContour.convertTo( GpuContour, CV_8UC3 );
+        cv::add( GpuContour, GpuFrame, Frame );
+        GpuContour.copyTo( DebugContour );
+    }
+    {
+        Out = DepthMap.clone();
+        Out = 1.0f - ( Out / 5.0f );
+    }
+#endif
     // Calculates the distance between each super-pixels then create a
     // distance matrix to select nearby super-pixels to evaluate.
 
@@ -326,8 +377,6 @@ FindCenters( cv::Mat Contour, std::vector<cv::Point2f>& Out, size_t NumSpxls )
     Out.resize( ArrayLen, {} );
     NumPxls.resize( ArrayLen, 0 );
     LOG_INFO( "Number of label: %d", Out.size() );
-
-    Contour.convertTo( Contour, CV_32S );
     CV_Assert( Contour.channels() == 1 );
 
     // For each rows ...
@@ -352,8 +401,8 @@ FindCenters( cv::Mat Contour, std::vector<cv::Point2f>& Out, size_t NumSpxls )
         // Calculates mean center position.
         // Output value will be normalized by aspect ratio.
         // x [0, AspectRatio), y [0, 1)
-        x /= num * NumCols;
-        y /= num * NumCols;
+        x /= num * NumRows;
+        y /= num * NumRows;
     }
 
     // done.
@@ -370,7 +419,7 @@ bool InitializeMeasurementDevice()
         return false;
     }
 
-    LOG_INFO( "Successfuly connected to DepScan device" );
+    LOG_INFO( "Successful connected to DepScan device" );
     if ( gScan.Report( 1000 ) == false )
     {
         CV_LOG_ERROR( nullptr, "Report failed" );
@@ -385,6 +434,7 @@ bool InitializeMeasurementDevice()
     gScan.ConfigSensorDelay( FLAGS_device_sample_delay );
     gScan.ConfigSensorDistMode( false );
     gScan.InitPointMode();
+    gScan.QueuePoint( 0, 0, 0 );
 
     LOG_INFO( "Successfully initialized point mode." );
     bScannerValid = true;
@@ -455,6 +505,8 @@ bool MeasureSampleDepths(
         TimeoutPivot        = system_clock::now();
     };
 
+    auto ElapsedTimeBegin = system_clock::now();
+
     // Capture all samples through path
     for ( size_t i = 0; i < NumSpxl; i++ )
     {
@@ -478,6 +530,18 @@ bool MeasureSampleDepths(
 
             // Yield thread if point queue is full.
             this_thread::sleep_for( 5ms );
+        }
+
+        if ( i % 64 == 63 )
+        {
+            auto now = system_clock::now();
+            LOG_INFO(
+              "Processing %lu/%lu requests ... %lu ms/smpl ",
+              i,
+              NumSpxl,
+              duration_cast<milliseconds>( now - ElapsedTimeBegin ).count()
+                / 64 );
+            ElapsedTimeBegin = now;
         }
     }
 
