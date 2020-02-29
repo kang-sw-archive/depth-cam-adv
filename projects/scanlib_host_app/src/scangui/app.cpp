@@ -16,7 +16,7 @@ using namespace std;
 //
 // Flag definitions
 //
-DEFINE_bool( no_gui, true, "Disables GUI mode" );
+DEFINE_bool( no_gui, false, "Disables GUI mode" );
 DEFINE_bool( show_console, false, "Hide console window printing log" );
 DEFINE_string( config_path, "", "Specify configuration path" );
 
