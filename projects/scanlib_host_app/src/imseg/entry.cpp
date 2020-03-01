@@ -35,7 +35,7 @@ using namespace std::chrono_literals;
 DEFINE_int32( cam_index, 1, "Specify camera index to use" );
 DEFINE_int32( desired_pixel_cnt, int( 4e5 ), "Number of intended pixels" );
 DEFINE_double( slic_compactness, 65.f, "Pixel compactness" );
-DEFINE_int32( desired_superpixel_cnt, 16000, "Number of desired super pixels" );
+DEFINE_int32( desired_superpixel_cnt, 1666, "Number of desired super pixels" );
 DEFINE_double( vertical_fov, 38, "Camera vertical FOV in degree" );
 DEFINE_int32( ocl_dev_idx, 0, "Specify open-cl device index" );
 
@@ -67,7 +67,7 @@ static bool MeasureSampleDepths(
   std::vector<depth_t>*           Depths,
   std::chrono::milliseconds       DeviceTimeout );
 
-static std::optional<cv::Mat> CaptureDepthImage( cv::Mat FrameData );
+static std::optional<cv::Mat> CaptureDepthImage( cv::Mat* FrameData );
 
 /////////////////////////////////////////////////////////////////////////////
 // Logging utility
@@ -82,6 +82,7 @@ static std::string stringf( char const* fmt, ... );
 #define LOG_FATAL( fmt, ... )                                                  \
     CV_LOG_FATAL( nullptr, stringf( fmt, __VA_ARGS__ ) )
 
+#define DEBUG_MAX_DIST 5.0f
 /////////////////////////////////////////////////////////////////////////////
 // Exported
 FScannerProtocolHandler gScan;
@@ -95,6 +96,7 @@ static size_t                   NumSpxls;
 static float                    AspectRatio;
 static SlicCuda                 GpuSLIC;
 static bool                     bScannerValid;
+static atomic_bool              bTerminate = false;
 
 /////////////////////////////////////////////////////////////////////////////
 // Core lop
@@ -102,7 +104,6 @@ int main( int argc, char* argv[] )
 {
     cv::VideoCapture Video;
     cv::Mat          FrameData;
-    cv::cuda::GpuMat CudaFrame;
 
     std::future<std::optional<cv::Mat>> FrameTask;
 
@@ -179,9 +180,7 @@ int main( int argc, char* argv[] )
       FLAGS_slic_compactness );
 
     // Open named window
-    cv::namedWindow( "camera" );
-    cv::namedWindow( "depth" );
-    cv::namedWindow( "active" );
+    cv::namedWindow( "depth-grid" );
 
     // Reset device's origin point
     while ( InitializeMeasurementDevice() == false )
@@ -207,17 +206,22 @@ int main( int argc, char* argv[] )
         }
         else if ( key == 27 )
         {
-            break;
+            goto TERMINATE;
         }
 
+        cv::imshow( "rgb", FrameData );
         for ( ;; )
         {
             if ( cv::waitKey( 33 ) == 27 )
-                return -1;
+            {
+                Video >> FrameData;
+                imshow( "active", FrameData );
+                goto TERMINATE;
+            }
 
             if ( FrameTask.valid() == false )
             {
-                FrameTask = async( CaptureDepthImage, FrameData );
+                FrameTask = async( CaptureDepthImage, &FrameData );
                 continue;
             }
 
@@ -228,14 +232,17 @@ int main( int argc, char* argv[] )
 
             if ( auto Depth = FrameTask.get(); Depth )
             {
-                cv::imshow( "camera", FrameData );
-                cv::imshow( "depth", Depth.value() / 5.0f );
+                cv::imshow( "rgb-grid", FrameData );
+                cv::imshow( "depth", Depth.value() / DEBUG_MAX_DIST );
                 gScan.QueuePoint( 0, 0, 0 );
                 break;
             }
         }
     }
 
+TERMINATE:;
+    bTerminate = true;
+    FrameTask.wait();
     CV_LOG_INFO( nullptr, "Shutting down ... " );
     return 0;
 }
@@ -243,11 +250,12 @@ int main( int argc, char* argv[] )
 /////////////////////////////////////////////////////////////////////////////
 // Logics
 
-static std::optional<cv::Mat> CaptureDepthImage( cv::Mat Frame )
+static std::optional<cv::Mat> CaptureDepthImage( cv::Mat* FrameData )
 {
     // Scale image for optimization
     // cv::resize( Frame, Frame, DesiredImageSize );
     cv::Mat Out;
+    auto&   Frame = *FrameData;
 
     CV_LOG_INFO( nullptr, "-- START OF NEW FRAME --" );
 
@@ -269,7 +277,7 @@ static std::optional<cv::Mat> CaptureDepthImage( cv::Mat Frame )
 
     auto TimeContourDone = system_clock::now();
     LOG_INFO(
-      "Time Consumed to Extract Contour: %ul ",
+      "Time Consumed to Extract Contour: %lu",
       duration_cast<milliseconds>( TimeContourDone - TimeIterDone ).count() );
 
     // Get number of super pixels
@@ -283,7 +291,7 @@ static std::optional<cv::Mat> CaptureDepthImage( cv::Mat Frame )
     FindCenters( Contour, Centers, NumSpxls );
     auto TimeCenterLookupDone = system_clock::now();
     LOG_INFO(
-      "Time Consumed to Calculate Centers: %ul",
+      "Time Consumed to Calculate Centers: %lu",
       duration_cast<milliseconds>( TimeCenterLookupDone - TimeContourDone )
         .count() );
 
@@ -298,7 +306,7 @@ static std::optional<cv::Mat> CaptureDepthImage( cv::Mat Frame )
     }
     auto TimeDepthSamplingDone = system_clock::now();
     LOG_INFO(
-      "Time Consumed to Sample Depths: %ul",
+      "Time Consumed to Sample Depths: %lu",
       duration_cast<milliseconds>(
         TimeDepthSamplingDone - TimeCenterLookupDone )
         .count() );
@@ -320,19 +328,6 @@ static std::optional<cv::Mat> CaptureDepthImage( cv::Mat Frame )
         }
     }
 
-#if 1 // Debug display ...
-    cv::Mat DebugContour;
-    {
-        cv::UMat GpuContour;
-        Contour.copyTo( GpuContour );
-        cv::Laplacian( GpuContour, GpuContour, -1 );
-        cv::compare( GpuContour, 0, GpuContour, cv::CMP_NE );
-        cv::cvtColor( GpuContour, GpuContour, cv::COLOR_GRAY2BGR );
-        GpuContour.convertTo( GpuContour, CV_8UC3 );
-        cv::add( GpuContour, GpuFrame, Frame );
-        GpuContour.copyTo( DebugContour );
-    }
-#endif
 #if 0
     {
         Out = DepthMap.clone();
@@ -349,6 +344,31 @@ static std::optional<cv::Mat> CaptureDepthImage( cv::Mat Frame )
 
         cv::bilateralFilter( DepthMap, BlurImage, 0, 0.16, 14.0 );
         BlurImage.copyTo( Out );
+#if 1 // Debug display ...
+        {
+            cv::UMat GpuContour;
+            Contour.copyTo( GpuContour );
+            cv::Laplacian( GpuContour, GpuContour, -1 );
+            cv::compare( GpuContour, 0, GpuContour, cv::CMP_NE );
+
+            // Contour for RGB img
+            {
+                auto RgbContour = GpuContour.clone();
+                cv::cvtColor( RgbContour, RgbContour, cv::COLOR_GRAY2BGR );
+                // GpuContour.convertTo( RgbContour, CV_8UC3 );
+                cv::add( RgbContour, GpuFrame, Frame );
+            }
+
+            // Contour for depth img
+            {
+                cv::multiply( GpuContour, 1e3, GpuContour );
+                GpuContour.convertTo( GpuContour, CV_32FC1 );
+                cv::Mat GridDepth;
+                cv::add( GpuContour, BlurImage, GridDepth );
+                cv::imshow( "depth-grid", GridDepth / DEBUG_MAX_DIST );
+            }
+        }
+#endif
     }
 
     // Calculates the distance between each super-pixels then create a
@@ -521,10 +541,19 @@ bool MeasureSampleDepths(
     };
 
     auto ElapsedTimeBegin = system_clock::now();
-
+    auto IntervalPivot    = ElapsedTimeBegin;
     // Capture all samples through path
     for ( size_t i = 0; i < NumSpxl; i++ )
     {
+        if ( bTerminate )
+        {
+            while ( gScan.QueuePoint( 0, 0, 0 ) == false )
+            {
+            }
+            gScan.OnPointRecv = {};
+            return false;
+        }
+
         // Translate normalized point into angular dimension
         auto const& pt = CapturePath[i];
 
@@ -554,18 +583,18 @@ bool MeasureSampleDepths(
             this_thread::sleep_for( 5ms );
         }
 
-        if ( i % 64 == 63 )
+        if ( auto now = system_clock::now(); now - IntervalPivot > 500ms )
         {
-            auto now = system_clock::now();
+            IntervalPivot = now;
             auto speed
-              = duration_cast<milliseconds>( now - ElapsedTimeBegin ).count()
-                / i;
+              = duration_cast<microseconds>( now - ElapsedTimeBegin ).count()
+                / ( i + 1.0 ) * 1e-3;
             LOG_INFO(
-              "%lu/%lu ... %lu ms/smpl %.1f seconds left",
+              "%lu / %lu ... %.3f ms/smpl %.2fs left",
               i,
               NumSpxl,
               speed,
-              ( ( NumSpxl - i - 1 ) * speed ) / 1000.0 );
+              ( ( NumSpxl - i - 1 ) * speed ) * 1e-3 );
         }
     }
 
