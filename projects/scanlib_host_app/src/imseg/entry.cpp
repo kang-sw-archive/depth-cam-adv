@@ -34,9 +34,9 @@ using namespace std::chrono_literals;
 // GLOBAL FLAGS
 DEFINE_int32( cam_index, 1, "Specify camera index to use" );
 DEFINE_int32( desired_pixel_cnt, int( 4e5 ), "Number of intended pixels" );
-DEFINE_double( slic_compactness, 75.f, "Pixel compactness" );
-DEFINE_int32( desired_superpixel_cnt, 2200, "Number of desired super pixels" );
-DEFINE_double( vertical_fov, 40, "Camera vertical FOV in degree" );
+DEFINE_double( slic_compactness, 65.f, "Pixel compactness" );
+DEFINE_int32( desired_superpixel_cnt, 16000, "Number of desired super pixels" );
+DEFINE_double( vertical_fov, 38, "Camera vertical FOV in degree" );
 DEFINE_int32( ocl_dev_idx, 0, "Specify open-cl device index" );
 
 DEFINE_double(
@@ -47,7 +47,7 @@ DEFINE_int32( device_x_accel, 32400, "Stepper motor acceleration in Hz/s" );
 DEFINE_int32( device_y_accel, 544800, "Stepper motor acceleration in Hz/s" );
 DEFINE_int32(
   device_sample_delay,
-  3000,
+  6000,
   "Distance sensor delay in microseconds" );
 /////////////////////////////////////////////////////////////////////////////
 // Static types
@@ -229,7 +229,7 @@ int main( int argc, char* argv[] )
             if ( auto Depth = FrameTask.get(); Depth )
             {
                 cv::imshow( "camera", FrameData );
-                cv::imshow( "depth", Depth.value() );
+                cv::imshow( "depth", Depth.value() / 5.0f );
                 gScan.QueuePoint( 0, 0, 0 );
                 break;
             }
@@ -332,11 +332,25 @@ static std::optional<cv::Mat> CaptureDepthImage( cv::Mat Frame )
         cv::add( GpuContour, GpuFrame, Frame );
         GpuContour.copyTo( DebugContour );
     }
+#endif
+#if 0
     {
         Out = DepthMap.clone();
         Out = 1.0f - ( Out / 5.0f );
     }
 #endif
+    // Apply Gaussian blurring on gradient contour.
+    // Superpixels that have a close relationship should be interpolated
+    // smoothly. On the other hand, the cliff, which indicates a large
+    // difference between Superpixels, should not be interpolated.
+    {
+        cv::Mat BlurImage;
+        DepthMap.copyTo( BlurImage );
+
+        cv::bilateralFilter( DepthMap, BlurImage, 0, 0.16, 14.0 );
+        BlurImage.copyTo( Out );
+    }
+
     // Calculates the distance between each super-pixels then create a
     // distance matrix to select nearby super-pixels to evaluate.
 
@@ -500,7 +514,8 @@ bool MeasureSampleDepths(
 
     // Configure gScan device
     gScan.OnPointRecv = [&]( FPointData const& pd ) {
-        Depths[pd.ID].Range = pd.V.Distance / (float)Q9_22_ONE_INT;
+        auto Range          = pd.V.Distance / (float)Q9_22_ONE_INT;
+        Depths[pd.ID].Range = std::max( 0.f, Range );
         Depths[pd.ID].Amp   = pd.V.AMP / (float)UQ12_4_ONE_INT;
         TimeoutPivot        = system_clock::now();
     };
@@ -514,8 +529,15 @@ bool MeasureSampleDepths(
         auto const& pt = CapturePath[i];
 
         // Set image center as 0, 0.
-        float x = ( pt.second.x - AspectRatio * 0.5f ) * FLAGS_vertical_fov;
-        float y = ( pt.second.y - 0.5f ) * FLAGS_vertical_fov;
+        auto const fov    = FLAGS_vertical_fov;
+        auto const aspect = AspectRatio;
+        float      x      = pt.second.x / aspect - 0.5f;
+        float      y      = pt.second.y - 0.5f;
+        auto       xc = x, yc = y;
+        x = x * aspect;
+        // x = powf( fabs( x ), 1.2f ) * ( x > 0 ? 1 : -1 );
+        // y                 = powf( fabs( y ), 0.77f ) * ( y > 0 ? 1 : -1 );
+        x *= fov, y *= fov;
 
         // Queue point capture
         TimeoutPivot = system_clock::now();
@@ -535,13 +557,15 @@ bool MeasureSampleDepths(
         if ( i % 64 == 63 )
         {
             auto now = system_clock::now();
+            auto speed
+              = duration_cast<milliseconds>( now - ElapsedTimeBegin ).count()
+                / i;
             LOG_INFO(
-              "Processing %lu/%lu requests ... %lu ms/smpl ",
+              "%lu/%lu ... %lu ms/smpl %.1f seconds left",
               i,
               NumSpxl,
-              duration_cast<milliseconds>( now - ElapsedTimeBegin ).count()
-                / 64 );
-            ElapsedTimeBegin = now;
+              speed,
+              ( ( NumSpxl - i - 1 ) * speed ) / 1000.0 );
         }
     }
 
@@ -559,6 +583,7 @@ bool MeasureSampleDepths(
 
     // Clear callback to prevent local data corruption
     gScan.OnPointRecv = {};
+    gScan.QueuePoint( 0, 0, 0 );
 
     // done.
 }
