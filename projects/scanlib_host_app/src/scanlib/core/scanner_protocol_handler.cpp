@@ -711,7 +711,7 @@ bool FScannerProtocolHandler::InitPointMode() noexcept
 
     // Refresh number of available requests
     mStatCache = mStat.load();
-    constexpr decltype( mStatCache.NumMaxPointRequest ) MAX_VALUE = 15;
+    constexpr decltype( mStatCache.NumMaxPointRequest ) MAX_VALUE = 30;
     auto Max = std::min( MAX_VALUE, mStatCache.NumMaxPointRequest );
     mNumAvailablePointRequest = Max;
     mNumMaxPointRequest       = Max;

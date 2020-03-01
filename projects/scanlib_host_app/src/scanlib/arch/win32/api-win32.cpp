@@ -16,7 +16,7 @@ bool API_RefreshScannerControl( FScannerProtocolHandler& S )
     memset( Port, 0, sizeof Port );
     API_FindConnection( Port );
 
-    if ( strlen( Port ) == 0 )
+    if ( strlen( Port ) == 0 || strncmp( Port, "COM", 3 ) != 0 )
     {
         return false;
     }
@@ -222,6 +222,7 @@ static void SearchCOM( TCHAR* pszComePort, TCHAR* vid, TCHAR* pid )
     DEVPROPTYPE     ulPropertyType;
     DWORD           dwSize = 0;
     DWORD           Error  = 0;
+    pszComePort[0]         = 0;
     enum
     {
         BUFF_LEN = 20

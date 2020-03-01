@@ -1,22 +1,23 @@
 #include "com.hpp"
 #include <Windows.h>
 
-comstreambuf_t::comstreambuf_t( char const* com_port )
-    : m_hCom( NULL )
-    , ibuf()
+comstreambuf_t::comstreambuf_t( char const* com_port ) : m_hCom( NULL ), ibuf()
 {
+    if ( strlen( com_port ) == 0 || strncmp( com_port, "COM", 3 ) != 0 )
+        return;
+
     char buf[128];
     sprintf_s( buf, "\\\\.\\%s", com_port );
 
     // Create file object for opening COM port
     auto hComm = CreateFile(
-        buf,
-        GENERIC_READ | GENERIC_WRITE,
-        0,
-        NULL,
-        OPEN_EXISTING,
-        FILE_FLAG_WRITE_THROUGH,
-        NULL );
+      buf,
+      GENERIC_READ | GENERIC_WRITE,
+      0,
+      NULL,
+      OPEN_EXISTING,
+      FILE_FLAG_WRITE_THROUGH,
+      NULL );
 
     if ( hComm == INVALID_HANDLE_VALUE )
         return;
@@ -37,7 +38,8 @@ comstreambuf_t::comstreambuf_t( char const* com_port )
 
 comstreambuf_t::~comstreambuf_t()
 {
-    if ( *this ) {
+    if ( *this )
+    {
         CloseHandle( m_hCom );
     }
 }
@@ -62,7 +64,8 @@ void comstreambuf_t::set_timeout( _COMMTIMEOUTS* timeout )
     SetCommTimeouts( m_hCom, timeout );
 }
 
-comstreambuf_t::strmbuf_t::int_type comstreambuf_t::overflow( strmbuf_t::int_type c )
+comstreambuf_t::strmbuf_t::int_type
+comstreambuf_t::overflow( strmbuf_t::int_type c )
 {
     DWORD written;
     return *this && WriteFile( m_hCom, &c, 1, &written, NULL ) && written;
@@ -80,11 +83,13 @@ comstreambuf_t::strmbuf_t::int_type comstreambuf_t::underflow()
     DWORD               readcnt = 0;
     strmbuf_t::int_type retval;
     bool                stat;
-    do {
+    do
+    {
         stat  = ReadFile( m_hCom, &c, sizeof( c ), &readcnt, NULL );
         *ibuf = c;
 
-        if ( readcnt ) {
+        if ( readcnt )
+        {
             retval = traits_type::not_eof( c );
             setg( ibuf, ibuf, ibuf + 1 );
             return retval;
@@ -94,10 +99,15 @@ comstreambuf_t::strmbuf_t::int_type comstreambuf_t::underflow()
     return traits_type::eof();
 }
 
-std::streamsize comstreambuf_t::xsputn( const char* _Ptr, std::streamsize _Count )
+std::streamsize
+comstreambuf_t::xsputn( const char* _Ptr, std::streamsize _Count )
 {
     DWORD written = 0;
-    return ( *this && WriteFile( m_hCom, _Ptr, static_cast<DWORD>( _Count ), &written, NULL ) ) ? written : 0;
+    return ( *this
+             && WriteFile(
+               m_hCom, _Ptr, static_cast<DWORD>( _Count ), &written, NULL ) )
+             ? written
+             : 0;
 }
 
 std::streamsize comstreambuf_t::xsgetn( char* _Ptr, std::streamsize _Count )
@@ -108,8 +118,10 @@ std::streamsize comstreambuf_t::xsgetn( char* _Ptr, std::streamsize _Count )
     DWORD           readcnt = 0;
     std::streamsize cnt     = 0;
     bool            stat;
-    do {
-        stat = ReadFile( m_hCom, _Ptr, static_cast<DWORD>( _Count ), &readcnt, NULL );
+    do
+    {
+        stat = ReadFile(
+          m_hCom, _Ptr, static_cast<DWORD>( _Count ), &readcnt, NULL );
         cnt += readcnt;
         _Ptr += readcnt;
         // printf("readcnt: %d of %d\n", readcnt, _Count);
