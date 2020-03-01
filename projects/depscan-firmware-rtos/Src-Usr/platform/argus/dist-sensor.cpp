@@ -165,7 +165,7 @@ bool DistSens_MeasureAsync(
             if ( result == STATUS_OK )
                 result = si.result_.Status;
 
-            if ( result < STATUS_OK )
+            if ( result != ERROR_ARGUS_STALLED && result < STATUS_OK )
             { // When the result is negative, it indicates an error.
                 API_Msgf(
                   "error: failed to evaluate data for code %d\n", result );
