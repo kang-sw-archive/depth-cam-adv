@@ -34,18 +34,19 @@ using namespace std::chrono_literals;
 /////////////////////////////////////////////////////////////////////////////
 // GLOBAL FLAGS
 DEFINE_int32( cam_index, 0, "Specify camera index to use" );
-DEFINE_int32( desired_pixel_cnt, int( 1e6 ), "Number of intended pixels" );
+DEFINE_int32( desired_pixel_cnt, int( 6e5 ), "Number of intended pixels" );
 DEFINE_double( slic_compactness, 65.f, "Pixel compactness" );
 DEFINE_int32(
   desired_superpixel_cnt,
-  int( 1e4 ),
+  int( 160 ),
   "Number of desired super pixels" );
-DEFINE_double( vertical_fov, 38, "Camera vertical FOV in degree" );
+DEFINE_double( vertical_fov, 42.5, "Camera vertical FOV in degree" );
+DEFINE_double( horizontal_fov, 69.4, "Camera horizontal FOV in degree" );
 DEFINE_int32( ocl_dev_idx, 0, "Specify open-cl device index" );
 
 DEFINE_double(
   path_x_tolerance,
-  0.06f,
+  0.04f,
   "X axis movement tolerance of Depscan" );
 DEFINE_int32( device_x_accel, 32400, "Stepper motor acceleration in Hz/s" );
 DEFINE_int32( device_y_accel, 544800, "Stepper motor acceleration in Hz/s" );
@@ -77,13 +78,13 @@ static std::optional<cv::Mat> CaptureDepthImage( cv::Mat* FrameData );
 // Logging utility
 static std::string stringf( char const* fmt, ... );
 #define LOG_INFO( fmt, ... ) CV_LOG_INFO( nullptr, stringf( fmt, __VA_ARGS__ ) )
-#define LOG_VERBOSE( fmt, ... )                                                \
+#define LOG_VERBOSE( fmt, ... ) \
     CV_LOG_VERBOSE( nullptr, stringf( fmt, __VA_ARGS__ ) )
-#define LOG_WARNING( fmt, ... )                                                \
+#define LOG_WARNING( fmt, ... ) \
     CV_LOG_WARNING( nullptr, stringf( fmt, __VA_ARGS__ ) )
-#define LOG_ERROR( fmt, ... )                                                  \
+#define LOG_ERROR( fmt, ... ) \
     CV_LOG_ERROR( nullptr, stringf( fmt, __VA_ARGS__ ) )
-#define LOG_FATAL( fmt, ... )                                                  \
+#define LOG_FATAL( fmt, ... ) \
     CV_LOG_FATAL( nullptr, stringf( fmt, __VA_ARGS__ ) )
 
 #define DEBUG_MAX_DIST 5.0f
@@ -320,34 +321,18 @@ static std::optional<cv::Mat> CaptureDepthImage( cv::Mat* FrameData )
     auto    NumRows = Contour.rows;
     auto    NumCols = Contour.cols;
     int     Sizes[] = { NumRows, NumCols };
-    cv::Mat DepthMap { 2, Sizes, CV_32F };
+    cv::Mat DepthMap{ 2, Sizes, CV_32F };
 
     {
-        vector<ScanDataPixelType> Raw;
-        Raw.resize( size_t( NumRows ) * NumCols );
-
         for ( size_t i = 0; i < NumRows; i++ )
         {
             auto LabelRow = Contour.ptr<int>( i );
             auto DepthRow = DepthMap.ptr<float>( i );
             for ( size_t j = 0; j < NumCols; j++ )
             {
-                auto dpxl                        = Depths[LabelRow[j]];
-                DepthRow[j]                      = dpxl.Range;
-                Raw[i * NumCols + j].Q9_22_DEPTH = dpxl.Range * Q9_22_ONE_INT;
-                Raw[i * NumCols + j].UQ_12_4_AMP = dpxl.Amp * UQ12_4_ONE_INT;
+                auto dpxl   = Depths[LabelRow[j]];
+                DepthRow[j] = dpxl.Range;
             }
-        }
-
-        auto fp = fopen(
-          ( to_string( system_clock::now().time_since_epoch().count() )
-            + ".dpta" )
-            .c_str(),
-          "wb" );
-        if ( fp )
-        {
-            ScanDataWriteTo( fp, Raw.data(), NumCols, NumRows, AspectRatio );
-            fclose( fp );
         }
     }
 
@@ -363,10 +348,36 @@ static std::optional<cv::Mat> CaptureDepthImage( cv::Mat* FrameData )
     // difference between Superpixels, should not be interpolated.
     {
         cv::Mat BlurImage;
+        
         DepthMap.copyTo( BlurImage );
-
-        cv::bilateralFilter( DepthMap, BlurImage, 0, 0.16, 14.0 );
+        // cv::bilateralFilter( DepthMap, BlurImage, 0, 0.16, 14.0 );
         BlurImage.copyTo( Out );
+
+        vector<ScanDataPixelType> Raw;
+        Raw.resize( size_t( NumRows ) * NumCols );
+
+        for ( size_t i = 0; i < NumRows; i++ )
+        {
+            auto DepthRow = BlurImage.ptr<float>( i );
+            auto LabelRow = Contour.ptr<int>( i );
+            for ( size_t j = 0; j < NumCols; j++ )
+            {
+                auto dpxl                        = Depths[LabelRow[j]];
+                Raw[i * NumCols + j].Q9_22_DEPTH = q9_22_t( DepthRow[j] * Q9_22_ONE_INT );
+                Raw[i * NumCols + j].UQ_12_4_AMP = dpxl.Amp;
+            }
+        }
+
+        auto fp = fopen(
+          ( to_string( system_clock::now().time_since_epoch().count() )
+            + ".dpta" )
+            .c_str(),
+          "wb" );
+        if ( fp )
+        {
+            ScanDataWriteTo( fp, Raw.data(), NumCols, NumRows, AspectRatio );
+            fclose( fp );
+        }
 #if 1 // Debug display ...
         {
             cv::UMat GpuContour;
@@ -442,7 +453,7 @@ FindCenters( cv::Mat Contour, std::vector<cv::Point2f>& Out, size_t NumSpxls )
         auto RowPtr = Contour.ptr<int>( i );
         for ( decltype( NumCols ) k = 0; k < NumCols; k++ )
         {
-            Out[RowPtr[k]] += cv::Point2f { float( k ), float( i ) };
+            Out[RowPtr[k]] += cv::Point2f{ float( k ), float( i ) };
             NumPxls[RowPtr[k]]++;
         }
     }
