@@ -5,7 +5,6 @@
 //!
 //! @details
 #pragma once
-#include "app.hpp"
 #include <deque>
 #include <memory>
 #include <nana/gui.hpp>
@@ -28,8 +27,11 @@
 #include <nana/paint/image.hpp>
 #include <string>
 #include <utility>
+#include <optional>
+#include "app.hpp"
 
-class ScannerViewerWidget : public nana::picture {
+class ScannerViewerWidget : public nana::picture
+{
 public:
     ScannerViewerWidget( nana::form& w, FScanImageDesc const& desc );
     ScannerViewerWidget() = default;
@@ -44,7 +46,8 @@ public:
     }
 
 private:
-    enum class ColorMappingMode {
+    enum class ColorMappingMode
+    {
         NONE,
         BGR,
         GREYSCALE,
@@ -53,25 +56,25 @@ private:
     };
 
 private:
-    void        rerenderBuf();
-    void        refreshScreen( bool bTryLock = false );
-    void        viewportDraw( nana::paint::graphics& gr );
-    static void TranslateInto(
-        nana::paint::graphics& dst,
-        nana::paint::graphics& src,
-        double                 AspectRatio,
-        double                 x,
-        double                 y,
-        double                 zoom_percent );
+    void rerenderBuf();
+    void refreshScreen( bool bTryLock = false );
+    void viewportDraw( nana::paint::graphics& gr );
+    void TranslateInto(
+      nana::paint::graphics& dst,
+      nana::paint::graphics& src,
+      double                 AspectRatio,
+      double                 x,
+      double                 y,
+      double                 zoom_percent );
     static void RenderImage(
-        FScanImageDesc const&,
-        nana::paint::graphics& To,
-        bool                   bRenderAmp,
-        float                  MaxDistance     = 10.0f,
-        float                  MinDistance     = 0.0f,
-        int                    HorizontalCalib = 0,
-        ColorMappingMode       ColorMode       = {},
-        void*                  CacheBuff       = NULL );
+      FScanImageDesc const&,
+      nana::paint::graphics& To,
+      bool                   bRenderAmp,
+      float                  MaxDistance     = 10.0f,
+      float                  MinDistance     = 0.0f,
+      int                    HorizontalCalib = 0,
+      ColorMappingMode       ColorMode       = {},
+      void*                  CacheBuff       = NULL );
 
 private:
     nana::place   mLayout = {};
@@ -102,11 +105,14 @@ private:
 
     std::unique_ptr<uint32_t[]> mTmpBuf   = {};
     size_t                      mTmpBufSz = 0;
+
+    std::optional<nana::point> mViewportCursorPos = {};
+    nana::paint::font          mConsolas{ "consolas", 11 };
 };
 
 //! Layout script for main form
 static char const* ScannerMainFormLayoutScript =
-    R"(
+  R"(
 vert
 <   
     margin=[25, 10, 2, 10] 
@@ -128,26 +134,29 @@ vert
 )";
 
 #ifdef WIN32
-#    define SCANLIB_ASCIIVAL_ENTER   13
-#    define SCANLIB_ASCIIVAL_UPARROW 38
-#    define SCANLIB_ASCIIVAL_DNARROW 40
+#define SCANLIB_ASCIIVAL_ENTER   13
+#define SCANLIB_ASCIIVAL_UPARROW 38
+#define SCANLIB_ASCIIVAL_DNARROW 40
 #endif
 
 //! Simple set of components that make up application
 //! @todo. Improve color range view
 //! @todo. Output to png file
 //! @todo. Capture file history
-class ScannerMainForm : public nana::form {
+class ScannerMainForm : public nana::form
+{
 public:
-    ScannerMainForm( FScannerProtocolHandler* mScannerRef, std::string const& fontName = "consolas" );
+    ScannerMainForm(
+      FScannerProtocolHandler* mScannerRef,
+      std::string const&       fontName = "consolas" );
     ~ScannerMainForm();
 
     void BindScanner( FScannerProtocolHandler* scanRef );
 
 public:
     size_t                    NumMaxCommandHistory = 512;
-    std::chrono::milliseconds UpdatePeriod { 100 };
-    std::chrono::milliseconds ReportPeriod { 100 };
+    std::chrono::milliseconds UpdatePeriod{ 100 };
+    std::chrono::milliseconds ReportPeriod{ 100 };
 
     size_t NumMaxImageHistory() const { return mNumMaxImageHistory; }
     void   NumMaxImageHistory( size_t val )
@@ -185,14 +194,16 @@ private:
         time_t t;
         time( &t );
         auto tm = localtime( &t );
-        mScan->print( "system %02d:%02d:%02d:: ", tm->tm_hour, tm->tm_min, tm->tm_sec );
+        mScan->print(
+          "system %02d:%02d:%02d:: ", tm->tm_hour, tm->tm_min, tm->tm_sec );
         mScan->print( fmt, std::forward<args_>( args )... );
     }
 
     template <class widget_, typename... args_>
     widget_& createWidget( args_&&... args )
     {
-        mUnnamedRefs.emplace_back( std::make_unique<widget_>( std::forward<args_>( args )... ) );
+        mUnnamedRefs.emplace_back(
+          std::make_unique<widget_>( std::forward<args_>( args )... ) );
         return *static_cast<widget_*>( mUnnamedRefs.back().get() );
     }
 

@@ -21,7 +21,10 @@ using namespace std::chrono;
 using namespace std;
 
 template <typename arg_, size_t n_>
-constexpr size_t countof( arg_ ( & )[n_] ) { return n_; }
+constexpr size_t countof( arg_ ( & )[n_] )
+{
+    return n_;
+}
 
 int gui_app( int argc, char** argv )
 {
@@ -37,12 +40,14 @@ int gui_view_app( int argc, char** argv )
     vector<std::unique_ptr<form>>                forms;
     vector<std::unique_ptr<ScannerViewerWidget>> widgets;
 
-    for ( size_t i = 1; i < argc; i++ ) {
+    for ( size_t i = 1; i < argc; i++ )
+    {
         printf( "%s\n", argv[i] );
-        ifstream           fs { argv[i], ios::binary | ios::in };
+        ifstream           fs{ argv[i], ios::binary | ios::in };
         ScanDataHeaderType f;
         ScanDataPixelType* p;
-        if ( scanlib::ScanDataReadFrom( fs, &p, &f ) ) {
+        if ( scanlib::ScanDataReadFrom( fs, &p, &f ) )
+        {
             printf( "Opening viewer form ...\n" );
             auto& fm   = *forms.emplace_back( make_unique<form>() );
             auto  desc = FScanImageDesc( f.WIDTH, f.HEIGHT, f.ASPECT_RATIO, (FPxlData*)p );
@@ -55,7 +60,8 @@ int gui_view_app( int argc, char** argv )
             vp.bgcolor( color().from_rgb( 176, 176, 176 ) );
             fm.show();
         }
-        else {
+        else
+        {
             printf( "error: failed to read image file\n    :: %s\n", argv[i] );
         }
     }
@@ -71,7 +77,7 @@ ScannerMainForm::ScannerMainForm( FScannerProtocolHandler* Scanner, std::string 
 {
     caption( "scangui" );
 
-    mFormatFont = paint::font { fontName, 10.0 };
+    mFormatFont = paint::font{ fontName, 10.0 };
     mLayout.div( ScannerMainFormLayoutScript );
 
     /// Determine Layout
@@ -96,7 +102,7 @@ ScannerMainForm::ScannerMainForm( FScannerProtocolHandler* Scanner, std::string 
         mStatus.multi_lines( true );
         paint::font::font_style status_style = {};
         status_style.weight                  = 500;
-        auto font                            = paint::font { fontName, 10, status_style };
+        auto font                            = paint::font{ fontName, 10, status_style };
         mStatus.typeface( font );
         mStatus.bgcolor( color().from_rgb( 64, 64, 64 ) );
         mStatus.fgcolor( color().from_rgb( 54, 255, 54 ) );
@@ -143,13 +149,9 @@ ScannerMainForm::ScannerMainForm( FScannerProtocolHandler* Scanner, std::string 
         mViewIndexInput.events().text_changed( [this]( auto ) {
             mViewImgIndex = mViewIndexInput.to_int();
             mViewIndexLabel
-                .caption( mViewImgIndex == 0
-                              ? string( "Viewing Scanning" )
-                              : string( "Viewing Captured" ) );
+              .caption( mViewImgIndex == 0 ? string( "Viewing Scanning" ) : string( "Viewing Captured" ) );
             mViewIndexInput
-                .bgcolor( mViewImgIndex == 0
-                              ? color().from_rgb( 0, 0, 0 )
-                              : color().from_rgb( 255, 255, 255 ) );
+              .bgcolor( mViewImgIndex == 0 ? color().from_rgb( 0, 0, 0 ) : color().from_rgb( 255, 255, 255 ) );
             AutoUpdateImage();
         } );
         UpdateImageHistoryBox( 0 );
@@ -168,8 +170,9 @@ ScannerMainForm::ScannerMainForm( FScannerProtocolHandler* Scanner, std::string 
 
         // Style request buttons
         mRequestGroup.caption( "Operations" );
-        mRequestGroup.div( "<vert margin=10 gap = 10 <vert gap=5 "
-                           "btns><margin=[5, 0, 0, 0] btns_sub weight=30%>" );
+        mRequestGroup.div(
+          "<vert margin=10 gap = 10 <vert gap=5 "
+          "btns><margin=[5, 0, 0, 0] btns_sub weight=30%>" );
         mStartScan.create( mRequestGroup );
         mStopScan.create( mRequestGroup );
         mMoveMotorBtn.create( mRequestGroup );
@@ -185,35 +188,37 @@ ScannerMainForm::ScannerMainForm( FScannerProtocolHandler* Scanner, std::string 
 
         // Setup control group
         mConfigGroup.caption( "Configure (Hover over to view tooltips)" );
-        mConfigGroup.div( "<vert margin=[10,0] texts weight=30%>       "
-                          "<vert margin=10                             "
-                          " <><margin=[2.5, 0] gap = 5 b0 weight=30>   "
-                          " <><margin=[2.5, 0] gap = 5 b1 weight=30>   "
-                          " <><margin=[2.5, 0] gap = 5 b2 weight=30>   "
-                          " <><margin=[2.5, 0] gap = 5 b3 weight=30>   "
-                          " <><margin=[2.5, 0] gap = 5 b4 weight=30>   "
-                          "<>>" );
+        mConfigGroup.div(
+          "<vert margin=[10,0] texts weight=30%>       "
+          "<vert margin=10                             "
+          " <><margin=[2.5, 0] gap = 5 b0 weight=30>   "
+          " <><margin=[2.5, 0] gap = 5 b1 weight=30>   "
+          " <><margin=[2.5, 0] gap = 5 b2 weight=30>   "
+          " <><margin=[2.5, 0] gap = 5 b3 weight=30>   "
+          " <><margin=[2.5, 0] gap = 5 b4 weight=30>   "
+          "<>>" );
         char constexpr* conftxt[]     = { "Offset Angle", "FOV", "Resolution", "Measure Delay \n[usec]", "Motor Speed \n[Accel/Max]" };
         char constexpr* conftooltip[] = {
-            //
-            // Offset angle tooltip
-            "Target offset angle from motor origin [x, y] [degree]",
-            //
-            // FOV tooltip
-            "Target field of view [x, y] [degree]",
-            //
-            // Resolution
-            "Target image resolution value [x, y] [pixels]\n"
-            "Resolution can have large error from the target value, since priority of FOV is higher.",
-            //
-            // Delay
-            "Sensor delay on every measurement. [microseconds]",
-            //
-            // Motor Speed
-            "The left column shows the maximum step speed of the motor in Hz. \n"
-            "The item on the right shows the step acceleration of the motor in Hz/s.",
+          //
+          // Offset angle tooltip
+          "Target offset angle from motor origin [x, y] [degree]",
+          //
+          // FOV tooltip
+          "Target field of view [x, y] [degree]",
+          //
+          // Resolution
+          "Target image resolution value [x, y] [pixels]\n"
+          "Resolution can have large error from the target value, since priority of FOV is higher.",
+          //
+          // Delay
+          "Sensor delay on every measurement. [microseconds]",
+          //
+          // Motor Speed
+          "The left column shows the maximum step speed of the motor in Hz. \n"
+          "The item on the right shows the step acceleration of the motor in Hz/s.",
         };
-        for ( size_t idx = 0; idx < countof( conftxt ); idx++ ) {
+        for ( size_t idx = 0; idx < countof( conftxt ); idx++ )
+        {
             auto& i = mConfText[idx];
             i.create( mConfigGroup );
             i.bgcolor( GroupColor );
@@ -228,15 +233,19 @@ ScannerMainForm::ScannerMainForm( FScannerProtocolHandler* Scanner, std::string 
         double const    RangeMax[]    = { 120, 120, 100000, 10000000 };
         double const    RangeStep[]   = { 5, 5, 25, 1000 };
         int const       RangeInit[]   = { 0, 5, 25, 15400 };
-        for ( size_t i = 0; i < countof( confgrp ); i++ ) {
-            for ( size_t k = 0; k < 2; k++ ) {
+        for ( size_t i = 0; i < countof( confgrp ); i++ )
+        {
+            for ( size_t k = 0; k < 2; k++ )
+            {
                 auto& widget = confwidgets[i][k];
                 widget.create( mConfigGroup );
                 mConfigGroup[confgrp[i]] << confwidgets[i][k];
-                if ( i == 2 || i == 3 ) {
+                if ( i == 2 || i == 3 )
+                {
                     widget.range( (int)RangeMin[i], (int)RangeMax[i], (int)RangeStep[i] );
                 }
-                else {
+                else
+                {
                     widget.range( RangeMin[i], RangeMax[i], RangeStep[i] );
                 }
                 widget.value( to_string( RangeInit[i] ) );
@@ -261,7 +270,7 @@ ScannerMainForm::ScannerMainForm( FScannerProtocolHandler* Scanner, std::string 
 
         // Setup auto retrigger
         ops.append( "Auto restart capture", [this]( auto proxy ) { bEnableAutoRestart = proxy.checked(); } )
-            .check_style( menu::checks::highlight );
+          .check_style( menu::checks::highlight );
         ops.append( "Set Angle Per Step", [this]( auto proxy ) { OpenStepPerAngleSettingDialog(); } );
         ops.append( "Set Motor Drive Clock Speed", [this]( auto proxy ) { OpenMotorDrvClkSettingDialog(); } );
         ops.append_splitter();
@@ -272,7 +281,7 @@ ScannerMainForm::ScannerMainForm( FScannerProtocolHandler* Scanner, std::string 
         file.append_splitter();
         file.append( "Set autosave path...", [this]( auto ) { SetAutosavePath(); } );
         file.append( "Auto save when capture done", [this]( auto proxy ) { bFileEnableAutosave = proxy.checked(); } )
-            .check_style( menu::checks::highlight );
+          .check_style( menu::checks::highlight );
         file.append_splitter();
         file.append( "Exit", [this]( auto proxy ) { this->close(); } );
     }
@@ -283,31 +292,38 @@ ScannerMainForm::ScannerMainForm( FScannerProtocolHandler* Scanner, std::string 
         UpdateReportText();
     } );
     mMenualCommand.events().key_press( [this]( arg_keyboard const& arg ) {
-        switch ( arg.key ) {
-        case SCANLIB_ASCIIVAL_ENTER: {
+        switch ( arg.key )
+        {
+        case SCANLIB_ASCIIVAL_ENTER:
+        {
             auto cmd = mMenualCommand.text();
             mScan->SendString( cmd.c_str() );
             mMenualCommand.reset();
-            if ( mCommandHistory.size() >= NumMaxCommandHistory ) {
+            if ( mCommandHistory.size() >= NumMaxCommandHistory )
+            {
                 mCommandHistory.pop_front();
             }
             mCommandHistory.emplace_back( std::move( cmd ) );
             mCommandCursor = 0;
-        } break;
+        }
+        break;
         case SCANLIB_ASCIIVAL_UPARROW:
-        case SCANLIB_ASCIIVAL_DNARROW: {
+        case SCANLIB_ASCIIVAL_DNARROW:
+        {
             if ( arg.key == SCANLIB_ASCIIVAL_UPARROW && mCommandCursor < mCommandHistory.size() )
                 mCommandCursor++;
             else if ( arg.key == SCANLIB_ASCIIVAL_DNARROW && mCommandCursor )
                 mCommandCursor--;
 
-            if ( mCommandCursor == 0 ) {
+            if ( mCommandCursor == 0 )
+            {
                 mMenualCommand.reset();
                 break;
             }
 
             mMenualCommand.reset( *( mCommandHistory.end() - mCommandCursor ) );
-        } break;
+        }
+        break;
         default:
             break;
         }
@@ -335,7 +351,8 @@ ScannerMainForm::ScannerMainForm( FScannerProtocolHandler* Scanner, std::string 
 
 ScannerMainForm::~ScannerMainForm()
 {
-    if ( mComSearchTask.valid() ) {
+    if ( mComSearchTask.valid() )
+    {
         mComSearchTask.wait();
     }
     mScan->Logger = nullptr;
@@ -349,15 +366,22 @@ void ScannerMainForm::BindScanner( FScannerProtocolHandler* scanRef )
     mScan->OnReceiveLine = [this]( auto rep ) { this->OnUpdateImage( rep ); };
     mScan->OnFinishScan  = [this]( auto rep ) { this->OnScannerCaptureDone( rep ); };
     mScan->Logger        = [this]( auto str ) {
-        enum { LINE_CLEAR_THRESHOLD = 150,
-               LINE_LEFT_DIVIDER    = 2 };
-        if ( mReport.text_line_count() > LINE_CLEAR_THRESHOLD ) {
+        enum
+        {
+            LINE_CLEAR_THRESHOLD = 150,
+            LINE_LEFT_DIVIDER    = 2
+        };
+        if ( mReport.text_line_count() > LINE_CLEAR_THRESHOLD )
+        {
             auto   cpy      = mReport.text();
             size_t inv_ofst = cpy.size();
             auto   riter    = cpy.crbegin();
             for ( size_t i = 0, length = LINE_CLEAR_THRESHOLD / 4;
-                  i < length; ++riter, --inv_ofst ) {
-                if ( *riter == '\n' ) {
+                  i < length;
+                  ++riter, --inv_ofst )
+            {
+                if ( *riter == '\n' )
+                {
                     ++i;
                 }
             }
@@ -375,7 +399,8 @@ void ScannerMainForm::UpdateImageHistoryBox( size_t newval )
 
 FScanImageDesc const& ScannerMainForm::GetViewingImage() const
 {
-    if ( mCapturedImage.empty() ) {
+    if ( mCapturedImage.empty() )
+    {
         return {};
     }
     return *( mCapturedImage.end() - std::max( size_t( 1 ), mViewImgIndex ) );
@@ -383,11 +408,13 @@ FScanImageDesc const& ScannerMainForm::GetViewingImage() const
 
 void ScannerMainForm::OnScannerCaptureDone( FScanImageDesc const& desc )
 {
-    if ( desc.CData() == nullptr ) {
+    if ( desc.CData() == nullptr )
+    {
         return;
     }
 
-    if ( mCapturedImage.size() >= mNumMaxImageHistory ) {
+    if ( mCapturedImage.size() >= mNumMaxImageHistory )
+    {
         mCapturedImage.pop_front();
     }
     mCapturedImage.emplace_back( desc.Clone() );
@@ -395,7 +422,8 @@ void ScannerMainForm::OnScannerCaptureDone( FScanImageDesc const& desc )
 
     // Write images to auto save path
     // File name is yyyy-mm-dd-hh-mm-ss-s.dpta
-    if ( bFileEnableAutosave && mAutoSavePath.empty() == false ) {
+    if ( bFileEnableAutosave && mAutoSavePath.empty() == false )
+    {
         // Make file name
         using namespace std;
         using namespace std::chrono;
@@ -445,15 +473,24 @@ void ScannerMainForm::OnUpdateReport( FDeviceStat const& Stat )
              " %-13s [ %17.3f    s ]\n"
              "\n"
              "      :::      %04.1f%% done      ::: ",
-             'x', 'y',
-             Stat.StepPerPxlX, Stat.StepPerPxlY,
-             Stat.StepPerPxlX * Stat.DegreePerStepX, Stat.StepPerPxlY * Stat.DegreePerStepY,
-             Stat.SizeX, Stat.SizeY,
-             Stat.SizeX * Stat.StepPerPxlX * Stat.DegreePerStepX, Stat.SizeY * Stat.StepPerPxlY * Stat.DegreePerStepY,
-             Stat.OfstX, Stat.OfstY,
-             Stat.OfstX * Stat.DegreePerStepX, (int)Stat.OfstY * Stat.DegreePerStepY,
-             Stat.DegreePerStepX, Stat.DegreePerStepY,
-             Stat.CurMotorStepX, Stat.CurMotorStepY,
+             'x',
+             'y',
+             Stat.StepPerPxlX,
+             Stat.StepPerPxlY,
+             Stat.StepPerPxlX * Stat.DegreePerStepX,
+             Stat.StepPerPxlY * Stat.DegreePerStepY,
+             Stat.SizeX,
+             Stat.SizeY,
+             Stat.SizeX * Stat.StepPerPxlX * Stat.DegreePerStepX,
+             Stat.SizeY * Stat.StepPerPxlY * Stat.DegreePerStepY,
+             Stat.OfstX,
+             Stat.OfstY,
+             Stat.OfstX * Stat.DegreePerStepX,
+             (int)Stat.OfstY * Stat.DegreePerStepY,
+             Stat.DegreePerStepX,
+             Stat.DegreePerStepY,
+             Stat.CurMotorStepX,
+             Stat.CurMotorStepY,
              Stat.DelayPerCapture,
              Stat.bIsPrecisionMode ? "Near" : "Far",
              Stat.bIsIdle ? "TimeLaunch" : "TimeMeasure",
@@ -466,7 +503,8 @@ void ScannerMainForm::OnUpdateReport( FDeviceStat const& Stat )
 void ScannerMainForm::OnUpdateImage( FScanImageDesc const& desc )
 {
     //! Update GUI
-    if ( mViewImgIndex && !mCapturedImage.empty() ) {
+    if ( mViewImgIndex && !mCapturedImage.empty() )
+    {
         return;
     }
 
@@ -474,80 +512,85 @@ void ScannerMainForm::OnUpdateImage( FScanImageDesc const& desc )
 }
 
 static void Internal_RenderImage(
-    FScanImageDesc const&                      desc,
-    function<float( FPxlData )>                calc_H,
-    function<void( float H, color& out )>      calc_col,
-    function<void( int i, int j, color& out )> set_pixel,
-    int                                        HorizontalCalib );
+  FScanImageDesc const&                      desc,
+  function<float( FPxlData )>                calc_H,
+  function<void( float H, color& out )>      calc_col,
+  function<void( int i, int j, color& out )> set_pixel,
+  int                                        HorizontalCalib );
 
 void ScannerViewerWidget::RenderImage(
-    FScanImageDesc const&  desc,
-    nana::paint::graphics& gp,
-    bool                   bRenderAmp,
-    float                  MaxDistance,
-    float                  MinDistance,
-    int                    HorizontalCalib,
-    ColorMappingMode       ColorMode,
-    void*                  CacheBuff )
+  FScanImageDesc const&  desc,
+  nana::paint::graphics& gp,
+  bool                   bRenderAmp,
+  float                  MaxDistance,
+  float                  MinDistance,
+  int                    HorizontalCalib,
+  ColorMappingMode       ColorMode,
+  void*                  CacheBuff )
 {
     //! Reserve buffer if size is not sufficient
-    if ( desc.Width == 0 || desc.Height == 0 ) {
+    if ( desc.Width == 0 || desc.Height == 0 )
+    {
         return;
     }
-    if ( gp.size().width != desc.Width || gp.size().height != desc.Height ) {
+    if ( gp.size().width != desc.Width || gp.size().height != desc.Height )
+    {
         gp.resize( { (uint32_t)desc.Width, (uint32_t)desc.Height } );
     }
 
     // Setup callbacks
     function<float( FPxlData )> calc_H;
-    if ( bRenderAmp == false ) {
+    if ( bRenderAmp == false )
+    {
         calc_H = [MaxDistance, MinDistance, desc]( FPxlData d ) {
             return (float)( d.Distance / (float)(Q9_22_ONE_INT)-MinDistance ) / ( MaxDistance - MinDistance );
         };
     }
-    else {
+    else
+    {
         calc_H = []( FPxlData d ) {
             return d.AMP / (float)( UQ12_4_ONE_INT * ( 1 << 12 ) );
         };
     }
     function<void( float H, color& out )> calc_col;
 
-    switch ( ColorMode ) {
+    switch ( ColorMode )
+    {
     case ScannerViewerWidget::ColorMappingMode::WTOK:
         calc_col =
-            []( float H, color& out ) {
-                H          = clamp( H, 0.f, 1.f );
-                auto ratio = H * 3.f;
-                auto b     = unsigned( clamp( 255.f * ( 1.f - ratio ), 0.f, 255.5f ) );
-                auto g     = unsigned( clamp( 255.f * ( 1.f - ratio / 2.f ), 0.f, 255.5f ) );
-                auto r     = unsigned( clamp( 255.f * ( 1.f - ratio / 3.f ), 0.f, 255.5f ) );
-                out.from_rgb( r, g, b );
-            };
+          []( float H, color& out ) {
+              H          = clamp( H, 0.f, 1.f );
+              auto ratio = H * 3.f;
+              auto b     = unsigned( clamp( 255.f * ( 1.f - ratio ), 0.f, 255.5f ) );
+              auto g     = unsigned( clamp( 255.f * ( 1.f - ratio / 2.f ), 0.f, 255.5f ) );
+              auto r     = unsigned( clamp( 255.f * ( 1.f - ratio / 3.f ), 0.f, 255.5f ) );
+              out.from_rgb( r, g, b );
+          };
         break;
     case ScannerViewerWidget::ColorMappingMode::RAINBOW:
         calc_col =
-            []( float H, color& out ) {
-                H          = clamp( H, 0.f, 1.f );
-                auto ratio = H * 3.f;
+          []( float H, color& out ) {
+              H          = clamp( H, 0.f, 1.f );
+              auto ratio = H * 3.f;
 
-                auto h = clamp( 1.f - ratio / 2.f, 0.f, 1.f );
-                auto s = clamp( 1.f - ratio / 3.f, 0.f, 1.f );
-                auto l = clamp( 1.f - ratio / 3.f, 0.f, 1.f );
+              auto h = clamp( 1.f - ratio / 2.f, 0.f, 1.f );
+              auto s = clamp( 1.f - ratio / 3.f, 0.f, 1.f );
+              auto l = clamp( 1.f - ratio / 3.f, 0.f, 1.f );
 
-                out.from_hsl( ( h * 360.f ) - 240.f, s, l );
-            };
+              out.from_hsl( ( h * 360.f ) - 240.f, s, l );
+          };
         break;
     case ScannerViewerWidget::ColorMappingMode::BGR:
         calc_col =
-            []( float H, color& out ) {
-                H           = clamp( H, 0.f, 1.f );
-                float ratio = 2 * H;
-                auto  b     = unsigned( max( 0.f, 255.f * ( 1.f - ratio ) ) );
-                auto  r     = unsigned( max( 0.f, 255.f * ( ratio - 1.f ) ) );
-                auto  g     = 255u - b - r;
+          []( float H, color& out ) {
+              H           = clamp( H, 0.f, 1.f );
+              float ratio = 2 * H;
+              auto  b     = unsigned( max( 0.f, 255.f * ( 1.f - ratio ) ) );
+              auto  r     = unsigned( max( 0.f, 255.f * ( ratio - 1.f ) ) );
+              auto  g     = 255u - b - r;
 
-                out.from_rgb( r, g, b );
-            };
+              out.from_rgb( r, g, b );
+          };
         break;
     case ScannerViewerWidget::ColorMappingMode::GREYSCALE:
     default:
@@ -560,49 +603,53 @@ void ScannerViewerWidget::RenderImage(
 
                                      [&]( void* data ) {
                                          Internal_RenderImage(
-                                             desc,
-                                             calc_H,
-                                             calc_col,
-                                             [data, w = desc.Width, h = desc.Height]( int x, int y, color const& c ) {
-                                                 uint32_t* ptr  = (uint32_t*)data;
-                                                 ptr[y * w + x] = c.argb().value;
-                                             },
-                                             HorizontalCalib );
+                                           desc,
+                                           calc_H,
+                                           calc_col,
+                                           [data, w = desc.Width, h = desc.Height]( int x, int y, color const& c ) {
+                                               uint32_t* ptr  = (uint32_t*)data;
+                                               ptr[y * w + x] = c.argb().value;
+                                           },
+                                           HorizontalCalib );
                                      },
-                                     CacheBuff ) ) {
+                                     CacheBuff ) )
+    {
         gp.flush();
         return;
     }
 
     Internal_RenderImage(
-        desc,
-        calc_H,
-        calc_col,
-        [&gp]( int x, int y, color const& c ) { gp.set_pixel( x, y, c ); },
-        HorizontalCalib );
+      desc,
+      calc_H,
+      calc_col,
+      [&gp]( int x, int y, color const& c ) { gp.set_pixel( x, y, c ); },
+      HorizontalCalib );
 
     gp.flush();
 }
 
 static void Internal_RenderImage(
-    FScanImageDesc const&                      desc,
-    function<float( FPxlData )>                calc_H,
-    function<void( float H, color& out )>      calc_col,
-    function<void( int x, int y, color& out )> set_pixel,
-    int                                        HorizontalCalib )
+  FScanImageDesc const&                      desc,
+  function<float( FPxlData )>                calc_H,
+  function<void( float H, color& out )>      calc_col,
+  function<void( int x, int y, color& out )> set_pixel,
+  int                                        HorizontalCalib )
 {
     //! Render image in mapped BGR format
     color col;
     auto  head = desc.Data();
-    for ( size_t i = 0; i < desc.Height; i++ ) {
-        for ( size_t j = 0; j < desc.Width; j++ ) {
+    for ( size_t i = 0; i < desc.Height; i++ )
+    {
+        for ( size_t j = 0; j < desc.Width; j++ )
+        {
             auto  pxl = *head++;
             float H   = calc_H( pxl );
             calc_col( H, col );
 
             size_t jnew = j + ( bool( i & 1 ) * (int64_t)HorizontalCalib );
             jnew        = clamp( jnew, size_t( 0 ), size_t( desc.Width - 1 ) );
-            if ( j < HorizontalCalib || j > desc.Width - HorizontalCalib ) {
+            if ( j < HorizontalCalib || j > desc.Width - HorizontalCalib )
+            {
                 set_pixel( j, i, col );
             }
             set_pixel( jnew, i, col );
@@ -613,7 +660,8 @@ static void Internal_RenderImage(
 void ScannerMainForm::AutoUpdateImage()
 {
     FScanImageDesc desc;
-    if ( ( mViewImgIndex == 0 && mScan->GetScanningImage( desc ) ) || ( mViewImgIndex && mCapturedImage.size() && ( desc = GetViewingImage() ).CData() ) ) {
+    if ( ( mViewImgIndex == 0 && mScan->GetScanningImage( desc ) ) || ( mViewImgIndex && mCapturedImage.size() && ( desc = GetViewingImage() ).CData() ) )
+    {
         mViewport.ReplaceDesc( desc );
     }
 }
@@ -621,38 +669,35 @@ void ScannerMainForm::AutoUpdateImage()
 void ScannerMainForm::OpenSaveAs()
 {
     // Check whether there's data to save
-    if ( mCapturedImage.empty() ) {
+    if ( mCapturedImage.empty() )
+    {
         return;
     }
 
-    nana::filebox fb { *this, false };
+    nana::filebox fb{ *this, false };
     char          buf[1024];
     auto          desc = GetViewingImage();
-    sprintf( buf, "fov[%1.0f-%1.0f]-r[%d-%d]-d[%d]-mot[%d]",
-             mConfAngle[0].to_double(),
-             mConfAngle[1].to_double(),
-             mConfResolution[0].to_int(),
-             mConfResolution[1].to_int(),
-             mConfDelay.to_int(),
-             mConfMotorSpd[1].to_int() );
+    sprintf( buf, "fov[%1.0f-%1.0f]-r[%d-%d]-d[%d]-mot[%d]", mConfAngle[0].to_double(), mConfAngle[1].to_double(), mConfResolution[0].to_int(), mConfResolution[1].to_int(), mConfDelay.to_int(), mConfMotorSpd[1].to_int() );
     fb.init_file( buf );
     fb.allow_multi_select( false );
     fb.add_filter( "Scan data file (*." SCAN_DATA_FORMAT_HEADER ")", "*." SCAN_DATA_FORMAT_HEADER );
 
     auto path = fb();
-    if ( path.empty() == false ) {
+    if ( path.empty() == false )
+    {
         SaveCurrentImage( GetViewingImage(), path.front().c_str() );
     }
 }
 
 void ScannerMainForm::SetAutosavePath()
 {
-    nana::filebox fb { *this, false };
+    nana::filebox fb{ *this, false };
     fb.add_filter( "Scan data file (*." SCAN_DATA_FORMAT_HEADER ")", "*." SCAN_DATA_FORMAT_HEADER );
     fb.allow_multi_select( false );
 
     auto path = fb();
-    if ( path.empty() == false ) {
+    if ( path.empty() == false )
+    {
         mAutoSavePath = path.front();
         mAutoSavePathDisplay.caption( mAutoSavePath );
     }
@@ -660,34 +705,39 @@ void ScannerMainForm::SetAutosavePath()
 
 void ScannerMainForm::OpenDepthMapFile()
 {
-    nana::filebox fb { *this, true };
+    nana::filebox fb{ *this, true };
     fb.add_filter( "Scan data file (*." SCAN_DATA_FORMAT_HEADER ")", "*." SCAN_DATA_FORMAT_HEADER );
     fb.allow_multi_select( true );
 
     auto paths = fb();
-    if ( paths.empty() && fb.path().empty() == false ) {
+    if ( paths.empty() && fb.path().empty() == false )
+    {
         paths.push_back( fb.path() );
     }
 
     // Before begin, destroy all unused windows
-    for ( int i = mUnnamedForms.size() - 1; i >= 0; i-- ) {
+    for ( int i = mUnnamedForms.size() - 1; i >= 0; i-- )
+    {
         auto& r = mUnnamedForms[i];
-        if ( r->visible() == false ) {
+        if ( r->visible() == false )
+        {
             r = std::move( mUnnamedForms.back() );
             mUnnamedForms.pop_back();
         }
     }
 
     // For each paths
-    for ( auto& path : paths ) {
+    for ( auto& path : paths )
+    {
         // Load image from selected path
         //! @todo. Find wfopen()'s linux version.
-        ifstream           fs { path.c_str(), ios::binary };
+        ifstream           fs{ path.c_str(), ios::binary };
         FPxlData*          ptr;
         ScanDataHeaderType ods;
-        if ( scanlib::ScanDataReadFrom( fs, (ScanDataPixelType**)&ptr, &ods ) ) {
+        if ( scanlib::ScanDataReadFrom( fs, (ScanDataPixelType**)&ptr, &ods ) )
+        {
             // Create descriptor from loaded image
-            FScanImageDesc desc { ods.WIDTH, ods.HEIGHT, ods.ASPECT_RATIO, ptr };
+            FScanImageDesc desc{ ods.WIDTH, ods.HEIGHT, ods.ASPECT_RATIO, ptr };
 
             // New image form
             auto& frm     = *mUnnamedForms.emplace_back( make_unique<form>( *this ) );
@@ -698,7 +748,7 @@ void ScannerMainForm::OpenDepthMapFile()
             frm["ALL"] << view;
             frm.caption( pathstr.substr( pathstr.find_last_of( '\\' ) ) );
             frm.collocate();
-            view.bgcolor( color {}.from_rgb( 53, 53, 53 ) );
+            view.bgcolor( color{}.from_rgb( 53, 53, 53 ) );
             frm.show();
         }
     }
@@ -732,10 +782,12 @@ void ScannerMainForm::StartCapture()
     c.DesiredOffset.emplace( mConfOfst[0].to_double(), mConfOfst[1].to_double() );
     c.DesiredResolution.emplace( mConfResolution[0].to_int(), mConfResolution[1].to_int() );
 
-    if ( mScan->IsDeviceRunning() ) {
+    if ( mScan->IsDeviceRunning() )
+    {
         mScan->TryPauseOrResume();
     }
-    else {
+    else
+    {
         int slow = mConfMotorSpd[0].to_int();
         int fast = mConfMotorSpd[1].to_int();
         mScan->SetMotorDriveClockSpeed( fast );
@@ -744,17 +796,21 @@ void ScannerMainForm::StartCapture()
     }
 }
 
-void ScannerMainForm::StopCapture() { mScan->StopCapture(); }
+void ScannerMainForm::StopCapture()
+{
+    mScan->StopCapture();
+}
 
 void ScannerMainForm::RequestMotorMovement()
 {
     // Create input box
-    inputbox inp { *this, "Enter motor angle to request movement", "Motor Movement Request" };
+    inputbox inp{ *this, "Enter motor angle to request movement", "Motor Movement Request" };
 
-    inputbox::real angle_x { "X angle", 0.0, -180.0, 180.0, 3 };
-    inputbox::real angle_y { "Y angle", 0.0, -180.0, 180.0, 3 };
+    inputbox::real angle_x{ "X angle", 0.0, -180.0, 180.0, 3 };
+    inputbox::real angle_y{ "Y angle", 0.0, -180.0, 180.0, 3 };
 
-    if ( !inp.show( angle_x, angle_y ) ) {
+    if ( !inp.show( angle_x, angle_y ) )
+    {
         return;
     }
 
@@ -772,12 +828,13 @@ void ScannerMainForm::RequestMotorMovement()
 
 void ScannerMainForm::OpenStepPerAngleSettingDialog()
 {
-    inputbox inp { *this, "Enter motor angle per step", "Set Degrees per Step" };
+    inputbox inp{ *this, "Enter motor angle per step", "Set Degrees per Step" };
 
-    inputbox::real angle_x { "X angle", 1.8 / 32, 0.0, 10.0, 0.0001 };
-    inputbox::real angle_y { "Y angle", 1.8 / 32, 0.0, 10.0, 0.0001 };
+    inputbox::real angle_x{ "X angle", 1.8 / 32, 0.0, 10.0, 0.0001 };
+    inputbox::real angle_y{ "Y angle", 1.8 / 32, 0.0, 10.0, 0.0001 };
 
-    if ( !inp.show( angle_x, angle_y ) ) {
+    if ( !inp.show( angle_x, angle_y ) )
+    {
         return;
     }
 
@@ -790,11 +847,12 @@ void ScannerMainForm::OpenStepPerAngleSettingDialog()
 
 void ScannerMainForm::OpenMotorDrvClkSettingDialog()
 {
-    inputbox inp { *this, "Set motor drive clock speed", "Set Motor Speed" };
+    inputbox inp{ *this, "Set motor drive clock speed", "Set Motor Speed" };
 
-    inputbox::integer clk { "Hz", 1000, 1, 100000, 100 };
+    inputbox::integer clk{ "Hz", 1000, 1, 100000, 100 };
 
-    if ( !inp.show( clk ) ) {
+    if ( !inp.show( clk ) )
+    {
         return;
     }
 
@@ -815,12 +873,14 @@ void ScannerMainForm::UpdateTimerEventHandler()
     cbool         bAsyncProcessDone   = mComSearchTask.valid() && wait_result == future_status ::ready;
     cbool         bConnectResult      = bAsyncProcessDone && mComSearchTask.get();
 
-    if ( !bIsConnect && ( !bAsyncProcessActive || ( bAsyncProcessDone && !bConnectResult ) ) ) {
+    if ( !bIsConnect && ( !bAsyncProcessActive || ( bAsyncProcessDone && !bConnectResult ) ) )
+    {
         mStatusText    = "-- No connection -- ";
         mComSearchTask = async( launch::async, [this]() {
             print( "Finding scanner connection ... \n" );
             cbool res = API_RefreshScannerControl( *mScan );
-            if ( res == false ) {
+            if ( res == false )
+            {
                 print( "Failed to find connection\n" );
                 this_thread::sleep_for( 500ms );
             }
@@ -829,20 +889,20 @@ void ScannerMainForm::UpdateTimerEventHandler()
     }
 
     // Let timer to retrigger if flag is active
-    if ( bInStartMode
-         && mScan->IsDeviceRunning() == false
-         && bEnableAutoRestart
-         && mRetriggerCnt-- == 0 ) {
+    if ( bInStartMode && mScan->IsDeviceRunning() == false && bEnableAutoRestart && mRetriggerCnt-- == 0 )
+    {
         print( "Auto re-triggering capture ... \n" );
         StartCapture();
     }
 
     // Update start button status
-    if ( mScan->IsDeviceRunning() ) {
+    if ( mScan->IsDeviceRunning() )
+    {
         mStartScan.caption( mScan->IsPaused() ? "Resume" : "Pause" );
         mMenualCommand.bgcolor( mScan->IsPaused() ? color().from_rgb( 255, 255, 0 ) : color().from_rgb( 255, 125, 125 ) );
     }
-    else {
+    else
+    {
         mStartScan.caption( "Start Capture" );
         mMenualCommand.bgcolor( color().from_rgb( 125, 255, 125 ) );
     }
@@ -850,14 +910,15 @@ void ScannerMainForm::UpdateTimerEventHandler()
     // Update idle state indicator
     mStatus.reset( mStatusText );
 
-    if ( auto now = chrono::system_clock::now(); now - mLastReportReqTime > ReportPeriod ) {
+    if ( auto now = chrono::system_clock::now(); now - mLastReportReqTime > ReportPeriod )
+    {
         mLastReportReqTime = now;
         mScan->Report();
     }
 }
 
 static constexpr char* divtxt =
-    R"(
+  R"(
 vert<margin=10><<><settings margin=10 weight = 560><> weight=160>
 )";
 
@@ -895,16 +956,27 @@ void ScannerViewerWidget::init( FScanImageDesc const& desc )
         auto& prv = mViewporPreviousMousePos;
         auto  d   = arg.pos - prv;
 
-        if ( arg.left_button ) {
+        if ( arg.left_button )
+        {
             double zoom = mConfZoom.to_double();
             mConfXPos.value( to_string( mConfXPos.to_double() + d.x / ( zoom * 0.01 ) ) );
             mConfYPos.value( to_string( mConfYPos.to_double() + d.y / ( zoom * 0.01 ) ) );
+        }
+        if ( arg.right_button )
+        {
+            mViewportCursorPos = arg.pos;
+            mViewportDraw->update();
+        }
+        else
+        {
+            mViewportCursorPos = {};
         }
 
         prv = arg.pos;
     } );
 
-    mViewportDraw = make_unique<drawing>( mViewport );
+    mViewportDraw
+      = make_unique<drawing>( mViewport );
     mViewportDraw->draw( [this]( paint::graphics& graph ) {
         viewportDraw( graph );
     } );
@@ -913,32 +985,34 @@ void ScannerViewerWidget::init( FScanImageDesc const& desc )
 
     // Initalize configuration group
     mConfigGroup.caption( "" );
-    mConfigGroup.div( "<vert gap = 20 margin = 10"
-                      "<<rangetxt weight= 44%>  <mind><maxd>>"
-                      "<<postxt weight= 44%>    <posx><posy>> "
-                      "<<zoomtxt weight= 44%>   <zoom>>"
-                      "<<calibtxt weight= 44%>  <calibv><ampv>>"
-                      ">" );
+    mConfigGroup.div(
+      "<vert gap = 20 margin = 10"
+      "<<rangetxt weight= 44%>  <mind><maxd>>"
+      "<<postxt weight= 44%>    <posx><posy>> "
+      "<<zoomtxt weight= 44%>   <zoom>>"
+      "<<calibtxt weight= 44%>  <calibv><ampv>>"
+      ">" );
 
     nana::spinbox* boxs[] = {
-        &mConfMinDist,
-        &mConfMaxDist,
-        &mConfXPos,
-        &mConfYPos,
-        &mConfZoom,
-        &mConfCalib };
+      &mConfMinDist,
+      &mConfMaxDist,
+      &mConfXPos,
+      &mConfYPos,
+      &mConfZoom,
+      &mConfCalib };
     double init_min_max_step[countof( boxs )][4] = {
-        { 0.0, 0.0, 100.0, 0.25 },
-        { 3.0, 0.0, 100.0, 0.25 },
-        { 0, -1000000000, 1000000000, 1 },
-        { 0, -1000000000, 1000000000, 1 },
-        { 100.0, 0.0001, 100000, 0.5 },
-        { 0, -25, 25, 1 },
+      { 0.0, 0.0, 100.0, 0.25 },
+      { 3.0, 0.0, 100.0, 0.25 },
+      { 0, -1000000000, 1000000000, 1 },
+      { 0, -1000000000, 1000000000, 1 },
+      { 100.0, 0.0001, 100000, 0.5 },
+      { 0, -25, 25, 1 },
     };
     const char* divs[] = {
-        "mind", "maxd", "posx", "posy", "zoom", "calibv" };
+      "mind", "maxd", "posx", "posy", "zoom", "calibv" };
 
-    for ( size_t i = 0; i < countof( boxs ); i++ ) {
+    for ( size_t i = 0; i < countof( boxs ); i++ )
+    {
         auto& bx = *boxs[i];
         bx.create( mConfigGroup );
         mConfigGroup[divs[i]] << bx;
@@ -963,12 +1037,13 @@ void ScannerViewerWidget::init( FScanImageDesc const& desc )
     mConfRenderAmp.events().checked( [this]( auto& ) { rerenderBuf(); } );
 
     const char* divs2[] = {
-        "rangetxt", "postxt", "zoomtxt", "calibtxt" };
+      "rangetxt", "postxt", "zoomtxt", "calibtxt" };
 
     const char* txts[] = {
-        "Distance [min, MAX] [meter]", "Position [x, y]", "Zoom value [%]", "Horizontal Calibration" };
+      "Distance [min, MAX] [meter]", "Position [x, y]", "Zoom value [%]", "Horizontal Calibration" };
 
-    for ( size_t i = 0; i < countof( mConfTexts ); i++ ) {
+    for ( size_t i = 0; i < countof( mConfTexts ); i++ )
+    {
         auto& lb = mConfTexts[i];
         lb.create( mConfigGroup );
         lb.caption( txts[i] );
@@ -992,26 +1067,23 @@ void ScannerViewerWidget::init( FScanImageDesc const& desc )
 void ScannerViewerWidget::rerenderBuf()
 {
     bPendingRender = true;
-    if ( mAsyncDraw.valid() && mAsyncDraw.wait_for( 0ms ) != future_status::ready ) {
+    if ( mAsyncDraw.valid() && mAsyncDraw.wait_for( 0ms ) != future_status::ready )
+    {
         return;
     }
 
     mAsyncDraw = async( launch::async, [this]( void ) {
-        while ( bPendingRender.exchange( false ) ) {
+        while ( bPendingRender.exchange( false ) )
+        {
             auto required = mImgDesc.Width * mImgDesc.Height;
-            if ( mTmpBufSz < required ) {
+            if ( mTmpBufSz < required )
+            {
                 mTmpBuf   = make_unique<uint32_t[]>( required );
                 mTmpBufSz = required;
             }
 
             RenderImage(
-                mImgDesc, mViewportBuf[!mFwd],
-                mConfRenderAmp.checked(),
-                mConfMaxDist.to_double(),
-                mConfMinDist.to_double(),
-                mConfCalib.to_int(),
-                mColorMode,
-                mTmpBuf.get() );
+              mImgDesc, mViewportBuf[!mFwd], mConfRenderAmp.checked(), mConfMaxDist.to_double(), mConfMinDist.to_double(), mConfCalib.to_int(), mColorMode, mTmpBuf.get() );
 
             mFwd = !mFwd;
             refreshScreen( true );
@@ -1032,20 +1104,16 @@ void ScannerViewerWidget::viewportDraw( nana::paint::graphics& gr )
         return;
 
     // Translate image into buffer
-    TranslateInto( gr, mViewportBuf[mFwd],
-                   mImgDesc.AspectRatio,
-                   mConfXPos.to_double(),
-                   mConfYPos.to_double(),
-                   mConfZoom.to_double() );
+    TranslateInto( gr, mViewportBuf[mFwd], mImgDesc.AspectRatio, mConfXPos.to_double(), mConfYPos.to_double(), mConfZoom.to_double() );
 }
 
 void ScannerViewerWidget::TranslateInto(
-    nana::paint::graphics& dst,
-    nana::paint::graphics& src,
-    double                 aspect,
-    double                 x,
-    double                 y,
-    double                 zoom_percent )
+  nana::paint::graphics& dst,
+  nana::paint::graphics& src,
+  double                 aspect,
+  double                 x,
+  double                 y,
+  double                 zoom_percent )
 {
     double zoom   = zoom_percent / 100.0;
     auto   dstw   = dst.width();
@@ -1056,5 +1124,54 @@ void ScannerViewerWidget::TranslateInto(
     auto   dx     = (int)std::min( (double)dstw, x * zoom + dstw / 2 - w / 2 );
     auto   dy     = (int)std::min( (double)dsth, y * zoom + dsth / 2 - h / 2 );
 
-    src.stretch( dst, rectangle { dx, dy, w, h } );
+    src.stretch( dst, rectangle{ dx, dy, w, h } );
+
+    // Draw depth information
+    if ( mViewportCursorPos )
+    {
+        auto const& desc = mImgDesc;
+        string      str;
+
+        // Translate viewport coordinated into source image's coordinate
+        auto pos     = *mViewportCursorPos;
+        auto drawPos = pos;
+
+        // Calculate source image coordinate by normalizing current cursor pos
+        pos.x -= dx;
+        pos.y -= dy;
+        pos.x = int( double( pos.x ) / w * desc.Width );
+        pos.y = int( double( pos.y ) / h * desc.Height );
+
+        if ( pos.x < 0 || pos.y < 0 || pos.x >= desc.Width || pos.y >= desc.Height )
+        {
+            str = "Out of image";
+        }
+        else
+        {
+            stringstream ss;
+            ss << "[" << setw( 4 ) << pos.x << ' ' << setw( 4 ) << pos.y << "] ";
+            auto value = desc.CData()[pos.y * desc.Width + pos.x];
+
+            ss << "D[" << setw( 11 ) << value.Distance / float( Q9_22_ONE_INT ) << " m] ";
+            ss << "A[" << setw( 5 ) << int( value.AMP / float( UQ12_4_ONE_INT ) ) << "] ";
+
+            str = ss.str();
+
+            dst.line( drawPos - nana::point{ 10, 0 }, drawPos + nana::point{ 10, 0 } );
+            dst.line( drawPos - nana::point{ 0, 10 }, drawPos + nana::point{ 0, 10 } );
+        }
+
+        {
+            auto old_face = dst.typeface();
+            dst.typeface( mConsolas );
+            auto extent = dst.text_extent_size( str );
+            auto atPos  = drawPos
+                         - nana::point{
+                           int( extent.width ) + 10,
+                           int( extent.height ) + 10 };
+            dst.rectangle( nana::rectangle{ atPos, extent }, true, nana::colors::white );
+            dst.string( atPos, str, nana::colors::black );
+            dst.typeface( old_face );
+        }
+    }
 };
