@@ -23,6 +23,7 @@
 #include <optional>
 #include <scanlib/arch/utility.hpp>
 #include <scanlib/core/scanner_protocol_handler.hpp>
+#include <scanlib/core/scanner_utils.h>
 
 #include <SlicCudaHost.h>
 
@@ -32,10 +33,13 @@ using namespace std::chrono_literals;
 
 /////////////////////////////////////////////////////////////////////////////
 // GLOBAL FLAGS
-DEFINE_int32( cam_index, 1, "Specify camera index to use" );
-DEFINE_int32( desired_pixel_cnt, int( 4e5 ), "Number of intended pixels" );
+DEFINE_int32( cam_index, 0, "Specify camera index to use" );
+DEFINE_int32( desired_pixel_cnt, int( 1e6 ), "Number of intended pixels" );
 DEFINE_double( slic_compactness, 65.f, "Pixel compactness" );
-DEFINE_int32( desired_superpixel_cnt, 1666, "Number of desired super pixels" );
+DEFINE_int32(
+  desired_superpixel_cnt,
+  int( 1e4 ),
+  "Number of desired super pixels" );
 DEFINE_double( vertical_fov, 38, "Camera vertical FOV in degree" );
 DEFINE_int32( ocl_dev_idx, 0, "Specify open-cl device index" );
 
@@ -225,7 +229,8 @@ int main( int argc, char* argv[] )
                 continue;
             }
 
-            if ( FrameTask.wait_for( 0ms ) != future_status::ready )
+            if ( auto WaitResult = FrameTask.wait_for( 0ms );
+                 WaitResult != future_status::ready )
             {
                 continue;
             }
@@ -316,15 +321,33 @@ static std::optional<cv::Mat> CaptureDepthImage( cv::Mat* FrameData )
     auto    NumCols = Contour.cols;
     int     Sizes[] = { NumRows, NumCols };
     cv::Mat DepthMap { 2, Sizes, CV_32F };
+
     {
+        vector<ScanDataPixelType> Raw;
+        Raw.resize( size_t( NumRows ) * NumCols );
+
         for ( size_t i = 0; i < NumRows; i++ )
         {
             auto LabelRow = Contour.ptr<int>( i );
             auto DepthRow = DepthMap.ptr<float>( i );
             for ( size_t j = 0; j < NumCols; j++ )
             {
-                DepthRow[j] = Depths[LabelRow[j]].Range;
+                auto dpxl                        = Depths[LabelRow[j]];
+                DepthRow[j]                      = dpxl.Range;
+                Raw[i * NumCols + j].Q9_22_DEPTH = dpxl.Range * Q9_22_ONE_INT;
+                Raw[i * NumCols + j].UQ_12_4_AMP = dpxl.Amp * UQ12_4_ONE_INT;
             }
+        }
+
+        auto fp = fopen(
+          ( to_string( system_clock::now().time_since_epoch().count() )
+            + ".dpta" )
+            .c_str(),
+          "wb" );
+        if ( fp )
+        {
+            ScanDataWriteTo( fp, Raw.data(), NumCols, NumRows, AspectRatio );
+            fclose( fp );
         }
     }
 
@@ -388,7 +411,7 @@ std::string stringf( char const* fmt, ... )
 
     auto        n = vsnprintf( NULL, 0, fmt, vpa );
     std::string str;
-    str.resize( n + 2 );
+    str.resize( size_t( n ) + 2 );
     vsnprintf( str.data(), str.size(), fmt, vpb );
 
     return str;
