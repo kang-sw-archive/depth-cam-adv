@@ -38,7 +38,7 @@ DEFINE_int32( desired_pixel_cnt, int( 6e5 ), "Number of intended pixels" );
 DEFINE_double( slic_compactness, 65.f, "Pixel compactness" );
 DEFINE_int32(
   desired_superpixel_cnt,
-  int( 160 ),
+  int( 10000 ),
   "Number of desired super pixels" );
 DEFINE_double( vertical_fov, 42.5, "Camera vertical FOV in degree" );
 DEFINE_double( horizontal_fov, 69.4, "Camera horizontal FOV in degree" );
@@ -348,35 +348,41 @@ static std::optional<cv::Mat> CaptureDepthImage( cv::Mat* FrameData )
     // difference between Superpixels, should not be interpolated.
     {
         cv::Mat BlurImage;
-        
-        DepthMap.copyTo( BlurImage );
-        // cv::bilateralFilter( DepthMap, BlurImage, 0, 0.16, 14.0 );
+        cv::bilateralFilter( DepthMap, BlurImage, 0, 0.16, 14.0 );
         BlurImage.copyTo( Out );
 
-        vector<ScanDataPixelType> Raw;
+        vector<ScanDataPixelType> Raw, Blurred;
         Raw.resize( size_t( NumRows ) * NumCols );
+        Blurred.resize( size_t( NumRows ) * NumCols );
 
         for ( size_t i = 0; i < NumRows; i++ )
-        {
-            auto DepthRow = BlurImage.ptr<float>( i );
-            auto LabelRow = Contour.ptr<int>( i );
+        { 
+            auto BlurredRow = BlurImage.ptr<float>( i );
+            auto LabelRow   = Contour.ptr<int>( i );
             for ( size_t j = 0; j < NumCols; j++ )
             {
-                auto dpxl                        = Depths[LabelRow[j]];
-                Raw[i * NumCols + j].Q9_22_DEPTH = q9_22_t( DepthRow[j] * Q9_22_ONE_INT );
-                Raw[i * NumCols + j].UQ_12_4_AMP = dpxl.Amp;
+                auto dpxl                            = Depths[LabelRow[j]];
+                Blurred[i * NumCols + j].Q9_22_DEPTH = q9_22_t( BlurredRow[j] * Q9_22_ONE_INT );
+                Blurred[i * NumCols + j].UQ_12_4_AMP = dpxl.Amp;
+                Raw[i * NumCols + j].Q9_22_DEPTH     = q9_22_t( dpxl.Range * Q9_22_ONE_INT );
+                Raw[i * NumCols + j].UQ_12_4_AMP     = dpxl.Amp;
             }
         }
 
-        auto fp = fopen(
-          ( to_string( system_clock::now().time_since_epoch().count() )
-            + ".dpta" )
-            .c_str(),
-          "wb" );
-        if ( fp )
+        for ( size_t i = 0; i < 2; i++ )
         {
-            ScanDataWriteTo( fp, Raw.data(), NumCols, NumRows, AspectRatio );
-            fclose( fp );
+            void* const Data[] = { Raw.data(), Blurred.data() };
+
+            auto fp = fopen(
+              ( to_string( system_clock::now().time_since_epoch().count() )
+                + ( i == 0 ? "_raw.dpta" : "_filtered.dpta" ) )
+                .c_str(),
+              "wb" );
+            if ( fp )
+            {
+                ScanDataWriteTo( fp, Data[i], NumCols, NumRows, AspectRatio );
+                fclose( fp );
+            }
         }
 #if 1 // Debug display ...
         {
@@ -592,15 +598,13 @@ bool MeasureSampleDepths(
         auto const& pt = CapturePath[i];
 
         // Set image center as 0, 0.
-        auto const fov    = FLAGS_vertical_fov;
         auto const aspect = AspectRatio;
         float      x      = pt.second.x / aspect - 0.5f;
         float      y      = pt.second.y - 0.5f;
         auto       xc = x, yc = y;
-        x = x * aspect;
         // x = powf( fabs( x ), 1.2f ) * ( x > 0 ? 1 : -1 );
         // y                 = powf( fabs( y ), 0.77f ) * ( y > 0 ? 1 : -1 );
-        x *= fov, y *= fov;
+        x *= FLAGS_horizontal_fov, y *= FLAGS_vertical_fov;
 
         // Queue point capture
         TimeoutPivot = system_clock::now();
