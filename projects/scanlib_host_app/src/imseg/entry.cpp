@@ -34,11 +34,11 @@ using namespace std::chrono_literals;
 /////////////////////////////////////////////////////////////////////////////
 // GLOBAL FLAGS
 DEFINE_int32( cam_index, 0, "Specify camera index to use" );
-DEFINE_int32( desired_pixel_cnt, int( 6e5 ), "Number of intended pixels" );
+DEFINE_int32( desired_pixel_cnt, int( 1e6 ), "Number of intended pixels" );
 DEFINE_double( slic_compactness, 65.f, "Pixel compactness" );
 DEFINE_int32(
   desired_superpixel_cnt,
-  int( 10000 ),
+  int( 10e3),
   "Number of desired super pixels" );
 DEFINE_double( vertical_fov, 42.5, "Camera vertical FOV in degree" );
 DEFINE_double( horizontal_fov, 69.4, "Camera horizontal FOV in degree" );
@@ -369,6 +369,7 @@ static std::optional<cv::Mat> CaptureDepthImage( cv::Mat* FrameData )
             }
         }
 
+        // Save as *.dpta file
         for ( size_t i = 0; i < 2; i++ )
         {
             void* const Data[] = { Raw.data(), Blurred.data() };
