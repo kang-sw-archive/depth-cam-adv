@@ -33,9 +33,9 @@ enum : size_t
 /////////////////////////////////////////////////////////////////////////////
 // Globals
 capture_t gCapture = {
-  .AnglePerStep       = { .x = 1.8f / 32.f, .y = 1.8f / 32.f },
-  .Scan_Resolution    = { .x = 10, .y = 10 },
-  .Scan_StepPerPxl    = { .x = 10, .y = 1 },
+  .AnglePerStep        = { .x = 1.8f / 32.f, .y = 1.8f / 32.f },
+  .Scan_Resolution     = { .x = 10, .y = 10 },
+  .Scan_StepPerPxl     = { .x = 10, .y = 1 },
   .Point_NumMaxRequest = POINT_NUM_RDQUEUE_ELEM };
 char Capture_Buffer[CAPTURER_BUFFER_SIZE];
 /////////////////////////////////////////////////////////////////////////////
@@ -479,10 +479,12 @@ TryMeasureDistance( int NumRetry, status_t* outResult = nullptr )
             return {};
         }
         API_Msgf(
-          "warning: measurement failed. Retry after 100ms ... retries left "
+          "warning: measurement failed for code %d. Retry after 300ms ... "
+          "retries left "
           "%d\n",
+          *outResult,
           NumRetry );
-        vTaskDelay( pdMS_TO_TICKS( 100 ) );
+        vTaskDelay( pdMS_TO_TICKS( 300 ) );
         DistSens_Configure( ghDistSens, NULL );
     }
 

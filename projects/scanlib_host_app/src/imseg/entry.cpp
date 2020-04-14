@@ -25,6 +25,9 @@
 #include <scanlib/core/scanner_protocol_handler.hpp>
 #include <scanlib/core/scanner_utils.h>
 
+#define _USE_MATH_DEFINES
+#include <math.h>
+
 #include <SlicCudaHost.h>
 
 using namespace std;
@@ -34,15 +37,14 @@ using namespace std::chrono_literals;
 /////////////////////////////////////////////////////////////////////////////
 // GLOBAL FLAGS
 DEFINE_int32( cam_index, 0, "Specify camera index to use" );
-DEFINE_int32( desired_pixel_cnt, int( 1e6 ), "Number of intended pixels" );
+DEFINE_int32( desired_pixel_cnt, int( 2e6 ), "Number of intended pixels" );
 DEFINE_double( slic_compactness, 65.f, "Pixel compactness" );
-DEFINE_int32(
-  desired_superpixel_cnt,
-  int( 10e3),
-  "Number of desired super pixels" );
-DEFINE_double( vertical_fov, 42.5, "Camera vertical FOV in degree" );
-DEFINE_double( horizontal_fov, 69.4, "Camera horizontal FOV in degree" );
+DEFINE_int32( desired_superpixel_cnt, int( 10e3 ), "Number of desired super pixels" );
+DEFINE_double( vertical_fov, 50.625, "Camera vertical FOV in degree" );
+DEFINE_double( horizontal_fov, 90, "Camera horizontal FOV in degree" );
 DEFINE_int32( ocl_dev_idx, 0, "Specify open-cl device index" );
+DEFINE_double( sensor_offset_x, 15e-3, "Distance sensor x axis offset in meters" );
+DEFINE_double( sensor_offset_y, 15e-3, "Distance sensor y axis offset in meters" );
 
 DEFINE_double(
   path_x_tolerance,
@@ -113,7 +115,7 @@ int main( int argc, char* argv[] )
     std::future<std::optional<cv::Mat>> FrameTask;
 
     gflags::ParseCommandLineFlags( &argc, &argv, true );
-    Video.open( FLAGS_cam_index );
+    Video.open( FLAGS_cam_index + cv::CAP_DSHOW );
 
     cv::ocl::setUseOpenCL( true );
 
@@ -151,13 +153,13 @@ int main( int argc, char* argv[] )
     // Configure video resolution ... Set pixel count as the desired
     // configuration
     {
-        // Query the camera's maximum pixel count
+        //// Query the camera's maximum pixel count
         Video.set( cv::CAP_PROP_FRAME_WIDTH, 1e6 );
         Video.set( cv::CAP_PROP_FRAME_HEIGHT, 1e6 );
         auto w = Video.get( cv::CAP_PROP_FRAME_WIDTH );
         auto h = Video.get( cv::CAP_PROP_FRAME_HEIGHT );
 
-        // Calculate required reduction ratio
+        //// Calculate required reduction ratio
         auto DesiredImageScale = sqrt( FLAGS_desired_pixel_cnt / ( w * h ) );
         w *= DesiredImageScale;
         h *= DesiredImageScale;
@@ -241,8 +243,8 @@ int main( int argc, char* argv[] )
                 cv::imshow( "rgb-grid", FrameData );
                 cv::imshow( "depth", Depth.value() / DEBUG_MAX_DIST );
                 gScan.QueuePoint( 0, 0, 0 );
-                break;
             }
+            break;
         }
     }
 
@@ -356,7 +358,7 @@ static std::optional<cv::Mat> CaptureDepthImage( cv::Mat* FrameData )
         Blurred.resize( size_t( NumRows ) * NumCols );
 
         for ( size_t i = 0; i < NumRows; i++ )
-        { 
+        {
             auto BlurredRow = BlurImage.ptr<float>( i );
             auto LabelRow   = Contour.ptr<int>( i );
             for ( size_t j = 0; j < NumCols; j++ )
@@ -598,14 +600,33 @@ bool MeasureSampleDepths(
         // Translate normalized point into angular dimension
         auto const& pt = CapturePath[i];
 
-        // Set image center as 0, 0.
-        auto const aspect = AspectRatio;
-        float      x      = pt.second.x / aspect - 0.5f;
-        float      y      = pt.second.y - 0.5f;
-        auto       xc = x, yc = y;
-        // x = powf( fabs( x ), 1.2f ) * ( x > 0 ? 1 : -1 );
-        // y                 = powf( fabs( y ), 0.77f ) * ( y > 0 ? 1 : -1 );
-        x *= FLAGS_horizontal_fov, y *= FLAGS_vertical_fov;
+        // Map normalized projection coordinate to the spherical coordinate of motor axis. Assumes projection plane is on the distance of the sensor offset r. The projection coordinate x', y' can be calculated from phi, theta by the following equation:
+        //      x' = r * tan(theta).
+        // Since we got normalized projection coordinate x, y currently, firstly this value should be converted to actual value x', y'.
+        // x' can be calculated from x' by the following equation:
+        //      x' = r * tan(xfov) * x
+        // To get theta, we use the following equation:
+        //      theta = atan(x'/r)
+
+        constexpr float DTOR   = float( M_PI / 180.0 );
+        constexpr float RTOD   = float( 180.0 / M_PI );
+        float           xfov   = DTOR * FLAGS_horizontal_fov;
+        float           yfov   = DTOR * FLAGS_vertical_fov;
+        auto const      aspect = AspectRatio;
+
+        using fc = float const;
+        fc rx    = FLAGS_sensor_offset_x;
+        fc ry    = FLAGS_sensor_offset_y;
+        fc xo    = pt.second.x / aspect - 0.5f;
+        fc yo    = pt.second.y - 0.5f;
+        // Since xo and yo varies between -0.5~ 0.5, should multiply 2 on them.
+        // fc xc = rx * tanf( xfov * 0.5f ) * xo * 2.f;
+        // fc yc = ry * tanf( yfov * 0.5f ) * yo * 2.f;
+        //
+        // fc theta = atanf( xc / rx ), phi = atanf( yc / ry );
+        // fc x = theta * RTOD, y = phi * RTOD;
+        fc x = xfov * xo * RTOD;
+        fc y = yfov * yo * RTOD;
 
         // Queue point capture
         TimeoutPivot = system_clock::now();

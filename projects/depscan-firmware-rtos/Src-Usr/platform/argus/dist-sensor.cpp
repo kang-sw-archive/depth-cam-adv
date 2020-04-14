@@ -142,8 +142,14 @@ bool DistSens_MeasureAsync(
 {
     if ( !si.init_correct_ )
     {
-        API_Msg( "error: sensor is not initialized correctly.\n" );
-        return false;
+        API_Msg(
+          "error: sensor is not initialized correctly. Trying reconfigure "
+          "...\n" );
+        if ( RefreshArgusSens() == false )
+        {
+            API_Msg( "fatal: Failed to refresh sensor ...\n" );
+            return false;
+        }
     }
     if ( si.capturing_ )
     {
@@ -299,6 +305,8 @@ static bool RefreshArgusSens()
     // handle
     uassert( si.capturing_ == false );
     si.capturing_ = true;
+
+    API_Msgf( "info: Refreshing distance sensor ... \n" );
 
     // Always destroy handle on reinitializtion
     if ( s.hnd_ )
