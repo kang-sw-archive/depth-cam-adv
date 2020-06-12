@@ -36,12 +36,12 @@ using namespace std::chrono_literals;
 
 /////////////////////////////////////////////////////////////////////////////
 // GLOBAL FLAGS
-DEFINE_int32( cam_index, 0, "Specify camera index to use" );
+DEFINE_int32( cam_index, 1, "Specify camera index to use" );
 DEFINE_int32( desired_pixel_cnt, int( 2e6 ), "Number of intended pixels" );
 DEFINE_double( slic_compactness, 65.f, "Pixel compactness" );
-DEFINE_int32( desired_superpixel_cnt, int( 10e3 ), "Number of desired super pixels" );
-DEFINE_double( vertical_fov, 50.625, "Camera vertical FOV in degree" );
-DEFINE_double( horizontal_fov, 90, "Camera horizontal FOV in degree" );
+DEFINE_int32( desired_superpixel_cnt, int( 3e3 ), "Number of desired super pixels" );
+DEFINE_double( vertical_fov, 49.0, "Camera vertical FOV in degree" );
+DEFINE_double( horizontal_fov, 78.0, "Camera horizontal FOV in degree" );
 DEFINE_int32( ocl_dev_idx, 0, "Specify open-cl device index" );
 DEFINE_double( sensor_offset_x, 15e-3, "Distance sensor x axis offset in meters" );
 DEFINE_double( sensor_offset_y, 15e-3, "Distance sensor y axis offset in meters" );
@@ -620,13 +620,13 @@ bool MeasureSampleDepths(
         fc xo    = pt.second.x / aspect - 0.5f;
         fc yo    = pt.second.y - 0.5f;
         // Since xo and yo varies between -0.5~ 0.5, should multiply 2 on them.
-        // fc xc = rx * tanf( xfov * 0.5f ) * xo * 2.f;
-        // fc yc = ry * tanf( yfov * 0.5f ) * yo * 2.f;
-        //
-        // fc theta = atanf( xc / rx ), phi = atanf( yc / ry );
-        // fc x = theta * RTOD, y = phi * RTOD;
-        fc x = xfov * xo * RTOD;
-        fc y = yfov * yo * RTOD;
+        fc xc = rx * tanf( xfov * 0.5f ) * xo * 2.f;
+        fc yc = ry * tanf( yfov * 0.5f ) * yo * 2.f;
+
+        fc theta = atanf( xc / rx ), phi = atanf( yc / ry );
+        fc x = theta * RTOD, y = phi * RTOD;
+        // fc x = xfov * xo * RTOD;
+        // fc y = yfov * yo * RTOD;
 
         // Queue point capture
         TimeoutPivot = system_clock::now();
